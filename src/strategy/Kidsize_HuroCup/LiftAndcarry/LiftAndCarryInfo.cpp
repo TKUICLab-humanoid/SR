@@ -18,11 +18,11 @@ LiftAndCarryInfo::LiftAndCarryInfo(void)
     RobotUp = true;
     AviodHole = false;
     InitialFlag = true;
-    RightFoot.XMin = 170 + 17;//165
+    RightFoot.XMin = 170 + 5;//165
     RightFoot.XMax = RightFoot.XMin + 50;//6.5
     RightFoot.YMin = 120;//83
     RightFoot.YMax = RightFoot.YMin + 80;//10
-    LeftFoot.XMin = 131 - 22 ;
+    LeftFoot.XMin = 131 - 36 ;
     LeftFoot.XMax = LeftFoot.XMin + 50;
     LeftFoot.YMin = 120;
     LeftFoot.YMax = LeftFoot.YMin + 80;
