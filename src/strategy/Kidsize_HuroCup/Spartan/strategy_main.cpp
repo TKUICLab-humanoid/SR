@@ -27,7 +27,7 @@ void KidsizeStrategy::strategymain()
 	{
 		if(liftandcarryinfo->Start)
 		{
-			ros_com->sendBodySector(41);
+			//ros_com->sendBodySector(41);
 			Initial_IMUdata();
 			tool->Delay(1000);
 			ros_com->sendBodyAuto(st0_SprX,st0_SprY,0,st0_SprTha,WalkingMode::ContinuousStep,SensorMode(st0_Sprimu));
@@ -206,20 +206,22 @@ void KidsizeStrategy::StrategyBody()
 					woodshape[i]=-1;
 				//------------------------------//
 				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-				tool->Delay(3000);
+				tool->Delay(1000);
+//				ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+//				tool->Delay(1500);
 				ros_com->sendBodySector(29);
 				tool->Delay(1000);
 				ros_com->sendBodySector(40);
-				tool->Delay(3000);
+				tool->Delay(2000);
 				ros_com->sendBodyAuto(LC_StepX,LC_StepY,0,LC_StepTha,WalkingMode::LC_Step,SensorMode(LC_Stepimu));//執行上坡動作
 				tool->Delay(1500);
-				ros_com->sendBodySector(42);	//蹲下
-				tool->Delay(3000);
-				ros_com->sendBodySector(44);	//站起來
-				tool->Delay(4000);
+				//ros_com->sendBodySector(42);	//蹲下
+				//tool->Delay(3000);
+				//ros_com->sendBodySector(44);	//站起來
+				//tool->Delay(4000);
 				ros_com->sendBodySector(29);
 				tool->Delay(500);
-				ros_com->sendBodySector(41);
+				//ros_com->sendBodySector(41);
 				liftandcarryinfo->WhichStair++;//目前層數++
 				if(liftandcarryinfo->WhichStair == Stair_1 ||liftandcarryinfo->WhichStair == Stair_2)
 				{
@@ -891,7 +893,8 @@ void KidsizeStrategy::CW_StrategyClassify()
 			CW_step_flag = false;
 			if(!CW_handcheck)
 			{
-				ros_com->sendContinuousValue(st0_SmallFrontX,st0_SmallFrontY,0,st0_SmallFrontTha+Theta_offset,SensorMode(st0_SmallFrontimu));
+	//			ros_com->sendContinuousValue(st0_SmallFrontX,st0_SmallFrontY,0,st0_SmallFrontTha+Theta_offset,SensorMode(st0_SmallFrontimu));
+				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
 				tool->Delay(1500);
 				ros_com->sendHeadMotor(HeadMotorID::HorizontalID, 2048, 400);
 				tool->Delay(50);
@@ -906,9 +909,10 @@ void KidsizeStrategy::CW_StrategyClassify()
 			}
 			else
 			{
-				ros_com->sendBodySector(22);
+				//ros_com->sendBodySector(22);
 				ROS_INFO("Sector = 22 , delay = %d", CW_first_foot_delay);
-				tool->Delay(CW_first_foot_delay);
+				//tool->Delay(CW_first_foot_delay);
+				tool->Delay(5000);
 				CW_Stair++;
 				liftandcarryinfo->CW_Strategy = Climb_to_second_stair;
 				CW_handcheck = false;
