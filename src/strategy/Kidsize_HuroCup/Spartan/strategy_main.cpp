@@ -903,16 +903,18 @@ void KidsizeStrategy::CW_StrategyClassify()
 				tool->Delay(50);
 				ros_com->sendBodySector(29);
 				tool->Delay(500);
-				ros_com->sendBodySector(21);
+				ros_com->sendBodySector(30);//爬梯站姿
+				tool->Delay(1000);
+				ros_com->sendBodySector(21);//手
 				ROS_INFO("Sector = 21 , delay = %d", CW_first_hand_delay);
 				tool->Delay(CW_first_hand_delay);
 				CW_handcheck = true;
 			}
 			else
 			{
-				//ros_com->sendBodySector(22);
+				ros_com->sendBodySector(22);//腳
 				ROS_INFO("Sector = 22 , delay = %d", CW_first_foot_delay);
-				//tool->Delay(CW_first_foot_delay);
+				tool->Delay(CW_first_foot_delay);
 				tool->Delay(5000);
 				CW_Stair++;
 				liftandcarryinfo->CW_Strategy = Climb_to_second_stair;
