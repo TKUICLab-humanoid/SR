@@ -18,42 +18,54 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
-
 void KidsizeStrategy::strategymain()
 {
 	if(!strategy_info->getStrategyStart())	//策略指撥開關沒開啟
-			StrategyInitial();//策略初始化
+	{		
+		StrategyInitial();//策略初始化
+		gettimeofday(&tend_stragegy, NULL);
+	}
 	else//策略指撥開關開啟
 	{
-		if(liftandcarryinfo->Start)
-		{
-			//ros_com->sendBodySector(41);
-			Initial_IMUdata();
-			tool->Delay(1000);
-			ros_com->sendBodyAuto(st0_SprX,st0_SprY,0,st0_SprTha,WalkingMode::ContinuousStep,SensorMode(st0_Sprimu));
-			liftandcarryinfo->Start=false;
-		}
-		gettimeofday(&tend, NULL);
-		timeuse = (1000000*(tend.tv_sec - tstart.tv_sec) + (tend.tv_usec - tstart.tv_usec))/1000;
-		if(liftandcarryinfo->WhichStrategy == strategy_liftandcarry)	//項目策略為LC
-		{
-			if(timeuse >= liftandcarryinfo->Delaytime)//身體動作時間到
+		gettimeofday(&tstart_stragegy, NULL);
+		timeuse_stragegy = (1000000*(tstart_stragegy.tv_sec - tend_stragegy.tv_sec) + (tstart_stragegy.tv_usec - tend_stragegy.tv_usec))/1000;
+		if(timeuse_stragegy >= 500)
+		{	
+			if(liftandcarryinfo->Start)
 			{
-				StrategyBody();//傳送身體策略
-				gettimeofday(&tstart, NULL);
+				//ros_com->sendBodySector(41);
+				Initial_IMUdata();
+				tool->Delay(1000);
+				ros_com->sendBodyAuto(st0_SprX,st0_SprY,0,st0_SprTha,WalkingMode::ContinuousStep,SensorMode(st0_Sprimu));
+				liftandcarryinfo->Start=false;
 			}
-			StrategyClassify();//策略判斷
-		}
-		else if(liftandcarryinfo->WhichStrategy == strategy_climbingwall)//項目策略為CW
-		{
-			if(timeuse >= liftandcarryinfo->Delaytime)//身體動作時間到
+			gettimeofday(&tend, NULL);
+			timeuse = (1000000*(tend.tv_sec - tstart.tv_sec) + (tend.tv_usec - tstart.tv_usec))/1000;
+			if(liftandcarryinfo->WhichStrategy == strategy_liftandcarry)	//項目策略為LC
 			{
-				CW_StrategyBody();//傳送CW身體策略
-				gettimeofday(&tstart, NULL);
+				if(timeuse >= liftandcarryinfo->Delaytime)//身體動作時間到
+				{
+					StrategyBody();//傳送身體策略
+					gettimeofday(&tstart, NULL);
+				}
+				StrategyClassify();//策略判斷
 			}
-			CW_StrategyClassify();//CW策略判斷
+			else if(liftandcarryinfo->WhichStrategy == strategy_climbingwall)//項目策略為CW
+			{
+				if(timeuse >= liftandcarryinfo->Delaytime)//身體動作時間到
+				{
+					CW_StrategyBody();//傳送CW身體策略
+					gettimeofday(&tstart, NULL);
+				}
+				CW_StrategyClassify();//CW策略判斷
+			}
+			liftandcarryinfo->InitialFlag = true;//初始化旗標
 		}
-		liftandcarryinfo->InitialFlag = true;//初始化旗標
+		else
+		{
+			ros_com->sendBodySector(29);//站立
+			tool->Delay(500);
+		}	
 	}
 	if(liftandcarryinfo->WhichStrategy == strategy_liftandcarry)//項目策略為LC
 	{
@@ -727,12 +739,12 @@ void KidsizeStrategy::CW_distance()
 	//-------------算出左腳與梯子的距離--------------//
 	for(int h = liftandcarryinfo->LeftFoot.YMax; h > 0; h--)//h=左虛擬腳Y座標最大值
 	{
-        if(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == TrdColor)//取樣像素點顏色=目標色模顏色
+        if((strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::YellowLabel))//取樣像素點顏色=目標色模顏色
 		{
 			CW_Leftfoot_distance = liftandcarryinfo->LeftFoot.YMax - h ;//左腳與梯子的距離=左虛擬腳Y座標最大值-h
 			for (h ; h > 0 ; h--)
 			{
-                if(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] != TrdColor)
+                if((strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] != (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::YellowLabel))
 				{
 					CW_Slope_Leftdistance = liftandcarryinfo->LeftFoot.YMax - h ;
 					break;
@@ -745,12 +757,12 @@ void KidsizeStrategy::CW_distance()
 	//-------------算出右腳與梯子的距離--------------(int)LabelMark::OrangeLabel//
 	for(int h = liftandcarryinfo->RightFoot.YMax; h > 0; h--)//h=右虛擬腳Y座標最大值
 	{
-        if(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->RightFoot.XMax ] == TrdColor)//取樣像素點顏色=目標色模顏色
+        if((strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->RightFoot.XMax ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::YellowLabel))//取樣像素點顏色=目標色模顏色
 		{
 			CW_Rightfoot_distance = liftandcarryinfo->RightFoot.YMax - h ;//右腳與梯子的距離=右虛擬腳Y座標最大值-h
 			for (h ; h > 0 ; h--)
 			{
-                if(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->RightFoot.XMax ] != TrdColor)
+                if((strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->RightFoot.XMax ] != (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::YellowLabel))
 				{
 					CW_Slope_Rightdistance = liftandcarryinfo->RightFoot.YMax - h ;
 					break;
@@ -764,7 +776,7 @@ void KidsizeStrategy::CW_distance()
 	//-----------------判斷左腳旗標-----------------//
 	for(int h = liftandcarryinfo->LeftFoot.YMax; h >= liftandcarryinfo->LeftFoot.YMin; h--)//h=左虛擬腳Y座標最大值;h>左虛擬腳Y座標最小值;h--
 	{
-        if(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == TrdColor)//取樣像素點顏色=目標色模顏色
+        if((strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::YellowLabel))//取樣像素點顏色=目標色模顏色
 		{
 			CW_Leftfoot_flag = true;//左腳旗標=true
 			break;
@@ -774,7 +786,7 @@ void KidsizeStrategy::CW_distance()
 	//-----------------判斷右腳旗標-----------------//
 	for(int h = liftandcarryinfo->RightFoot.YMax; h >= liftandcarryinfo->RightFoot.YMin; h--)//h=右虛擬腳Y座標最大值;h>右虛擬腳Y座標最小值;h--
 	{
-        if(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->RightFoot.XMax] == TrdColor)//取樣像素點顏色=目標色模顏色
+        if((strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->RightFoot.XMax] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * h + liftandcarryinfo->LeftFoot.XMin ] == (int)LabelMark::YellowLabel))//取樣像素點顏色=目標色模顏色
 		{
 			CW_Rightfoot_flag = true;//右腳旗標=true
 			break;
@@ -937,7 +949,7 @@ void KidsizeStrategy::CW_StrategyClassify()
 					tool->Delay(50);
 					ros::spinOnce();
 					tool->Delay(50);
-					if ((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == TrdColor) || (strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] == TrdColor))
+					if ((((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::RedLabel))||(strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::YellowLabel)) || ((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] ==  (int)LabelMark::YellowLabel)))
 					{
 						ROS_INFO("%d",i);
 						stairdistance = i - 1500;	//算梯距
@@ -971,7 +983,7 @@ void KidsizeStrategy::CW_StrategyClassify()
 					tool->Delay(50);
 					ros::spinOnce();
 					tool->Delay(50);
-					if ((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == TrdColor) || (strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] == TrdColor))
+					if (((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::YellowLabel)) || ((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::YellowLabel)))
 					{
 						ROS_INFO("%d",i);
 						stairdistance = i - 1500;	//算梯距
@@ -1010,7 +1022,7 @@ void KidsizeStrategy::CW_StrategyClassify()
 					tool->Delay(50);
 					ros::spinOnce();
 					tool->Delay(50);
-					if ((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == TrdColor) || (strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] == TrdColor))
+					if (((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] ==(int)LabelMark::YellowLabel)) || ((strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->RightFoot.XMin ] == (int)LabelMark::RedLabel)||(strategy_info->label_model[ ImageWidth * 100 + liftandcarryinfo->LeftFoot.XMax ] == (int)LabelMark::YellowLabel)))
 					{
 						ROS_INFO("%d",i);
 						stairdistance = i - 1500;	//算梯距
