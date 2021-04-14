@@ -875,9 +875,13 @@ void KidsizeStrategy::CW_StrategyClassify()
 		case Go_to_stair:
 			CW_distance();
 			if(CW_Count >=4)
+			{
 				liftandcarryinfo->BodyState = BigFront;
+			}
+				
 			else if(CW_Leftfoot_flag && CW_Rightfoot_flag)	//11
 			{
+				
 				if(CW_Leftfoot_distance >= 40 && CW_Rightfoot_distance >= 40)
 					liftandcarryinfo->BodyState = BigFront;
 				else if(CW_Slope < -0.1)
