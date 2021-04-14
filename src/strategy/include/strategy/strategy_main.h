@@ -56,8 +56,9 @@ class KidsizeStrategy
 		void ShiftDanger();
 		void Initial_IMUdata();
 		void Theta_Offset();
-		double timeuse;
+		double timeuse,timeuse_stragegy;
 		struct timeval tstart, tend;
+		struct timeval tstart_stragegy,tend_stragegy;
 		struct timeval tstart2, tend2;
 		double initial_IMUdata,current_IMUdata;
 		double IMUoffset;
