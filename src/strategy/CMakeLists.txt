@@ -58,16 +58,18 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(LiftAndCarryFoot
-	Kidsize_HuroCup/LiftAndcarry/LiftAndCarryInfo.cpp
-	Kidsize_HuroCup/LiftAndcarry/LiftAndCarryFoot.cpp
-)
+#add_executable(LiftAndCarryFoot
+#	Kidsize_HuroCup/LiftAndcarry/LiftAndCarryInfo.cpp
+#	Kidsize_HuroCup/LiftAndcarry/LiftAndCarryFoot.cpp
+#)
 add_executable(LiftAndCarrymain
 	Kidsize_HuroCup/Spartan/strategy_main.cpp
+	Kidsize_HuroCup/Spartan/matrix.cpp
+	Kidsize_HuroCup/Spartan/Source.cpp
 	Kidsize_HuroCup/LiftAndcarry/LiftAndCarryInfo.cpp
 )
 add_dependencies(LiftAndCarrymain ${catkin_EXPORTED_TARGETS})
-add_dependencies(LiftAndCarryFoot ${catkin_EXPORTED_TARGETS})
+#add_dependencies(LiftAndCarryFoot ${catkin_EXPORTED_TARGETS})
 target_link_libraries(LiftAndCarrymain ${catkin_LIBRARIES} ${TKU_LIBRARIES} ${ROSCOMMUNICATION_LIBRARIES})
-target_link_libraries(LiftAndCarryFoot ${catkin_LIBRARIES} ${TKU_LIBRARIES} ${ROSCOMMUNICATION_LIBRARIES})
+#target_link_libraries(LiftAndCarryFoot ${catkin_LIBRARIES} ${TKU_LIBRARIES} ${ROSCOMMUNICATION_LIBRARIES})
 
