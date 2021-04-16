@@ -19,6 +19,8 @@ int main(int argc, char** argv)
 	}
 	return 0;
 }
+
+
 void KidsizeStrategy::strategymain()
 {
 	if(!strategy_info->getStrategyStart())	//策略指撥開關沒開啟
@@ -34,7 +36,8 @@ void KidsizeStrategy::strategymain()
 		{	
 			if(liftandcarryinfo->Start)
 			{
-				//ros_com->sendBodySector(41);
+				ros_com->sendBodySector(41);
+				tool->Delay(500);
 				Initial_IMUdata();
 				tool->Delay(1000);
 				ros_com->sendBodyAuto(st0_SprX,st0_SprY,0,st0_SprTha,WalkingMode::ContinuousStep,SensorMode(st0_Sprimu));
@@ -135,11 +138,23 @@ void KidsizeStrategy::StrategyInitial()
 	
 	if(liftandcarryinfo->InitialFlag)
 	{
-		//ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-		tool->Delay(500);
-		ros_com->sendBodySector(29);//站立
-		tool->Delay(500);
-		liftandcarryinfo->InitialFlag = false;
+		if(!CW_step_flag && (liftandcarryinfo->WhichStrategy == strategy_climbingwall || liftandcarryinfo->WhichStrategy == strategy_liftandcarry))
+		{	
+			//ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendBodySector(29);//站立
+			tool->Delay(500);
+			liftandcarryinfo->InitialFlag = false;
+		}
+		else
+		{
+			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendBodySector(29);//站立
+			tool->Delay(500);
+			liftandcarryinfo->InitialFlag = false;
+		}
+
 	}
 	if(liftandcarryinfo->WhichStrategy == strategy_liftandcarry)//策略項目為LC
 	{
@@ -240,7 +255,8 @@ void KidsizeStrategy::StrategyBody()
 				//tool->Delay(4000);
 				ros_com->sendBodySector(29);
 				tool->Delay(1000);
-				//ros_com->sendBodySector(41);
+				ros_com->sendBodySector(41);
+				tool->Delay(500);
 				liftandcarryinfo->WhichStair++;//目前層數++
 				if(liftandcarryinfo->WhichStair == Stair_1 ||liftandcarryinfo->WhichStair == Stair_2)
 				{
@@ -876,9 +892,8 @@ void KidsizeStrategy::CW_StrategyClassify()
 			CW_distance();
 			if(CW_Count >=4)
 			{
-				liftandcarryinfo->BodyState = BigFront;
-			}
-				
+					liftandcarryinfo->BodyState = BigFront;
+			}	
 			else if(CW_Leftfoot_flag && CW_Rightfoot_flag)	//11
 			{
 				
