@@ -13,6 +13,7 @@
 //#include "LiftAndCarryInfo.h"
 #include <iostream>
 #include <string>
+#include "tku_msgs/PointData.h"
 
 using namespace std;
 
@@ -28,7 +29,7 @@ class KidsizeStrategy
 			strategy_info = StrategyInfoInstance::getInstance();
 			tool = ToolInstance::getInstance();
 			ros_com = RosCommunicationInstance::getInstance();
-			Endpoint_Publish = nh.advertise<package::PointData>("/package/EndPoint", 1000);
+			Endpoint_Publish = nh.advertise<tku_msgs::PointData>("/package/EndPoint", 1000);
 
 		};
 		~KidsizeStrategy()
@@ -53,5 +54,5 @@ class KidsizeStrategy
 		bool first_flag = true;
 
 
-		package::PointData endpoint_temp;
+		tku_msgs::PointData endpoint_temp;
 };

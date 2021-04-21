@@ -582,7 +582,8 @@ void fMatrix::Show() const
 
 fVector fMatrix::GetCol(int col) const
 {
-	fVector buffer(this->cols);
+	fVector buffer(this->rows);
+	// printf("\ncol = %d\n",this->rows);
 	Float *bufferelem = new Float[buffer.Getsize()];
 	for (int i = 0; i < this->rows; i++)
 		bufferelem[i] = this->elem[i * this->cols + col];
@@ -593,7 +594,8 @@ fVector fMatrix::GetCol(int col) const
 
 fVector fMatrix::GetRow(int row) const
 {
-	fVector buffer(this->rows);
+	fVector buffer(this->cols);
+	// printf("\nrow = %d\n",this->rows);
 	Float *bufferelem = new Float[buffer.Getsize()];
 	for (int i = 0; i < this->cols; i++)
 		bufferelem[i] = this->elem[row * this->cols + i];

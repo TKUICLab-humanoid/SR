@@ -66,7 +66,7 @@ void fVector::Show(VecType Type /*= ColVec*/) const
 {
 	if (Type == ColVec) {
 		for (int i = 0; i < size; i++)
-			printf("%lf\n", elem[i]);
+			printf("%lf\n", i,elem[i]);
 	}
 	else{
 		for (int i = 0; i < size; i++) {
@@ -347,6 +347,7 @@ void fVector::Setelem(Float *elem) const
 
 Float fVector::receiveelem(int i) const
 {
+	// printf("%d = %lf\n",i,this->elem[i]);
 	double temp;
 	temp = this->elem[i];
 	return temp;

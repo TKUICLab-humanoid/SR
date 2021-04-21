@@ -96,7 +96,7 @@ void KidsizeStrategy::strategymain()
 
 void KidsizeStrategy::systemtransform(int x, int y, double headangle,double distance)
 {
-	double yaw_angle[3] = {0,headangle,0};
+	double yaw_angle[3] = {0,-90+abs(headangle),-90};
 	double s_r = sin(yaw_angle[0]*Deg2Rad);
 	double c_r = cos(yaw_angle[0]*Deg2Rad);
 
@@ -138,18 +138,25 @@ void KidsizeStrategy::systemtransform(int x, int y, double headangle,double dist
 	fMatrix end_point(3, 1);
 	
 	end_point = out_matrix_n*in_matrix_n*pixel*distance-out_matrix_n*in_matrix_n*move;
-	end_point.Show();
+	//end_point.Show();
 
-	Float m_l[3] ={ 3.123,
-			         7.4 , 
-			        8.525 };//cm
+	Float m_l[3] ={ 0,
+			        8.525 , 
+			        -3.125 };//cm 3.123 7.4 8.525
 
 	fMatrix move_l(m_l, 3, 1);
 	fMatrix end_point_l(3, 1);
 	
-	end_point_l = out_matrix_n*in_matrix_n*pixel*distance-out_matrix_n*in_matrix_n*move_l;
+	end_point_l = out_matrix_n*in_matrix_n*pixel*distance-out_matrix_n*move_l;
 	end_point_l.Show();
+	fVector end_point_vector(end_point_l.GetCol(0)); 
+	endpoint_temp.x = (int)(end_point_vector.receiveelem(0)*100);
+	endpoint_temp.y = (int)(end_point_vector.receiveelem(1)*100);
+	endpoint_temp.z = -(int)(end_point_vector.receiveelem(2)*100);
 
+	ROS_INFO("x = %d, y = %d, z = %d\n",endpoint_temp.x,endpoint_temp.y,endpoint_temp.z);
+
+	Endpoint_Publish.publish(endpoint_temp);
 }
 
 void KidsizeStrategy::MoveHead(HeadMotorID ID, int Position, int Speed)//動頭(馬達編號，刻度，速度)
