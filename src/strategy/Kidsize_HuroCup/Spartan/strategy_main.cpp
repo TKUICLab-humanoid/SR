@@ -154,6 +154,8 @@ void KidsizeStrategy::systemtransform(int x, int y, double headangle,double dist
 	endpoint_temp.y = (int)(end_point_vector.receiveelem(1)*100);
 	endpoint_temp.z = -(int)(end_point_vector.receiveelem(2)*100);
 
+	endpoint_temp.state = 1;
+
 	ROS_INFO("x = %d, y = %d, z = %d\n",endpoint_temp.x,endpoint_temp.y,endpoint_temp.z);
 
 	Endpoint_Publish.publish(endpoint_temp);
