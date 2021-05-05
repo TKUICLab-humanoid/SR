@@ -118,6 +118,8 @@ void KidsizeStrategy::GetFootData(const strategy::FootData &msg)
 		liftandcarryinfo->LeftSlopeFlag = msg.LeftSlopeFlag;
 		liftandcarryinfo->RightSlopeFlag = msg.RightSlopeFlag;
 		liftandcarryinfo->CenterSlopeFlag = msg.CenterSlopeFlag;
+		liftandcarryinfo->RightFindWoodFlag = msg.RightFindWoodFlag;//4.21
+ 		liftandcarryinfo->LeftFindWoodFlag = msg.LeftFindWoodFlag;//4.21
 		//----------------------------------------------//
 	}
 }
@@ -140,6 +142,9 @@ void KidsizeStrategy::StrategyInitial()
 		tool->Delay(500);
 		ros_com->sendBodySector(29);//站立
 		tool->Delay(500);
+		LC_danger_right=false;
+		LC_danger_left=false;
+		LC_danger_count=0;
 		liftandcarryinfo->InitialFlag = false;
 	}
 	if(liftandcarryinfo->WhichStrategy == strategy_liftandcarry)//策略項目為LC
@@ -149,6 +154,7 @@ void KidsizeStrategy::StrategyInitial()
 		liftandcarryinfo->StrategyState = CalSlope;
 		liftandcarryinfo->BodyState = Find_Wood;
 		liftandcarryinfo->HoleState = Left;
+		liftandcarryinfo->Calculate = true;
 		liftandcarryinfo->IMUenable = false;		//IMU
 		liftandcarryinfo->AviodHole = false;
 		liftandcarryinfo->LeftSlopeFlag = false;
@@ -187,11 +193,14 @@ void KidsizeStrategy::StrategyInitial()
 	}
 }
 bool avoiddrop;
+bool BodyMove=false;
 void KidsizeStrategy::StrategyBody()
 {
-	int i,j,l;
+	int i,j,k,l,T,S;
+	int edge_distance[320];
+	bool wood_L = true,wood_C = true,wood_R = true;
 	double woodshape[240];
-	bool BodyMove=false;
+	
 	int leftmore=0,rightmore=0,foothalfdistance,rightoutdistance,leftoutdistance,rightcenteroutdistance,leftcenteroutdistance;
 	int wood_area;
 	double rightoutslope,leftoutslope;
@@ -212,6 +221,7 @@ void KidsizeStrategy::StrategyBody()
 			liftandcarryinfo->Delaytime = LC_DownDelay;
 			liftandcarryinfo->rightrotatcount = 0;
 			liftandcarryinfo->leftrotatcount = 0;
+			liftandcarryinfo->Calculate = true;//4.21
 			//------------------------------//
 			if (liftandcarryinfo->RobotUp)//上坡階段
 			{
@@ -243,6 +253,9 @@ void KidsizeStrategy::StrategyBody()
 				tool->Delay(1000);
 				ros_com->sendBodySector(41);
 				tool->Delay(500);
+				LC_danger_right=false;
+				LC_danger_left=false;
+				LC_danger_count=0;
 				liftandcarryinfo->WhichStair++;//目前層數++
 				if(liftandcarryinfo->WhichStair == Stair_1 ||liftandcarryinfo->WhichStair == Stair_2)
 				{
@@ -619,25 +632,375 @@ void KidsizeStrategy::StrategyBody()
 					tool->Delay(2000);
 				}
 			}
+			    //-----------godown-----------//
 			else
 			{
+				//-------------初始-------------//
+				BodyMove=false;
+				leftmore=0;
+				rightmore=0;
+				wood_area=0;
+				for(i=0;i<240;i++)
+					woodshape[i]=-1;
+				//------------------------------//
 				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-				tool->Delay(3000);
+				tool->Delay(500);
 				ros_com->sendBodySector(29);
 				tool->Delay(1000);
-				ros_com->sendBodySector(45);
+				ros_com->sendBodySector(45);//下坡調整動作
 				tool->Delay(5000);
 				ros_com->sendBodyAuto(LC_DownX,LC_DownY,0,LC_DownTha,WalkingMode::LC_Down,SensorMode(LC_Downimu));    //執行下坡動作
+				tool->Delay(4000);
 				ros_com->sendBodySector(29);
 				tool->Delay(3000);
-				ros_com->sendBodySector(41);
+				ros_com->sendBodySector(41);//調整站姿
 				tool->Delay(500);
 				Initial_IMUdata();
 				liftandcarryinfo->WhichStair++;	//目前層數++
 				liftandcarryinfo->BodyState = SmallFront;
 				ros::spinOnce();
 				if (liftandcarryinfo->WhichStair == Stair_4 || liftandcarryinfo->WhichStair == Stair_5)
-					ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+				{
+					//---轉頭---//
+					if(liftandcarryinfo->WhichStair == Stair_4)
+					{
+						ros_com->sendHeadMotor(HeadMotorID::VerticalID,1400,400);
+						tool->Delay(1500);
+						ros::spinOnce();
+					}
+					//---------//
+					//------------計算距離-------------//
+					
+					for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)   //左虛擬腳Y座標最大值
+					{
+						if(liftandcarryinfo->WhichStair == Stair_4)
+						{
+							if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->LeftFoot.XMin ] == TrdColor)
+							{
+								break;
+							}
+						}
+						else if(liftandcarryinfo->WhichStair == Stair_5)
+						{
+							if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->LeftFoot.XMin ] == FileColor )
+							{
+								break;
+							}
+						}
+					}
+					leftdistance=liftandcarryinfo->LeftFoot.YMax-i;   //左虛擬腳與下一層板子的距離
+
+
+					for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+					{
+						if(liftandcarryinfo->WhichStair == Stair_4)
+						{
+							if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->RightFoot.XMax ] == TrdColor )
+							{
+								break;
+							}
+						}
+						else if(liftandcarryinfo->WhichStair == Stair_5)
+						{
+							if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->RightFoot.XMax ] == FileColor )
+							{
+								break;
+							}
+						}
+					}
+					rightdistance=liftandcarryinfo->LeftFoot.YMax-i;//右虛擬腳與下一層板子的距離
+
+					for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+					{
+						if(liftandcarryinfo->WhichStair == Stair_4)
+						{
+							if( strategy_info->label_model[ ImageWidth * i + (liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2 ] == TrdColor )
+							{
+								break;
+							}
+						}
+						else if(liftandcarryinfo->WhichStair == Stair_5)
+						{
+							if( strategy_info->label_model[ ImageWidth * i + (liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2 ] == FileColor )
+							{
+								break;
+							}
+						}
+					}
+					centerdistance=liftandcarryinfo->LeftFoot.YMax-i;//中間虛擬腳與下一層板子的距離
+
+					//--------------------------------//
+
+				if(leftdistance > centerdistance && centerdistance < rightdistance )	//提早避免010 
+					{
+						for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+						{
+							if(liftandcarryinfo->WhichStair == Stair_4)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  314] == TrdColor )
+								{
+									break;
+								}
+							}
+							else if(liftandcarryinfo->WhichStair == Stair_5)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  314] == FileColor )
+								{
+									break;
+								}
+							}
+						}
+						rightoutdistance=liftandcarryinfo->LeftFoot.YMax-i;
+						for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+						{
+							if(liftandcarryinfo->WhichStair == Stair_4)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  ((314+liftandcarryinfo->RightFoot.XMax)/2) ] == TrdColor )
+								{
+									break;
+								}
+							}
+							else if(liftandcarryinfo->WhichStair == Stair_5)
+							{
+								if( strategy_info->label_model[ ImageWidth * i + ((314+liftandcarryinfo->RightFoot.XMax)/2)] == FileColor )
+								{
+									break;
+								}
+							}
+						}
+						rightcenteroutdistance=liftandcarryinfo->LeftFoot.YMax-i;
+						for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+						{
+							if(liftandcarryinfo->WhichStair == Stair_4)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  5 ] == TrdColor )
+								{
+									break;
+								}
+							}
+							else if(liftandcarryinfo->WhichStair == Stair_5)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  5] == FileColor )
+								{
+									break;
+								}
+							}
+						}
+						leftoutdistance=liftandcarryinfo->LeftFoot.YMax-i;
+						for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+						{
+							if(liftandcarryinfo->WhichStair == Stair_4)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  ((5+liftandcarryinfo->LeftFoot.XMin)/2) ] == TrdColor )
+								{
+									break;
+								}
+							}
+							else if(liftandcarryinfo->WhichStair == Stair_5)
+							{
+								if( strategy_info->label_model[ ImageWidth * i +  ((5+liftandcarryinfo->LeftFoot.XMin)/2)] == FileColor )
+								{
+									break;
+								}
+							}
+						}
+						leftcenteroutdistance=liftandcarryinfo->LeftFoot.YMax-i;
+						rightoutslope=(((double)(rightoutdistance-rightcenteroutdistance)/(double)(314-(314+liftandcarryinfo->RightFoot.XMax)/2))-((double)(rightcenteroutdistance-rightdistance)/(double)((314+liftandcarryinfo->RightFoot.XMax)/2-liftandcarryinfo->RightFoot.XMax)));
+						leftoutslope=(((double)(leftcenteroutdistance-leftoutdistance)/(double)((5+liftandcarryinfo->LeftFoot.XMin)/2-5))-(double)(leftdistance-leftcenteroutdistance)/(double)(liftandcarryinfo->LeftFoot.XMin-(5+liftandcarryinfo->LeftFoot.XMin)/2));
+						if(abs(leftoutslope)>abs(rightoutslope))
+							liftandcarryinfo->BodyState = RightShift;
+						else if(abs(leftoutslope)<abs(rightoutslope))
+							liftandcarryinfo->BodyState = LeftShift;
+						else
+						{
+							if(leftdistance>rightdistance)
+								liftandcarryinfo->BodyState = RightShift;
+							else
+								liftandcarryinfo->BodyState = LeftShift;		
+						}
+					}
+					else
+					{
+						for(i=0;i<240;i++)	//垂直
+						{
+							//------算出下一層板的xmin------//
+							for(j=1;j<319;j++)
+							{
+								if(liftandcarryinfo->WhichStair == Stair_4)
+								{
+									if( strategy_info->label_model[ ImageWidth * i + j ] == TrdColor )
+									{
+										break;
+									}
+								}
+								else if(liftandcarryinfo->WhichStair == Stair_5)
+								{
+									if( strategy_info->label_model[ ImageWidth * i + j ] == FileColor )
+									{
+										break;
+									}
+								}
+							}
+							//-----------------------------//
+							if(j<319)
+							{
+								//------算出下一層板的xmax------//
+								for(l=318;l>0;l--)
+								{
+									if(liftandcarryinfo->WhichStair == Stair_4)
+									{
+										if( strategy_info->label_model[ ImageWidth * i + l ] == TrdColor )
+										{
+											break;
+										}
+									}
+									else if(liftandcarryinfo->WhichStair == Stair_5)
+									{
+										if( strategy_info->label_model[ ImageWidth * i + l ] == FileColor )
+										{
+											break;
+										}
+									}
+								}
+								//-----------------------------//
+								woodshape[i]=(j+l)/2;		//看下層板的中心點偏左或偏右
+								//------算出下一層板的面積------//
+								for(j;j<=l;j++)
+								{
+									if(liftandcarryinfo->WhichStair == Stair_4)
+									{
+										if( strategy_info->label_model[ ImageWidth * i + j ] == TrdColor )
+											wood_area++;			
+									}
+									else if(liftandcarryinfo->WhichStair == Stair_5)
+									{
+										if( strategy_info->label_model[ ImageWidth * i + j ] == FileColor )
+											wood_area++;
+									}
+								}
+								//-----------------------------//
+							}
+						}
+						if(wood_area>=15000)
+							liftandcarryinfo->BodyState =  SmallFront;
+						else
+						{
+							for(i=0;i<240;i++)
+							{
+								if(woodshape[i]==-1)
+									continue;
+								else if(woodshape[i]<159.5)
+									leftmore++;
+								else if(woodshape[i]>159.5)
+									rightmore++;
+							}
+							if(leftmore>rightmore && leftmore > 10)
+							{
+								if(wood_area>=8000)
+								{
+									liftandcarryinfo->BodyState =  SmallLeftRotation;
+									BodyMove=true;
+								}
+								else
+								{
+									liftandcarryinfo->BodyState =  BigLeftRotation;
+									BodyMove=true;
+								}
+							}
+							else if(leftmore<rightmore && rightmore > 10)
+							{
+								if(wood_area>=8000)
+								{
+									liftandcarryinfo->BodyState =  SmallRightRotation;
+									BodyMove=true;
+								}
+								else
+								{
+									liftandcarryinfo->BodyState =  BigRightRotation;
+									BodyMove=true;
+								}
+							}
+							else
+							{
+								ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX-600,400);
+								tool->Delay(1500);
+								ros::spinOnce();
+								for(i=239;i>=0;i--)
+								{
+									if(liftandcarryinfo->WhichStair == Stair_4)
+									{
+										if( strategy_info->label_model[ ImageWidth * i + 314 ] == TrdColor )
+										{
+											liftandcarryinfo->BodyState =  BigRightRotation;
+											BodyMove=true;
+											break;
+										}
+									}
+									else if(liftandcarryinfo->WhichStair == Stair_5)
+									{
+										if( strategy_info->label_model[ ImageWidth * i + 314 ] == FileColor )
+										{
+											liftandcarryinfo->BodyState =  BigRightRotation;
+											BodyMove=true;
+											break;
+										}
+									}
+								}
+								if(!BodyMove)
+								{
+									ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX+600,400);
+									tool->Delay(1500);
+									ros::spinOnce();
+									for(i=239;i>=0;i--)
+									{
+										if(liftandcarryinfo->WhichStair == Stair_4)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + 5 ] == TrdColor )
+											{
+												liftandcarryinfo->BodyState =  BigLeftRotation;
+												BodyMove=true;
+												break;
+											}
+										}
+										else if(liftandcarryinfo->WhichStair == Stair_5)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + 5 ] == FileColor )
+											{
+												liftandcarryinfo->BodyState =  BigLeftRotation;
+												BodyMove=true;
+												break;
+											}
+										}
+									}
+								}
+							}
+							if(!BodyMove)
+								liftandcarryinfo->BodyState =  SmallFront;	
+						}
+					}	
+					
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(50);
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					tool->Delay(50);
+					ros::spinOnce();
+					ShowMainData();
+					
+					if(liftandcarryinfo->BodyState ==  BigLeftRotation)
+							ros_com->sendBodyAuto(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,WalkingMode::ContinuousStep,SensorMode(BigLeftRotationimu));
+						else if(liftandcarryinfo->BodyState ==  BigRightRotation)
+							ros_com->sendBodyAuto(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,WalkingMode::ContinuousStep,SensorMode(BigRightRotationimu));
+						else if(liftandcarryinfo->BodyState ==  SmallLeftRotation)
+							ros_com->sendBodyAuto(SmallLeftRotationX,SmallLeftRotationY,0,SmallLeftRotationTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftRotationimu));
+						else if(liftandcarryinfo->BodyState ==  SmallRightRotation)
+							ros_com->sendBodyAuto(SmallRightRotationX,SmallRightRotationY,0,SmallRightRotationTha,WalkingMode::ContinuousStep,SensorMode(SmallRightRotationimu));
+						else if(liftandcarryinfo->BodyState == RightShift)
+							ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha+Theta_offset,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
+						else if(liftandcarryinfo->BodyState == LeftShift)
+							ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha+Theta_offset,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
+						else
+							ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+				}
 				else if (liftandcarryinfo->WhichStair == Stair_6)//在第6層
 				{
 					liftandcarryinfo->BodyState = Zero;//不動作
@@ -724,6 +1087,214 @@ void KidsizeStrategy::StrategyBody()
 		case Zero:
 			liftandcarryinfo->Delaytime = 0;
 		break;
+		/*case CBD:	//4.20
+			liftandcarryinfo->Delaytime = 1500;
+			ROS_INFO("---------------------------");
+			ROS_INFO("Calculate!!");
+			ROS_INFO("---------------------------");
+			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendBodySector(29);//站立
+			tool->Delay(500);
+				
+			for(i=HeadpositionY;i<1700;i+=10)
+			{
+				ros_com->sendHeadMotor(HeadMotorID::VerticalID,i,200);
+				tool->Delay(50);
+				if(liftandcarryinfo->WhichStair == Stair_0)
+				{
+					if( strategy_info->label_model[ ImageWidth * liftandcarryinfo->LeftFoot.YMax + 0 ] == SecColor )
+					break;
+				}
+				else if(liftandcarryinfo->WhichStair == Stair_1)
+				{
+					if( strategy_info->label_model[ ImageWidth * liftandcarryinfo->LeftFoot.YMax + 0 ] ==  TopColor )
+					break;
+				}
+				else if(liftandcarryinfo->WhichStair == Stair_3)
+				{
+					if( strategy_info->label_model[ ImageWidth * liftandcarryinfo->LeftFoot.YMax + 0 ] == TrdColor )
+					break;
+				}
+				else if(liftandcarryinfo->WhichStair == Stair_4)
+				{
+					if( strategy_info->label_model[ ImageWidth * liftandcarryinfo->LeftFoot.YMax + 0 ] == FileColor )
+					break;
+				}
+			}
+			tool->Delay(500);
+			ros::spinOnce();
+			if(liftandcarryinfo->WhichStair == Stair_0)//在綠地時
+			{
+				for(i=0;i<320;i+=10)	
+				{
+					for(T=240;T>0;T--)
+					{
+						if(strategy_info->label_model[ ImageWidth * T + i ] == TrdColor)
+						{
+							for(S=T;S>0;S--)
+							{
+								if( strategy_info->label_model[ ImageWidth * S + i ] == SecColor )	
+								{
+									edge_distance[i]=T-S;
+								}
+								else
+								{
+									edge_distance[i]=T;
+								}
+								break;
+							}	
+							break;
+						}
+					}
+				}
+			}
+			else if(liftandcarryinfo->WhichStair == Stair_1)//在一階時
+			{
+				for(i=0;i<320;i+=10)	
+				{
+					for(T=240;T>0;T--)
+					{
+						if(strategy_info->label_model[ ImageWidth * T + i ] == SecColor)
+						{
+							for(S=T;S>0;S--)
+							{
+								if( strategy_info->label_model[ ImageWidth * S + i ] == TopColor )	
+								{
+									edge_distance[i]=T-S;
+								}
+								else
+								{
+									edge_distance[i]=T;
+								}
+								break;
+							}	
+							break;
+						}
+					}
+				}
+			}
+			else if(liftandcarryinfo->WhichStair == Stair_3)//在三階時
+			{
+				for(i=0;i<320;i+=10)	
+				{
+					for(T=0;T<240;T++)
+					{
+						if(strategy_info->label_model[ ImageWidth * T + i ] == SecColor)
+						{
+							for(S=T;S<240;S++)
+							{
+								if( strategy_info->label_model[ ImageWidth * S + i ] == TopColor )	
+								{
+									edge_distance[i]=T-S;
+								}
+								else
+								{
+									edge_distance[i]=T;
+								}
+								break;
+							}	
+							break;
+						}
+					}
+				}
+			}
+			else if(liftandcarryinfo->WhichStair == Stair_4)//在二階往下時
+			{
+				for(i=0;i<320;i+=10)	
+				{
+					for(T=0;T<240;T++)
+					{
+						if(strategy_info->label_model[ ImageWidth * T + i ] == TrdColor)
+						{
+							for(S=T;S<240;S++)
+							{
+								if( strategy_info->label_model[ ImageWidth * S + i ] == FileColor )	
+								{
+									edge_distance[i]=T-S;
+								}
+								else
+								{
+									edge_distance[i]=T;
+								}
+								break;
+							}	
+							break;
+						}
+					}
+				}
+			}
+			for(i=0;i<11;i++)//左邊區塊面積
+			{
+				if(edge_distance[i]<60)
+				{
+					wood_L = false;
+					break;
+				}
+			}
+			for(i=11;i<22;i++)//中間區塊面積
+			{
+				if(edge_distance[i]<60)
+				{
+					wood_C = false;
+					break;
+				}
+			}
+			for(i=22;i<33;i++)//右邊區塊面積
+			{
+				if(edge_distance[i]<60)
+				{
+					wood_R = false;
+					break;
+				}
+			}
+			if(wood_C =true)
+			{
+				liftandcarryinfo->BodyState =  BigFront;
+			}
+			else if(wood_C = false)
+			{	
+				if(wood_L = true)
+					liftandcarryinfo->BodyState = BigLeftRotation;
+				else if(wood_R = true)
+					liftandcarryinfo->BodyState = BigRightRotation;
+			}
+			else
+			{
+				liftandcarryinfo->BodyState =  BigFront;
+			}
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,200);
+			tool->Delay(50);
+			if(liftandcarryinfo->BodyState = BigLeftRotation)
+			{
+				ros_com->sendBodySector(29);
+				tool->Delay(50);
+				ros_com->sendBodyAuto(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,WalkingMode::ContinuousStep,SensorMode(BigLeftRotationimu));
+				ROS_INFO("---------------------------");
+				ROS_INFO("BigLeftRotation!!");
+				ROS_INFO("---------------------------");
+				tool->Delay(1500);
+			}
+			else if(liftandcarryinfo->BodyState =  BigFront)
+			{
+				ros_com->sendBodySector(29);
+				tool->Delay(50);
+				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+				ROS_INFO("---------------------------");
+				ROS_INFO("BigFront!!");
+				ROS_INFO("---------------------------");
+			}
+			else if(liftandcarryinfo->BodyState = BigRightRotation)
+			{
+				ros_com->sendBodySector(29);
+				tool->Delay(50);
+				ros_com->sendBodyAuto(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,WalkingMode::ContinuousStep,SensorMode(BigRightRotationimu));
+				ROS_INFO("---------------------------");
+				ROS_INFO("BigRightRotation!!");
+				ROS_INFO("---------------------------");
+				tool->Delay(1500);
+			}
+		break;*/
 	}
 }
 
@@ -920,10 +1491,10 @@ void KidsizeStrategy::CW_StrategyClassify()
 			if(!CW_handcheck)
 			{
 	//			ros_com->sendContinuousValue(st0_SmallFrontX,st0_SmallFrontY,0,st0_SmallFrontTha+Theta_offset,SensorMode(st0_SmallFrontimu));
-				//ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-				//tool->Delay(1500);
-				ros_com->sendBodyAuto(SmallLeftRotationX,SmallLeftRotationY,0,SmallLeftRotationTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftRotationimu));
+				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
 				tool->Delay(1500);
+				//ros_com->sendBodyAuto(SmallLeftRotationX,SmallLeftRotationY,0,SmallLeftRotationTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftRotationimu));
+				//tool->Delay(1500);
 				ros_com->sendHeadMotor(HeadMotorID::HorizontalID, 2048, 400);
 				tool->Delay(50);
 				ros_com->sendHeadMotor(HeadMotorID::VerticalID, 1500, 400);
@@ -1090,6 +1661,7 @@ void KidsizeStrategy::CW_StrategyClassify()
 void KidsizeStrategy::ShowMainData()		//比賽時建議關閉
 {
 	ROS_INFO("---------------------------");
+	ROS_INFO("Calculate = %s",(liftandcarryinfo->Calculate == true ? "true" : "false"));
 	ROS_INFO("IMUenable = %s",(liftandcarryinfo->IMUenable == true ? "true" : "false"));
 	ROS_INFO("initial_IMUdata = %lf", initial_IMUdata);
 	ROS_INFO("current_IMUdata = %lf", current_IMUdata);
@@ -1102,6 +1674,9 @@ void KidsizeStrategy::ShowMainData()		//比賽時建議關閉
 			ROS_INFO("WhichStair = %d",liftandcarryinfo->WhichStair);      
 			ROS_INFO("SlopeFlag = %s %s %s",(liftandcarryinfo->LeftSlopeFlag == true ? "true" : "false"),(liftandcarryinfo->CenterSlopeFlag == true ? "true" : "false"),(liftandcarryinfo->RightSlopeFlag == true ? "true" : "false"));
 			ROS_INFO("FootDistance = %d %d %d %d %d",liftandcarryinfo->LeftFootDistance,liftandcarryinfo->LeftCenterFootDistance,liftandcarryinfo->CenterFootDistance,liftandcarryinfo->RightCenterFootDistance,liftandcarryinfo->RightFootDistance);
+			ROS_INFO("LC_danger = %s %s",(LC_danger_left == true ? "true" : "false"),(LC_danger_right == true ? "true" : "false"));
+			ROS_INFO("LC_danger_count = %d",LC_danger_count);
+			ROS_INFO("BodyMove = %s ",BodyMove == true ? "true" : "false");
 			switch (liftandcarryinfo->StrategyState)
 			{
 				case CalSlope:
@@ -1156,6 +1731,9 @@ void KidsizeStrategy::ShowMainData()		//比賽時建議關閉
 				break;
 				case Find_Wood:
 					ROS_INFO("BodyState = Find_Wood\n");
+				break;
+				case CBD:
+					ROS_INFO("BodyState = CBD\n");
 				break;
 				default:
 				break;
@@ -1235,181 +1813,576 @@ void KidsizeStrategy::StrategyClassify()
 				//---------------------------------up---------------------------------//
 				if (liftandcarryinfo->RobotUp)			
 				{
-					if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance)) //111
-						liftandcarryinfo->BodyState = Up;
-					else if ((liftandcarryinfo->LeftFootDistance > 60) && (liftandcarryinfo->CenterFootDistance > 60) && (liftandcarryinfo->RightFootDistance > 60))
-						liftandcarryinfo->BodyState = Spr;
-					else if ((liftandcarryinfo->LeftFootDistance > 40) && (liftandcarryinfo->CenterFootDistance > 40) && (liftandcarryinfo->RightFootDistance > 40))//000
-						liftandcarryinfo->BodyState = BigFront;//大直走
-					else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance ) && (liftandcarryinfo->CenterFootDistance > SureUpDistance ) && (liftandcarryinfo->RightFootDistance > SureUpDistance ))//000
-						liftandcarryinfo->BodyState = SmallFront;//小直走
-					else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//011
+					if((!LC_danger_left && !LC_danger_right)||(LC_danger_left && LC_danger_right))
 					{
-						if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance))
+						if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance)) //111
 							liftandcarryinfo->BodyState = Up;
-						else
+						else if ((liftandcarryinfo->LeftFootDistance > 60) && (liftandcarryinfo->CenterFootDistance > 60) && (liftandcarryinfo->RightFootDistance > 60))
+							liftandcarryinfo->BodyState = Spr;
+						else if ((liftandcarryinfo->LeftFootDistance > 40) && (liftandcarryinfo->CenterFootDistance > 40) && (liftandcarryinfo->RightFootDistance > 40))//000
+							liftandcarryinfo->BodyState = BigFront;//大直走
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance ) && (liftandcarryinfo->CenterFootDistance > SureUpDistance ) && (liftandcarryinfo->RightFootDistance > SureUpDistance ))//000
+							liftandcarryinfo->BodyState = SmallFront;//小直走
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//011
 						{
-							liftandcarryinfo->BodyState = SmallRightShift;
-							ShiftDanger();
-							if(shiftdanger)
-								liftandcarryinfo->BodyState = SmallRightRotation;
+							if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								liftandcarryinfo->BodyState = SmallRightShift;
+								ShiftDanger();
+								AvoidDrop();
+								if(shiftdanger)
+								{
+									liftandcarryinfo->BodyState = SmallRightRotation;
+								}
+							}
 						}
-					}
-					else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
-					{
-						if(liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 7 && liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 7)
-							liftandcarryinfo->BodyState = Up;
-						else if (liftandcarryinfo->LeftCenterFootDistance > 17  && liftandcarryinfo->RightCenterFootDistance <= 17)//01
-							liftandcarryinfo->BodyState = SmallRightRotation;
-						else if (liftandcarryinfo->LeftCenterFootDistance <= 17 && liftandcarryinfo->RightCenterFootDistance > 17)//10
-							liftandcarryinfo->BodyState = SmallLeftRotation;
-						else
-							liftandcarryinfo->BodyState = SmallFront;
-					}
-					else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//001
-					{
-						if ((liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 12) ))
-							liftandcarryinfo->BodyState = BigRightRotation;
-						else if(liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 6)
-							liftandcarryinfo->BodyState = SmallRightRotation;
-						else
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
 						{
-							if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 15 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 30)
-								liftandcarryinfo->BodyState = BigRightRotation;
-							else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 6 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 12)
+							if(liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 7 && liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 7)
+								liftandcarryinfo->BodyState = Up;
+							else if (liftandcarryinfo->LeftCenterFootDistance > 17  && liftandcarryinfo->RightCenterFootDistance <= 17)//01
 								liftandcarryinfo->BodyState = SmallRightRotation;
+							else if (liftandcarryinfo->LeftCenterFootDistance <= 17 && liftandcarryinfo->RightCenterFootDistance > 17)//10
+								liftandcarryinfo->BodyState = SmallLeftRotation;
 							else
 								liftandcarryinfo->BodyState = SmallFront;
 						}
-					}
-					else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//110
-					{
-						if ((liftandcarryinfo->RightFootDistance <= SureUpDistance + 10) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 6))
-							liftandcarryinfo->BodyState = Up;
-						else
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//001
 						{
-							liftandcarryinfo->BodyState = SmallLeftShift;
-							ShiftDanger();
-							if(shiftdanger)
-								liftandcarryinfo->BodyState = SmallLeftRotation;
-						}
-					}
-					else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
-					{
-						if((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->RightFootDistance <= SureUpDistance + 3))
-							liftandcarryinfo->BodyState = Up;
-						else if((liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 2) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 2))
-							liftandcarryinfo->BodyState = Up;
-						else
-						{
-							//-----------------找出010最低點-----------------//
-							for(l=liftandcarryinfo->LeftFoot.XMin;l<liftandcarryinfo->RightFoot.XMax;l++)
+							if ((liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 12) ))
+								liftandcarryinfo->BodyState = BigRightRotation;
+							else if(liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 6)
+								liftandcarryinfo->BodyState = SmallRightRotation;
+							else
 							{
-								for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+								if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 15 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 30)
+									liftandcarryinfo->BodyState = BigRightRotation;
+								else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 6 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 12)
+									liftandcarryinfo->BodyState = SmallRightRotation;
+								else
+									liftandcarryinfo->BodyState = SmallFront;
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//110
+						{
+							if ((liftandcarryinfo->RightFootDistance <= SureUpDistance + 10) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 6))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								liftandcarryinfo->BodyState = SmallLeftShift;
+								ShiftDanger();
+								AvoidDrop();
+								if(shiftdanger)
 								{
-									if(liftandcarryinfo->WhichStair == Stair_0)
+									liftandcarryinfo->BodyState = SmallLeftRotation;
+								}
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
+						{
+							if((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->RightFootDistance <= SureUpDistance + 3))
+								liftandcarryinfo->BodyState = Up;
+							else if((liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 2) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 2))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								//-----------------找出010最低點-----------------//
+								for(l=liftandcarryinfo->LeftFoot.XMin;l<liftandcarryinfo->RightFoot.XMax;l++)
+								{
+									for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
 									{
-										if( strategy_info->label_model[ ImageWidth * i + l ] == TrdColor )
+										if(liftandcarryinfo->WhichStair == Stair_0)
 										{
-											prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
-											break;
+											if( strategy_info->label_model[ ImageWidth * i + l ] == TrdColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
 										}
-									}
-									else if(liftandcarryinfo->WhichStair == Stair_1)
-									{
-										if( strategy_info->label_model[ ImageWidth * i + l ] == SecColor )
+										else if(liftandcarryinfo->WhichStair == Stair_1)
 										{
-											prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
-											break;
+											if( strategy_info->label_model[ ImageWidth * i + l ] == SecColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
 										}
-									}
-									else if(liftandcarryinfo->WhichStair == Stair_2)
-									{
-										if( strategy_info->label_model[ ImageWidth * i + l ] == TopColor )
+										else if(liftandcarryinfo->WhichStair == Stair_2)
 										{
-											prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
-											break;
+											if( strategy_info->label_model[ ImageWidth * i + l ] == TopColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
 										}
 									}
 								}
-							}
-							for(i=1;i<liftandcarryinfo->RightFoot.XMax-liftandcarryinfo->LeftFoot.XMin-1;i++)
-							{
-								if(prevent010[i]<prevent010[i-1])
-									l=i+liftandcarryinfo->LeftFoot.XMin;	//l為最低點x座標
-							}
-							//--------------------------------------------//
-							if(l<(liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2)
-							{
-								liftandcarryinfo->BodyState = RightShift;
-								ShiftDanger();
-								if(shiftdanger)
-									liftandcarryinfo->BodyState = BigLeftRotation;
-							}
-							else if(l>(liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)
-							{
-								liftandcarryinfo->BodyState = LeftShift;
-								ShiftDanger();
-								if(shiftdanger)
-									liftandcarryinfo->BodyState = BigRightRotation;
-							}
-							else
-							{
-								foothalfdistance=(liftandcarryinfo->LeftFoot.XMax-liftandcarryinfo->LeftFoot.XMin)/2;
-								leftslope=(((double)(liftandcarryinfo->LeftFootDistance-liftandcarryinfo->LeftCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->LeftCenterFootDistance-prevent010[l])/(double)(l-((liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2))));
-								rightslope=(((double)(liftandcarryinfo->RightFootDistance-liftandcarryinfo->RightCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->RightCenterFootDistance-prevent010[l])/(double)(((liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)-l)));
-								if(abs(leftslope)>abs(rightslope))
+								for(i=1;i<liftandcarryinfo->RightFoot.XMax-liftandcarryinfo->LeftFoot.XMin-1;i++)
+								{
+									if(prevent010[i]<prevent010[i-1])
+										l=i+liftandcarryinfo->LeftFoot.XMin;	//l為最低點x座標
+								}
+								//--------------------------------------------//
+								if(l<(liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2)
 								{
 									liftandcarryinfo->BodyState = RightShift;
 									ShiftDanger();
+									//AvoidDrop();
 									if(shiftdanger)
 										liftandcarryinfo->BodyState = BigLeftRotation;
 								}
-								else if(abs(leftslope)<abs(rightslope))
+								else if(l>(liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)
 								{
 									liftandcarryinfo->BodyState = LeftShift;
 									ShiftDanger();
+									//AvoidDrop();
 									if(shiftdanger)
 										liftandcarryinfo->BodyState = BigRightRotation;
 								}
 								else
 								{
-									if(liftandcarryinfo->LeftFootDistance>liftandcarryinfo->RightFootDistance)
+									foothalfdistance=(liftandcarryinfo->LeftFoot.XMax-liftandcarryinfo->LeftFoot.XMin)/2;
+									leftslope=(((double)(liftandcarryinfo->LeftFootDistance-liftandcarryinfo->LeftCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->LeftCenterFootDistance-prevent010[l])/(double)(l-((liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2))));
+									rightslope=(((double)(liftandcarryinfo->RightFootDistance-liftandcarryinfo->RightCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->RightCenterFootDistance-prevent010[l])/(double)(((liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)-l)));
+									if(abs(leftslope)>abs(rightslope))
 									{
 										liftandcarryinfo->BodyState = RightShift;
 										ShiftDanger();
+										//AvoidDrop();
 										if(shiftdanger)
 											liftandcarryinfo->BodyState = BigLeftRotation;
 									}
-									else
+									else if(abs(leftslope)<abs(rightslope))
 									{
 										liftandcarryinfo->BodyState = LeftShift;
 										ShiftDanger();
+										//AvoidDrop();
 										if(shiftdanger)
 											liftandcarryinfo->BodyState = BigRightRotation;
-									}		
+									}
+									else
+									{
+										if(liftandcarryinfo->LeftFootDistance>liftandcarryinfo->RightFootDistance)
+										{
+											liftandcarryinfo->BodyState = RightShift;
+											ShiftDanger();
+											//AvoidDrop();
+											if(shiftdanger)
+												liftandcarryinfo->BodyState = BigLeftRotation;
+										}
+										else
+										{
+											liftandcarryinfo->BodyState = LeftShift;
+											ShiftDanger();
+											//AvoidDrop();
+											if(shiftdanger)
+												liftandcarryinfo->BodyState = BigRightRotation;
+										}		
+									}
 								}
 							}
 						}
-					}
-					else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//100
-					{
-						if ((liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 15)))
-							liftandcarryinfo->BodyState = BigLeftRotation;
-						else if(liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 6)
-							liftandcarryinfo->BodyState = SmallLeftRotation;
-						else
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//100
 						{
-							if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 15 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 30)
+							if ((liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 15)))
 								liftandcarryinfo->BodyState = BigLeftRotation;
-							else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 6 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 12)
+							else if(liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 6)
+								liftandcarryinfo->BodyState = SmallLeftRotation;
+							else
+							{
+								if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 15 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 30)
+									liftandcarryinfo->BodyState = BigLeftRotation;
+								else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 6 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 12)
+									liftandcarryinfo->BodyState = SmallLeftRotation;
+								else
+									liftandcarryinfo->BodyState = SmallFront;
+							}
+						}
+						else
+							liftandcarryinfo->BodyState = SmallFront;
+					}
+					else if(LC_danger_left)//left
+					{
+						if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance)) //111
+							liftandcarryinfo->BodyState = Up;
+						else if ((liftandcarryinfo->LeftFootDistance > 60) && (liftandcarryinfo->CenterFootDistance > 60) && (liftandcarryinfo->RightFootDistance > 60))
+							liftandcarryinfo->BodyState = Spr;
+						else if ((liftandcarryinfo->LeftFootDistance > 40) && (liftandcarryinfo->CenterFootDistance > 40) && (liftandcarryinfo->RightFootDistance > 40))//000
+							liftandcarryinfo->BodyState = BigFront;//大直走
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance ) && (liftandcarryinfo->CenterFootDistance > SureUpDistance ) && (liftandcarryinfo->RightFootDistance > SureUpDistance ))//000
+							liftandcarryinfo->BodyState = SmallFront;//小直走
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//011
+						{
+							if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								liftandcarryinfo->BodyState = SmallRightShift;
+								ShiftDanger();
+								AvoidDrop();
+								if(shiftdanger)
+								{
+									liftandcarryinfo->BodyState = SmallRightRotation;
+								}
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
+						{
+							if(liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 7 && liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 7)
+								liftandcarryinfo->BodyState = Up;
+							else if (liftandcarryinfo->LeftCenterFootDistance > 17  && liftandcarryinfo->RightCenterFootDistance <= 17)//01
+								liftandcarryinfo->BodyState = SmallRightRotation;
+							else if (liftandcarryinfo->LeftCenterFootDistance <= 17 && liftandcarryinfo->RightCenterFootDistance > 17)//10
 								liftandcarryinfo->BodyState = SmallLeftRotation;
 							else
 								liftandcarryinfo->BodyState = SmallFront;
 						}
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//001
+						{
+							if ((liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 12) ))
+								liftandcarryinfo->BodyState = BigRightRotation;
+							else if(liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 6)
+								liftandcarryinfo->BodyState = SmallRightRotation;
+							else
+							{
+								if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 15 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 30)
+									liftandcarryinfo->BodyState = BigRightRotation;
+								else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 6 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 12)
+									liftandcarryinfo->BodyState = SmallRightRotation;
+								else
+									liftandcarryinfo->BodyState = SmallFront;
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//110
+						{
+							if ((liftandcarryinfo->RightFootDistance <= SureUpDistance + 10) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 6))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								liftandcarryinfo->BodyState = SmallLeftRotation;//SmallLeftShift;
+								/*ShiftDanger();
+								AvoidDrop();
+								if(shiftdanger)
+								{
+									liftandcarryinfo->BodyState = SmallLeftRotation;
+								}*/
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
+						{
+							if((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->RightFootDistance <= SureUpDistance + 3))
+								liftandcarryinfo->BodyState = Up;
+							else if((liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 2) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 2))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								//-----------------找出010最低點-----------------//
+								for(l=liftandcarryinfo->LeftFoot.XMin;l<liftandcarryinfo->RightFoot.XMax;l++)
+								{
+									for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+									{
+										if(liftandcarryinfo->WhichStair == Stair_0)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + l ] == TrdColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
+										}
+										else if(liftandcarryinfo->WhichStair == Stair_1)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + l ] == SecColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
+										}
+										else if(liftandcarryinfo->WhichStair == Stair_2)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + l ] == TopColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
+										}
+									}
+								}
+								for(i=1;i<liftandcarryinfo->RightFoot.XMax-liftandcarryinfo->LeftFoot.XMin-1;i++)
+								{
+									if(prevent010[i]<prevent010[i-1])
+										l=i+liftandcarryinfo->LeftFoot.XMin;	//l為最低點x座標
+								}
+								//--------------------------------------------//
+								if(l<(liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2)
+								{
+									liftandcarryinfo->BodyState = RightShift;
+									ShiftDanger();
+									//AvoidDrop();
+									if(shiftdanger)
+										liftandcarryinfo->BodyState = BigLeftRotation;
+								}
+								else if(l>(liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)
+								{
+									liftandcarryinfo->BodyState = LeftShift;
+									ShiftDanger();
+									//AvoidDrop();
+									if(shiftdanger)
+										liftandcarryinfo->BodyState = BigRightRotation;
+								}
+								else
+								{
+									foothalfdistance=(liftandcarryinfo->LeftFoot.XMax-liftandcarryinfo->LeftFoot.XMin)/2;
+									leftslope=(((double)(liftandcarryinfo->LeftFootDistance-liftandcarryinfo->LeftCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->LeftCenterFootDistance-prevent010[l])/(double)(l-((liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2))));
+									rightslope=(((double)(liftandcarryinfo->RightFootDistance-liftandcarryinfo->RightCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->RightCenterFootDistance-prevent010[l])/(double)(((liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)-l)));
+									if(abs(leftslope)>abs(rightslope))
+									{
+										liftandcarryinfo->BodyState = RightShift;
+										ShiftDanger();
+										//AvoidDrop();
+										if(shiftdanger)
+											liftandcarryinfo->BodyState = BigLeftRotation;
+									}
+									else if(abs(leftslope)<abs(rightslope))
+									{
+										liftandcarryinfo->BodyState = LeftShift;
+										ShiftDanger();
+										//AvoidDrop();
+										if(shiftdanger)
+											liftandcarryinfo->BodyState = BigRightRotation;
+									}
+									else
+									{
+										if(liftandcarryinfo->LeftFootDistance>liftandcarryinfo->RightFootDistance)
+										{
+											liftandcarryinfo->BodyState = RightShift;
+											ShiftDanger();
+											//AvoidDrop();
+											if(shiftdanger)
+												liftandcarryinfo->BodyState = BigLeftRotation;
+										}
+										else
+										{
+											liftandcarryinfo->BodyState = LeftShift;
+											ShiftDanger();
+											//AvoidDrop();
+											if(shiftdanger)
+												liftandcarryinfo->BodyState = BigRightRotation;
+										}		
+									}
+								}
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//100
+						{
+							if ((liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 15)))
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							else if(liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 6)
+								liftandcarryinfo->BodyState = SmallLeftRotation;
+							else
+							{
+								if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 15 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 30)
+									liftandcarryinfo->BodyState = BigLeftRotation;
+								else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 6 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 12)
+									liftandcarryinfo->BodyState = SmallLeftRotation;
+								else
+									liftandcarryinfo->BodyState = SmallFront;
+							}
+						}
+						else
+							liftandcarryinfo->BodyState = SmallFront;
 					}
-					else
-						liftandcarryinfo->BodyState = SmallFront;
+					else if(LC_danger_right)//right
+					{
+						if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance)) //111
+							liftandcarryinfo->BodyState = Up;
+						else if ((liftandcarryinfo->LeftFootDistance > 60) && (liftandcarryinfo->CenterFootDistance > 60) && (liftandcarryinfo->RightFootDistance > 60))
+							liftandcarryinfo->BodyState = Spr;
+						else if ((liftandcarryinfo->LeftFootDistance > 40) && (liftandcarryinfo->CenterFootDistance > 40) && (liftandcarryinfo->RightFootDistance > 40))//000
+							liftandcarryinfo->BodyState = BigFront;//大直走
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance ) && (liftandcarryinfo->CenterFootDistance > SureUpDistance ) && (liftandcarryinfo->RightFootDistance > SureUpDistance ))//000
+							liftandcarryinfo->BodyState = SmallFront;//小直走
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//011
+						{
+							if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								liftandcarryinfo->BodyState = SmallRightRotation;//SmallRightShift;
+								/*ShiftDanger();
+								AvoidDrop();
+								if(shiftdanger)
+								{
+									liftandcarryinfo->BodyState = SmallRightRotation;
+								}*/
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
+						{
+							if(liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 7 && liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 7)
+								liftandcarryinfo->BodyState = Up;
+							else if (liftandcarryinfo->LeftCenterFootDistance > 17  && liftandcarryinfo->RightCenterFootDistance <= 17)//01
+								liftandcarryinfo->BodyState = SmallRightRotation;
+							else if (liftandcarryinfo->LeftCenterFootDistance <= 17 && liftandcarryinfo->RightCenterFootDistance > 17)//10
+								liftandcarryinfo->BodyState = SmallLeftRotation;
+							else
+								liftandcarryinfo->BodyState = SmallFront;
+						}
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//001
+						{
+							if ((liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 12) ))
+								liftandcarryinfo->BodyState = BigRightRotation;
+							else if(liftandcarryinfo->LeftFootDistance - liftandcarryinfo->CenterFootDistance > 6)
+								liftandcarryinfo->BodyState = SmallRightRotation;
+							else
+							{
+								if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 15 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 30)
+									liftandcarryinfo->BodyState = BigRightRotation;
+								else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance > 6 && liftandcarryinfo->LeftFootDistance - liftandcarryinfo->RightFootDistance > 12)
+									liftandcarryinfo->BodyState = SmallRightRotation;
+								else
+									liftandcarryinfo->BodyState = SmallFront;
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//110
+						{
+							if ((liftandcarryinfo->RightFootDistance <= SureUpDistance + 10) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 6))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								liftandcarryinfo->BodyState = SmallLeftShift;
+								ShiftDanger();
+								AvoidDrop();
+								if(shiftdanger)
+								{
+									liftandcarryinfo->BodyState = SmallLeftRotation;
+								}
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
+						{
+							if((liftandcarryinfo->LeftFootDistance <= SureUpDistance + 3) && (liftandcarryinfo->RightFootDistance <= SureUpDistance + 3))
+								liftandcarryinfo->BodyState = Up;
+							else if((liftandcarryinfo->LeftCenterFootDistance <= SureUpDistance + 2) && (liftandcarryinfo->RightCenterFootDistance <= SureUpDistance + 2))
+								liftandcarryinfo->BodyState = Up;
+							else
+							{
+								//-----------------找出010最低點-----------------//
+								for(l=liftandcarryinfo->LeftFoot.XMin;l<liftandcarryinfo->RightFoot.XMax;l++)
+								{
+									for(i=liftandcarryinfo->LeftFoot.YMax;i>0;i--)
+									{
+										if(liftandcarryinfo->WhichStair == Stair_0)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + l ] == TrdColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
+										}
+										else if(liftandcarryinfo->WhichStair == Stair_1)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + l ] == SecColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
+										}
+										else if(liftandcarryinfo->WhichStair == Stair_2)
+										{
+											if( strategy_info->label_model[ ImageWidth * i + l ] == TopColor )
+											{
+												prevent010[l-liftandcarryinfo->LeftFoot.XMin]=liftandcarryinfo->LeftFoot.YMax-i;
+												break;
+											}
+										}
+									}
+								}
+								for(i=1;i<liftandcarryinfo->RightFoot.XMax-liftandcarryinfo->LeftFoot.XMin-1;i++)
+								{
+									if(prevent010[i]<prevent010[i-1])
+										l=i+liftandcarryinfo->LeftFoot.XMin;	//l為最低點x座標
+								}
+								//--------------------------------------------//
+								if(l<(liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2)
+								{
+									liftandcarryinfo->BodyState = RightShift;
+									ShiftDanger();
+									//AvoidDrop();
+									if(shiftdanger)
+										liftandcarryinfo->BodyState = BigLeftRotation;
+								}
+								else if(l>(liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)
+								{
+									liftandcarryinfo->BodyState = LeftShift;
+									ShiftDanger();
+									//AvoidDrop();
+									if(shiftdanger)
+										liftandcarryinfo->BodyState = BigRightRotation;
+								}
+								else
+								{
+									foothalfdistance=(liftandcarryinfo->LeftFoot.XMax-liftandcarryinfo->LeftFoot.XMin)/2;
+									leftslope=(((double)(liftandcarryinfo->LeftFootDistance-liftandcarryinfo->LeftCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->LeftCenterFootDistance-prevent010[l])/(double)(l-((liftandcarryinfo->LeftFoot.XMax+liftandcarryinfo->LeftFoot.XMin)/2))));
+									rightslope=(((double)(liftandcarryinfo->RightFootDistance-liftandcarryinfo->RightCenterFootDistance)/(double)foothalfdistance)-((double)(liftandcarryinfo->RightCenterFootDistance-prevent010[l])/(double)(((liftandcarryinfo->RightFoot.XMax+liftandcarryinfo->RightFoot.XMin)/2)-l)));
+									if(abs(leftslope)>abs(rightslope))
+									{
+										liftandcarryinfo->BodyState = RightShift;
+										ShiftDanger();
+										//AvoidDrop();
+										if(shiftdanger)
+											liftandcarryinfo->BodyState = BigLeftRotation;
+									}
+									else if(abs(leftslope)<abs(rightslope))
+									{
+										liftandcarryinfo->BodyState = LeftShift;
+										ShiftDanger();
+										//AvoidDrop();
+										if(shiftdanger)
+											liftandcarryinfo->BodyState = BigRightRotation;
+									}
+									else
+									{
+										if(liftandcarryinfo->LeftFootDistance>liftandcarryinfo->RightFootDistance)
+										{
+											liftandcarryinfo->BodyState = RightShift;
+											ShiftDanger();
+											//AvoidDrop();
+											if(shiftdanger)
+												liftandcarryinfo->BodyState = BigLeftRotation;
+										}
+										else
+										{
+											liftandcarryinfo->BodyState = LeftShift;
+											ShiftDanger();
+											//AvoidDrop();
+											if(shiftdanger)
+												liftandcarryinfo->BodyState = BigRightRotation;
+										}		
+									}
+								}
+							}
+						}
+						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//100
+						{
+							if ((liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 16)||((liftandcarryinfo->CenterFootDistance > SureUpDistance + 15)))
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							else if(liftandcarryinfo->RightFootDistance - liftandcarryinfo->CenterFootDistance > 6)
+								liftandcarryinfo->BodyState = SmallLeftRotation;
+							else
+							{
+								if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 15 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 30)
+									liftandcarryinfo->BodyState = BigLeftRotation;
+								else if (liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance > 6 && liftandcarryinfo->RightFootDistance - liftandcarryinfo->LeftFootDistance > 12)
+									liftandcarryinfo->BodyState = SmallLeftRotation;
+								else
+									liftandcarryinfo->BodyState = SmallFront;
+							}
+						}
+						else
+							liftandcarryinfo->BodyState = SmallFront;	
+					}
 				}
 				//--------------------------------------------------------------------//
 				//--------------------------------down--------------------------------//
@@ -1564,7 +2537,26 @@ void KidsizeStrategy::StrategyClassify()
 				//--------------------------------------------------------------------//
 			}
 			else if (!liftandcarryinfo->LeftSlopeFlag && !liftandcarryinfo->CenterSlopeFlag && !liftandcarryinfo->RightSlopeFlag)//000
-				liftandcarryinfo->BodyState = Spr;
+			{
+				/*if(liftandcarryinfo->RightFindWoodFlag && liftandcarryinfo->LeftFindWoodFlag)//4.21
+				{	
+					if(liftandcarryinfo->Calculate)
+					{
+						if(liftandcarryinfo->WhichStair ==  Stair_0 || liftandcarryinfo->WhichStair ==  Stair_1 || liftandcarryinfo->WhichStair ==  Stair_3 || liftandcarryinfo->WhichStair ==  Stair_4)//4.20
+						{
+							liftandcarryinfo->BodyState = CBD;
+							liftandcarryinfo->Delaytime = 0;
+							liftandcarryinfo->Calculate = false;
+						}
+						else
+							liftandcarryinfo->BodyState = Spr;
+					}
+					else
+						liftandcarryinfo->BodyState = Spr;	
+				}
+				else*/
+					liftandcarryinfo->BodyState = Spr;
+			}
 			else if (!liftandcarryinfo->LeftSlopeFlag && liftandcarryinfo->CenterSlopeFlag && !liftandcarryinfo->RightSlopeFlag)//010
 			{
 				if (liftandcarryinfo->CenterFootDistance >= SureUpDistance + 20)
@@ -1625,46 +2617,123 @@ void KidsizeStrategy::StrategyClassify()
 					{
 						liftandcarryinfo->BodyState = RightShift;
 						ShiftDanger();
+						//AvoidDrop();
 						if(shiftdanger)
+						{
 							liftandcarryinfo->BodyState = BigLeftRotation;
+						}
+						/*else if(avoiddrop)
+						{
+							liftandcarryinfo->BodyState = BigRightRotation;
+						}*/
+							
 					}
 					else if(leftdistance<rightdistance)
 					{
 						liftandcarryinfo->BodyState = LeftShift;
 						ShiftDanger();
+						//AvoidDrop();
 						if(shiftdanger)
+						{
 							liftandcarryinfo->BodyState = BigRightRotation;
+						}
+						/*else if(avoiddrop)
+						{
+							liftandcarryinfo->BodyState = BigLeftRotation;
+						}*/
+							
 					}
 					else
 					{
 						liftandcarryinfo->BodyState = LeftShift;
 						ShiftDanger();
+						//AvoidDrop();
 						if(shiftdanger)
+						{
 							liftandcarryinfo->BodyState = BigRightRotation;
+						}
+						/*else if(avoiddrop)
+						{
+							liftandcarryinfo->BodyState = BigLeftRotation;
+						}*/
+							
 					}
 				}
 			}
 			else if(liftandcarryinfo->LeftSlopeFlag && liftandcarryinfo->CenterSlopeFlag && !liftandcarryinfo->RightSlopeFlag)//110
 			{
-				if (liftandcarryinfo->RobotUp)
+				if (liftandcarryinfo->RobotUp)//123
 				{
-					if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 25)
-						liftandcarryinfo->BodyState = BigFront;
-					else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 15)
-						liftandcarryinfo->BodyState = SmallFront;
-					else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 15)
-						liftandcarryinfo->BodyState = BigLeftRotation;
-					else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 6)
-						liftandcarryinfo->BodyState = SmallLeftRotation;
-					else
+					if((!LC_danger_left && !LC_danger_right)||(LC_danger_left && LC_danger_right))
 					{
-						liftandcarryinfo->BodyState = LeftShift;
-						ShiftDanger();
-						if(shiftdanger)
+						if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 15)
 							liftandcarryinfo->BodyState = BigLeftRotation;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 6)
+							liftandcarryinfo->BodyState = SmallLeftRotation;
+						else
+						{
+							liftandcarryinfo->BodyState = LeftShift;
+							ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}
+							/*else if(avoiddrop)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}*/
+						}
+					}
+					else if (LC_danger_left)
+					{
+						if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 15)
+							liftandcarryinfo->BodyState = BigLeftRotation;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 6)
+							liftandcarryinfo->BodyState = SmallLeftRotation;
+						else
+						{
+							liftandcarryinfo->BodyState = BigLeftRotation;//LeftShift;
+							//ShiftDanger();
+							//AvoidDrop();
+							/*if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}*/
+						}
+					}
+					else if(LC_danger_right)
+					{
+						if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 15)
+							liftandcarryinfo->BodyState = BigLeftRotation;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->LeftFootDistance) > 6)
+							liftandcarryinfo->BodyState = SmallLeftRotation;
+						else
+						{
+							liftandcarryinfo->BodyState = LeftShift;
+							ShiftDanger();
+							//AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}
+							//LC_danger_right=false;
+						}
 					}
 				}
-				else
+				else//下板
 				{
 					if (liftandcarryinfo->CenterFootDistance > 60 && liftandcarryinfo->LeftFootDistance > 60)
 						liftandcarryinfo->BodyState = Spr;
@@ -1687,30 +2756,71 @@ void KidsizeStrategy::StrategyClassify()
 			{
 				if (liftandcarryinfo->RobotUp)
 				{
-					if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightFootDistance > SureUpDistance + 25)
-						liftandcarryinfo->BodyState = BigFront;
-					else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightFootDistance > SureUpDistance + 15)
-						liftandcarryinfo->BodyState = SmallFront;
-					else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 15)
-						liftandcarryinfo->BodyState = BigRightRotation;
-					else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 6)
-						liftandcarryinfo->BodyState = SmallRightRotation;
-					else
+					if((!LC_danger_left && !LC_danger_right)||(LC_danger_left && LC_danger_right))
 					{
-						liftandcarryinfo->BodyState = RightShift;
-						ShiftDanger();
-						//AvoidDrop();
-						if(shiftdanger)
-						{
+						if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 15)
 							liftandcarryinfo->BodyState = BigRightRotation;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 6)
+							liftandcarryinfo->BodyState = SmallRightRotation;
+						else
+						{
+							liftandcarryinfo->BodyState = RightShift;
+							ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}
 						}
-						//else if(avoiddrop)
-						//{
-							//liftandcarryinfo->BodyState = LeftShift;
-						//}
+					}
+					else if (LC_danger_left)
+					{
+						if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 15)
+							liftandcarryinfo->BodyState = BigRightRotation;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 6)
+							liftandcarryinfo->BodyState = SmallRightRotation;
+						else
+						{
+							liftandcarryinfo->BodyState = RightShift;
+							ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}
+							//LC_danger_left=false;
+						}
+					}
+					else if (LC_danger_right)
+					{
+						if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->CenterFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 15)
+							liftandcarryinfo->BodyState = BigRightRotation;
+						else if ((liftandcarryinfo->CenterFootDistance - liftandcarryinfo->RightFootDistance) > 6)
+							liftandcarryinfo->BodyState = SmallRightRotation;
+						else
+						{
+							liftandcarryinfo->BodyState = BigRightRotation;//RightShift;
+							//ShiftDanger();
+							/*if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}*/
+						}
 					}		
 				}
-				else
+				else//下板
 				{
 					if (liftandcarryinfo->CenterFootDistance > 60 && liftandcarryinfo->RightFootDistance > 60)
 						liftandcarryinfo->BodyState = Spr;
@@ -1733,19 +2843,60 @@ void KidsizeStrategy::StrategyClassify()
 			{
 				if (liftandcarryinfo->RobotUp)
 				{
-					if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 25)
-						liftandcarryinfo->BodyState = BigFront;
-					else if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 15)
-						liftandcarryinfo->BodyState = SmallFront;
-					else
+					if((!LC_danger_left && !LC_danger_right)||(LC_danger_left && LC_danger_right))
 					{
-						liftandcarryinfo->BodyState = LeftShift;
-						ShiftDanger();
-						if(shiftdanger)
-							liftandcarryinfo->BodyState = BigLeftRotation;
-					}		
+						if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else
+						{
+							liftandcarryinfo->BodyState = LeftShift;
+							ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}
+						}
+					}
+					else if (LC_danger_left)
+					{
+						if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else
+						{
+							liftandcarryinfo->BodyState = BigLeftRotation;//LeftShift;
+							/*ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}*/
+						}
+					}
+					else if (LC_danger_right)
+					{
+						if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 25 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->LeftFootDistance > SureUpDistance + 15 && liftandcarryinfo->LeftCenterFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else
+						{
+							liftandcarryinfo->BodyState = LeftShift;
+							ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}
+							//LC_danger_right=false;
+						}
+					}
 				}
-				else
+				else//下板
 				{
 					if (liftandcarryinfo->LeftFootDistance <= SureUpDistance + ErrorDownDistance )
 						liftandcarryinfo->BodyState = BigLeftRotation;
@@ -1759,19 +2910,66 @@ void KidsizeStrategy::StrategyClassify()
 			{
 				if (liftandcarryinfo->RobotUp)
 				{
-					if (liftandcarryinfo->RightFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 25)
-						liftandcarryinfo->BodyState = BigFront;
-					else if (liftandcarryinfo->RightFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 15)
-						liftandcarryinfo->BodyState = SmallFront;
-					else
+					if((!LC_danger_left && !LC_danger_right)||(LC_danger_left && LC_danger_right))
 					{
-						liftandcarryinfo->BodyState = RightShift;
-						ShiftDanger();
-						if(shiftdanger)
-							liftandcarryinfo->BodyState = BigRightRotation;
+						if (liftandcarryinfo->RightFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->RightFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else
+						{
+							liftandcarryinfo->BodyState = RightShift;
+							ShiftDanger();
+							//AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}
+							/*else if(avoiddrop)
+							{
+								liftandcarryinfo->BodyState = BigLeftRotation;
+							}*/
+								
+						}
+					}
+					else if(LC_danger_left)
+					{
+						if (liftandcarryinfo->RightFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->RightFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else
+						{
+							liftandcarryinfo->BodyState = RightShift;
+							ShiftDanger();
+							AvoidDrop();
+							if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}
+							//LC_danger_left=false;
+						}	
+					}
+					else if(LC_danger_right)
+					{
+						if (liftandcarryinfo->RightFootDistance > SureUpDistance + 25 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 25)
+							liftandcarryinfo->BodyState = BigFront;
+						else if (liftandcarryinfo->RightFootDistance > SureUpDistance + 15 && liftandcarryinfo->RightCenterFootDistance > SureUpDistance + 15)
+							liftandcarryinfo->BodyState = SmallFront;
+						else
+						{
+							liftandcarryinfo->BodyState = BigRightRotation;//RightShift;
+							//ShiftDanger();
+							//AvoidDrop();
+							/*if(shiftdanger)
+							{
+								liftandcarryinfo->BodyState = BigRightRotation;
+							}
+								LC_danger_left=false;*/
+						}	
 					}
 				}
-				else
+				else//下板
 				{
 					if(liftandcarryinfo->RightFootDistance  <= SureUpDistance + ErrorDownDistance)
 						liftandcarryinfo->BodyState = BigRightRotation;
@@ -2220,41 +3418,228 @@ void KidsizeStrategy::ShiftDanger()
 		}
 	}
 }
-/*void KidsizeStrategy::AvoidDrop()
+void KidsizeStrategy::AvoidDrop()
 {
-	avoiddrop=false;
-	int dropdistance[101]={0};
-	if(liftandcarryinfo->BodyState == RightShift)
+	int i,h;
+	bool a;
+	if(liftandcarryinfo->BodyState == SmallRightShift)
 	{
-		for(i=liftandcarryinfo->RightFoot.XMax;i<=liftandcarryinfo->RightFoot.XMax + 100 ;i++)
+		liftandcarryinfo->Laststate == SmallRightShift;
+		if(LC_danger_count==5)
 		{
-			for(h=liftandcarryinfo->LeftFoot.YMax; h > 0; h--)
+			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX-600,600);
+			tool->Delay(2000);
+			for(i = 0 ; i < 3200 ; i++)
 			{
-				if(liftandcarryinfo->WhichStair == Stair_1)
+				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
 				{
-					if( strategy_info->label_model[ ImageWidth * h + i ] == FileColor )
-					{
-						dropdistance[ liftandcarryinfo->LeftFoot.YMax-h ] = i-liftandcarryinfo->RightFoot.XMax;
-						break;
-					}
+					LC_danger_right=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionX,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionY,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+					//tool->Delay(500);
+					break;
 				}
-				else if(liftandcarryinfo->WhichStair == Stair_2)
+				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor)
 				{
-					if( strategy_info->label_model[ ImageWidth * h + i ] == TrdColor )
-					{
-						dropdistance[ liftandcarryinfo->LeftFoot.YMax-h ] = i-liftandcarryinfo->RightFoot.XMax;
-						break;
-					}
+						
+					LC_danger_right=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+					//tool->Delay(500);
+					break;
 				}
+				
 			}
+			LC_danger_count=0;
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			tool->Delay(800);
+			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
 		}
-		for(i=0;i<101;i++)
+		else
 		{
-			if(dropdistance[i]< 50 )
+			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			//tool->Delay(500);
+			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
 			{
-				avoiddrop=true;
-				break;
+				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				{
+					LC_danger_count++;
+					LC_danger_left=false;
+				}
+				
 			}
 		}
 	}
-}*/
+	else if(liftandcarryinfo->BodyState == RightShift)
+	{
+		liftandcarryinfo->Laststate == RightShift;
+		if(LC_danger_count==5)
+		{
+			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX-600,400);
+			tool->Delay(2000);
+			for(i = 0 ; i < 3200 ; i++)
+			{
+				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
+				{
+					LC_danger_right=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
+					//tool->Delay(500);
+					break;
+				}
+				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor )
+				{
+					LC_danger_right=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
+					//tool->Delay(500);
+					break;
+				}
+			}
+			LC_danger_count=0;
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			tool->Delay(500);
+			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+		}
+		else
+		{
+			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			//tool->Delay(500);
+			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
+			{
+				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				{
+					LC_danger_count++;
+					LC_danger_left=false;
+				}
+			}
+		}
+	}
+	else if(liftandcarryinfo->BodyState == SmallLeftShift)
+	{
+		liftandcarryinfo->Laststate == SmallLeftShift;
+		if(LC_danger_count==5)
+		{
+			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX+600,400);
+			tool->Delay(2000);
+			for(i = 0 ; i < 3200 ; i++)
+			{
+				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
+				{
+					LC_danger_left=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
+					//tool->Delay(500);
+					break;
+				}
+				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor)
+				{
+						
+					LC_danger_left=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
+					//tool->Delay(500);
+					break;
+				}
+			}
+			LC_danger_count=0;
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			tool->Delay(800);
+			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+		}
+		else
+		{
+			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			//tool->Delay(500);
+			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
+			{
+				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				{
+					LC_danger_count++;
+					LC_danger_left=false;
+				}
+			}
+		}
+	}
+	else if(liftandcarryinfo->BodyState == LeftShift)
+	{
+		liftandcarryinfo->Laststate == LeftShift;
+		if(LC_danger_count==5)
+		{
+			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+			tool->Delay(500);
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX+600,400);
+			tool->Delay(1500);
+			for(i = 0 ; i < 3200 ; i++)
+			{
+				
+				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
+				{
+					LC_danger_left=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
+					//tool->Delay(500);
+					break;
+				}
+				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor)
+				{
+					
+					LC_danger_left=true;
+					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+					tool->Delay(800);
+					ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
+					//tool->Delay(500);
+					break;
+				}
+			}
+			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
+			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			tool->Delay(800);
+			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+			LC_danger_count=0;
+		}
+		else
+		{
+			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
+			{
+				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				{
+					LC_danger_count++;
+					LC_danger_left=false;
+				}
+			}
+			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
+			//tool->Delay(500);
+			
+		}
+	}
+}
+

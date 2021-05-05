@@ -99,7 +99,9 @@ class LiftAndCarryInfo
         int rightrotatcount;
         int leftrotatcount;
         bool IMUenable;
-        bool Calculate; //計算板距
+        bool Calculate;//4.20
+        bool RightFindWoodFlag;//
+        bool LeftFindWoodFlag;//
         bool Start;
         bool Hole_x0Flag;
         bool Hole_x1Flag;

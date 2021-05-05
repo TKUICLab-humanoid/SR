@@ -11,7 +11,7 @@ void GetLabelModel(const tku_msgs::LabelModelObjectList &msg)
         strategy_info->label_model[i] = msg.LabelModel[i];
 }
 
-void SendFootData(bool LeftSlopeFlag, bool CenterSlopeFlag, bool RightSlopeFlag, int LeftFootDistance, int CenterFootDistance, int RightFootDistance, int LeftCenterFootDistance, int RightCenterFootDistance)
+void SendFootData(bool LeftSlopeFlag, bool CenterSlopeFlag, bool RightSlopeFlag, int LeftFootDistance, int CenterFootDistance, int RightFootDistance, int LeftCenterFootDistance, int RightCenterFootDistance,bool RightFindWoodFlag,bool LeftFindWoodFlag)
 {
     strategy::FootData msg;
     msg.LeftSlopeFlag = LeftSlopeFlag;
@@ -22,6 +22,8 @@ void SendFootData(bool LeftSlopeFlag, bool CenterSlopeFlag, bool RightSlopeFlag,
     msg.RightFootDistance = RightFootDistance;
     msg.LeftCenterFootDistance = LeftCenterFootDistance;
     msg.RightCenterFootDistance = RightCenterFootDistance;
+    msg.RightFindWoodFlag = RightFindWoodFlag;//4.21
+    msg.LeftFindWoodFlag = LeftFindWoodFlag;//4.21
     FootData_Publish.publish(msg);
 }
 
@@ -40,6 +42,8 @@ int main(int argc, char** argv)
     while(nh.ok())
     {
         ros::spinOnce();
+        liftandcarryinfo->LeftFindWoodFlag = false;
+        liftandcarryinfo->RightFindWoodFlag = false;
         liftandcarryinfo->LeftSlopeFlag = false;
         liftandcarryinfo->RightSlopeFlag = false;
         liftandcarryinfo->CenterSlopeFlag = false;
@@ -567,6 +571,67 @@ int main(int argc, char** argv)
                 }
             }
         }
+        int i;
+        for(i=liftandcarryinfo->LeftFoot.YMin;i>0;i--)//4.21 計算是否看到板子
+		{
+            if(liftandcarryinfo->WhichStair == Stair_0)
+			{
+				if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->LeftFoot.XMin ] == TrdColor )
+				{
+                   // NextStairDistanceL=liftandcarryinfo->LeftFoot.YMin-i;
+                    liftandcarryinfo->LeftFindWoodFlag = true;
+					break;
+				}
+			}
+			if(liftandcarryinfo->WhichStair == Stair_1)
+			{
+				if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->LeftFoot.XMin ] == SecColor )
+				{
+                    //NextStairDistanceL=liftandcarryinfo->LeftFoot.YMin-i;
+                    liftandcarryinfo->LeftFindWoodFlag = true;
+					break;
+				}
+			}
+			else if(liftandcarryinfo->WhichStair == Stair_2)
+			{
+				if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->LeftFoot.XMin ] == TopColor )
+				{
+                    //NextStairDistanceL=liftandcarryinfo->LeftFoot.YMin-i;
+                    liftandcarryinfo->LeftFindWoodFlag = true;
+					break;
+				}
+			}
+		}
+        for(i=liftandcarryinfo->LeftFoot.YMin;i>0;i--)//4.21
+		{
+            if(liftandcarryinfo->WhichStair == Stair_0)
+			{
+				if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->RightFoot.XMax] == TrdColor )
+				{
+                    //NextStairDistanceR=liftandcarryinfo->LeftFoot.YMin-i;
+                    liftandcarryinfo->RightFindWoodFlag = true;
+					break;
+				}
+			}
+			if(liftandcarryinfo->WhichStair == Stair_1)
+			{
+				if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->RightFoot.XMax] == SecColor )
+				{
+                    //NextStairDistanceR=liftandcarryinfo->LeftFoot.YMin-i;
+                    liftandcarryinfo->RightFindWoodFlag = true;
+					break;
+				}
+			}
+			else if(liftandcarryinfo->WhichStair == Stair_2)
+			{
+				if( strategy_info->label_model[ ImageWidth * i + liftandcarryinfo->RightFoot.XMax] == TopColor )
+				{
+                    //NextStairDistanceR=liftandcarryinfo->LeftFoot.YMin-i;
+                    liftandcarryinfo->RightFindWoodFlag = true;
+					break;
+				}
+			}
+		}
         liftandcarryinfo->LeftFootDistance = (liftandcarryinfo->LeftFoot.YMax) - liftandcarryinfo->LeftForSlope[0];
         liftandcarryinfo->RightFootDistance = (liftandcarryinfo->RightFoot.YMax) -liftandcarryinfo->RightForSlope[0];
         liftandcarryinfo->CenterFootDistance = (liftandcarryinfo->RightFoot.YMax) -liftandcarryinfo->CenterForSlope[0];
@@ -577,8 +642,9 @@ int main(int argc, char** argv)
         liftandcarryinfo->CenterForSlope[0] = -9999 + liftandcarryinfo->LeftFoot.YMax;
         liftandcarryinfo->LeftCenterForSlope[0] = -9999 + liftandcarryinfo->LeftFoot.YMax;
         liftandcarryinfo->RightCenterForSlope[0] = -9999 + liftandcarryinfo->LeftFoot.YMax;
-        SendFootData(liftandcarryinfo->LeftSlopeFlag, liftandcarryinfo->CenterSlopeFlag, liftandcarryinfo->RightSlopeFlag, liftandcarryinfo->LeftFootDistance, liftandcarryinfo->CenterFootDistance, liftandcarryinfo->RightFootDistance, liftandcarryinfo->LeftCenterFootDistance, liftandcarryinfo->RightCenterFootDistance);
+        SendFootData(liftandcarryinfo->LeftSlopeFlag, liftandcarryinfo->CenterSlopeFlag, liftandcarryinfo->RightSlopeFlag, liftandcarryinfo->LeftFootDistance, liftandcarryinfo->CenterFootDistance, liftandcarryinfo->RightFootDistance, liftandcarryinfo->LeftCenterFootDistance, liftandcarryinfo->RightCenterFootDistance,liftandcarryinfo->RightFindWoodFlag,liftandcarryinfo->LeftFindWoodFlag);
         ROS_INFO("FootWitchstar = %d",liftandcarryinfo->WhichStair);
+        ROS_INFO("LeftFindWoodFlag = %s, RightFindWoodFlag = %s",(liftandcarryinfo->LeftFindWoodFlag == true ? "true" : "false"),(liftandcarryinfo->RightFindWoodFlag == true ? "true" : "false"));
         ROS_INFO("FootDistance = %d %d %d %d %d\n",liftandcarryinfo->LeftFootDistance,liftandcarryinfo->LeftCenterFootDistance,liftandcarryinfo->CenterFootDistance,liftandcarryinfo->RightCenterFootDistance,liftandcarryinfo->RightFootDistance);
         ros_com->drawImageFunction(5,DrawMode::DrawObject,liftandcarryinfo->LeftFoot.XMin,liftandcarryinfo->LeftFoot.XMax,liftandcarryinfo->LeftFoot.YMin,liftandcarryinfo->LeftFoot.YMax,0,255,0);
         ros_com->drawImageFunction(6,DrawMode::DrawObject,liftandcarryinfo->RightFoot.XMin,liftandcarryinfo->RightFoot.XMax,liftandcarryinfo->RightFoot.YMin,liftandcarryinfo->RightFoot.YMax,0,255,0);
