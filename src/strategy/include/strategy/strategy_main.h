@@ -61,6 +61,7 @@ class KidsizeStrategy
 		struct timeval tstart, tend;
 		struct timeval tstart_stragegy,tend_stragegy;
 		struct timeval tstart2, tend2;
+		struct timeval tADstart,tADend;
 		double initial_IMUdata,current_IMUdata;
 		double IMUoffset;
 		double leftslope,rightslope;

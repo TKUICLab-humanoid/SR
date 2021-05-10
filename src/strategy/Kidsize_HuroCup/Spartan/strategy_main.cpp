@@ -1831,11 +1831,12 @@ void KidsizeStrategy::StrategyClassify()
 							{
 								liftandcarryinfo->BodyState = SmallRightShift;
 								ShiftDanger();
-								AvoidDrop();
+								
 								if(shiftdanger)
 								{
 									liftandcarryinfo->BodyState = SmallRightRotation;
 								}
+								AvoidDrop();
 							}
 						}
 						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
@@ -1873,11 +1874,12 @@ void KidsizeStrategy::StrategyClassify()
 							{
 								liftandcarryinfo->BodyState = SmallLeftShift;
 								ShiftDanger();
-								AvoidDrop();
 								if(shiftdanger)
 								{
 									liftandcarryinfo->BodyState = SmallLeftRotation;
+
 								}
+								AvoidDrop();
 							}
 						}
 						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
@@ -2021,11 +2023,12 @@ void KidsizeStrategy::StrategyClassify()
 							{
 								liftandcarryinfo->BodyState = SmallRightShift;
 								ShiftDanger();
-								AvoidDrop();
+								
 								if(shiftdanger)
 								{
 									liftandcarryinfo->BodyState = SmallRightRotation;
 								}
+								AvoidDrop();
 							}
 						}
 						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
@@ -2063,11 +2066,12 @@ void KidsizeStrategy::StrategyClassify()
 							{
 								liftandcarryinfo->BodyState = SmallRightShift;
 								ShiftDanger();
-								AvoidDrop();
+								
 								if(shiftdanger)
 								{
 									liftandcarryinfo->BodyState = SmallRightRotation;
 								}
+								AvoidDrop();
 							}
 						}
 						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
@@ -2211,11 +2215,12 @@ void KidsizeStrategy::StrategyClassify()
 							{
 								liftandcarryinfo->BodyState = SmallLeftShift;
 								ShiftDanger();
-								AvoidDrop();
+								
 								if(shiftdanger)
 								{
 									liftandcarryinfo->BodyState = SmallLeftRotation;
 								}
+								AvoidDrop();
 							}
 						}
 						else if ((liftandcarryinfo->LeftFootDistance <= SureUpDistance) && (liftandcarryinfo->CenterFootDistance > SureUpDistance) && (liftandcarryinfo->RightFootDistance <= SureUpDistance))		//101
@@ -2253,11 +2258,12 @@ void KidsizeStrategy::StrategyClassify()
 							{
 								liftandcarryinfo->BodyState = SmallLeftShift;
 								ShiftDanger();
-								AvoidDrop();
+								
 								if(shiftdanger)
 								{
 									liftandcarryinfo->BodyState = SmallLeftRotation;
 								}
+								AvoidDrop();
 							}
 						}
 						else if ((liftandcarryinfo->LeftFootDistance > SureUpDistance) && (liftandcarryinfo->CenterFootDistance <= SureUpDistance) && (liftandcarryinfo->RightFootDistance > SureUpDistance))		//010
@@ -2663,11 +2669,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = LeftShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigLeftRotation;
 							}
+							AvoidDrop();
 						}
 					}
 					else if (LC_danger_left)
@@ -2684,11 +2691,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = RightShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigRightRotation;
 							}
+							AvoidDrop();
 						}
 					}
 					else if(LC_danger_right)
@@ -2705,11 +2713,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = LeftShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigLeftRotation;
 							}
+							AvoidDrop();
 							LC_danger_right=false;
 						}
 					}
@@ -2751,11 +2760,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = RightShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigRightRotation;
 							}
+							AvoidDrop();
 						}
 					}
 					else if (LC_danger_left)
@@ -2772,11 +2782,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = RightShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigRightRotation;
 							}
+							AvoidDrop();
 							LC_danger_left=false;
 						}
 					}
@@ -2794,11 +2805,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = LeftShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigLeftRotation;
 							}
+							AvoidDrop();
 						}
 					}		
 				}
@@ -2835,11 +2847,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = LeftShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigLeftRotation;
 							}
+							AvoidDrop();
 						}
 					}
 					else if (LC_danger_left)
@@ -2852,11 +2865,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = RightShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigLeftRotation;
 							}
+							AvoidDrop();
 						}
 					}
 					else if (LC_danger_right)
@@ -2869,11 +2883,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = LeftShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigLeftRotation;
 							}
+							AvoidDrop();
 							LC_danger_right=false;
 						}
 					}
@@ -2902,11 +2917,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = RightShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigRightRotation;
-							}	
+							}
+							AvoidDrop();	
 						}
 					}
 					else if(LC_danger_left)
@@ -2919,11 +2935,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = RightShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigRightRotation;
 							}
+							AvoidDrop();
 							LC_danger_left=false;
 						}	
 					}
@@ -2937,11 +2954,12 @@ void KidsizeStrategy::StrategyClassify()
 						{
 							liftandcarryinfo->BodyState = LeftShift;
 							ShiftDanger();
-							AvoidDrop();
+							
 							if(shiftdanger)
 							{
 								liftandcarryinfo->BodyState = BigRightRotation;
 							}
+							AvoidDrop();
 								LC_danger_left=false;
 						}	
 					}
@@ -3149,8 +3167,10 @@ void KidsizeStrategy::Strategy_Select()
 			liftandcarryinfo->RobotUp = false;
 		}
 		else
+		{
 			liftandcarryinfo->WhichStrategy = strategy_climbingwall;
 			liftandcarryinfo->WhichStair = Stair_0;
+		}
 
 	}
 }
@@ -3395,293 +3415,80 @@ void KidsizeStrategy::ShiftDanger()
 		}
 	}
 }
-/*void KidsizeStrategy::AvoidDrop()
-{
-	int i,h;
-	bool a;
-	if(liftandcarryinfo->BodyState == SmallRightShift)
-	{
-		liftandcarryinfo->Laststate = SmallRightShift;
-		if(LC_danger_count==5)
-		{
-			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-			tool->Delay(500);
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX-600,600);
-			tool->Delay(2000);
-			for(i = 0 ; i < 3200 ; i++)
-			{
-				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
-				{
-					LC_danger_right=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionX,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionY,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor)
-				{
-						
-					LC_danger_right=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-				
-			}
-			LC_danger_count=0;
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			tool->Delay(800);
-			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-		}
-		else
-		{
-			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			//tool->Delay(500);
-			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
-			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
-				
-			}
-		}
-	}
-	else if(liftandcarryinfo->BodyState == RightShift)
-	{
-		liftandcarryinfo->Laststate = RightShift;
-		if(LC_danger_count==5)
-		{
-			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-			tool->Delay(500);
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX-600,400);
-			tool->Delay(2000);
-			for(i = 0 ; i < 3200 ; i++)
-			{
-				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
-				{
-					LC_danger_right=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor )
-				{
-					LC_danger_right=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-			}
-			LC_danger_count=0;
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			tool->Delay(500);
-			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-		}
-		else
-		{
-			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			//tool->Delay(500);
-			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
-			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
-			}
-		}
-	}
-	else if(liftandcarryinfo->BodyState == SmallLeftShift)
-	{
-		liftandcarryinfo->Laststate = SmallLeftShift;
-		if(LC_danger_count==5)
-		{
-			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-			tool->Delay(500);
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX+600,400);
-			tool->Delay(2000);
-			for(i = 0 ; i < 3200 ; i++)
-			{
-				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
-				{
-					LC_danger_left=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor)
-				{
-						
-					LC_danger_left=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-			}
-			LC_danger_count=0;
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			tool->Delay(800);
-			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-		}
-		else
-		{
-			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			//tool->Delay(500);
-			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
-			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
-			}
-		}
-	}
-	else if(liftandcarryinfo->BodyState == LeftShift)
-	{
-		liftandcarryinfo->Laststate = LeftShift;
-		if(LC_danger_count==5)
-		{
-			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-			tool->Delay(500);
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY+300,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX+600,400);
-			tool->Delay(1500);
-			for(i = 0 ; i < 3200 ; i++)
-			{
-				
-				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ i ] == FileColor)
-				{
-					LC_danger_left=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ i ] == TrdColor)
-				{
-					
-					LC_danger_left=true;
-					ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-					ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-					tool->Delay(800);
-					ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
-					//tool->Delay(500);
-					break;
-				}
-			}
-			ros_com->sendHeadMotor(HeadMotorID::VerticalID,HeadpositionY,400);
-			ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			tool->Delay(800);
-			ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-			LC_danger_count=0;
-		}
-		else
-		{
-			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
-			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
-			}
-			//ros_com->sendHeadMotor(HeadMotorID::HorizontalID,HeadpositionX,400);
-			//tool->Delay(500);
-			
-		}
-	}
-}*/
+
 void KidsizeStrategy::AvoidDrop()
 {
 	int i,h;
 	bool a;
-	if(liftandcarryinfo->BodyState == SmallRightShift)
+	
+	
+	switch(liftandcarryinfo->BodyState)
 	{
-		liftandcarryinfo->Laststate = SmallRightShift;
-		if(LC_danger_count==5)
-		{
-			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-			tool->Delay(1000);
-			for(i = 309 ; i < 76800 ; i=i+320)
+		case SmallRightShift :
+			liftandcarryinfo->Laststate = SmallRightShift;
+			if(LC_danger_count==5)
 			{
-				for(h = i ; h < (i+10) ; h++)
+				ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
+				tool->Delay(1000);
+				for(i = 310 ; i < 320 ; i++)
 				{
-					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ h ] == FileColor)
+					for(h = 0 ; h < 240 ; h=h+12)
 					{
-						LC_danger_right=true;
-						ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-						//tool->Delay(500);
-						break;
+						if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
+						{
+							LC_danger_right=true;
+							ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+							//tool->Delay(500);
+							break;
+						}
+						else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == TrdColor)
+						{
+							LC_danger_right=true;
+							ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+							break;		
+						}
+						//LC_danger_left=false;
 					}
-					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ h ] == TrdColor)
-					{
-						LC_danger_right=true;
-						ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
-						break;		
-					}
-					LC_danger_left=false;
+				}
+				LC_danger_count=0;
+				liftandcarryinfo->Laststate = SmallFront;
+				ros_com->sendBodyAuto(SmallRightShiftX,SmallRightShiftY,0,SmallRightShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallRightShiftimu));
+			}
+			else if(LC_danger_count!=5)
+			{
+				if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
+				{
+					//if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+					//{
+						gettimeofday(&tADstart, NULL);
+						if((((1000000*(tADstart.tv_sec - tADend.tv_sec) + (tADstart.tv_usec - tADend.tv_usec))/1000)>1000)||LC_danger_count==0)
+						{
+							LC_danger_count++;
+							gettimeofday(&tADend, NULL);
+							LC_danger_right=false;
+						}
+					//}
 				}
 			}
-		}
-		else
-		{
-			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
-			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_right=false;
-				}
-			}
-		}
-	}
-	else if(liftandcarryinfo->BodyState == RightShift)
-	{
+		break;
+	case RightShift :
 		liftandcarryinfo->Laststate = RightShift;
 		if(LC_danger_count==5)
 		{
 			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
 			tool->Delay(1000);
-			for(i = 309 ; i < 76800 ; i=i+320)
+			for(i = 310 ; i < 320 ; i++)
 			{
-				for(h = i ; h < (i+10) ; h++)
+				for(h = 0 ; h < 240 ; h=h+12)
 				{
-					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ h ] == FileColor)
+					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 					{
 						LC_danger_right=true;
 						ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
 						//tool->Delay(500);
 						break;
 					}
-					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ h ] == TrdColor)
+					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == TrdColor)
 					{
 						LC_danger_right=true;
 						ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
@@ -3691,39 +3498,44 @@ void KidsizeStrategy::AvoidDrop()
 				}
 			}
 			LC_danger_count=0;
+			liftandcarryinfo->Laststate = SmallFront;
 			ros_com->sendBodyAuto(RightShiftX,RightShiftY,0,RightShiftTha,WalkingMode::ContinuousStep,SensorMode(RightShiftimu));
 		}
 		else
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
 			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
+				//if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				//{
+					gettimeofday(&tADstart, NULL);
+						if((((1000000*(tADstart.tv_sec - tADend.tv_sec) + (tADstart.tv_usec - tADend.tv_usec))/1000)>1000)||LC_danger_count==0)
+						{
+							LC_danger_count++;
+							gettimeofday(&tADend, NULL);
+							LC_danger_right=false;
+						}
+				//}
 			}
 		}
-	}
-	else if(liftandcarryinfo->BodyState == SmallLeftShift)
-	{
+	break;
+	case SmallLeftShift :
 		liftandcarryinfo->Laststate = SmallLeftShift;
 		if(LC_danger_count==5)
 		{
 			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
 			tool->Delay(1000);
-			for(i = 0 ; i < 76480 ; i=i+320)
+			for(i = 0 ; i < 10 ; i++)
 			{
-				for(h = i ; h < (i+10) ; h++)
+				for(h = 0 ; h < 240 ; h=h+12)
 				{
-					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ h ] == FileColor)
+					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 					{
 						LC_danger_right=true;
 						ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
 						//tool->Delay(500);
 						break;
 					}
-					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ h ] == TrdColor)
+					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == TrdColor)
 					{
 						LC_danger_right=true;
 						ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
@@ -3733,39 +3545,44 @@ void KidsizeStrategy::AvoidDrop()
 				}
 			}
 			LC_danger_count=0;
+			liftandcarryinfo->Laststate = SmallFront;
 			ros_com->sendBodyAuto(SmallLeftShiftX,SmallLeftShiftY,0,SmallLeftShiftTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftShiftimu));
 		}
 		else
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
 			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
+				//if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				//{
+					gettimeofday(&tADstart, NULL);
+						if((((1000000*(tADstart.tv_sec - tADend.tv_sec) + (tADstart.tv_usec - tADend.tv_usec))/1000)>1000)||LC_danger_count==0)
+						{
+							LC_danger_count++;
+							gettimeofday(&tADend, NULL);
+							LC_danger_right=false;
+						}
+				//}
 			}
 		}
-	}
-	else if(liftandcarryinfo->BodyState == LeftShift)
-	{
+	break;
+	case LeftShift :
 		liftandcarryinfo->Laststate = LeftShift;
 		if(LC_danger_count==5)
 		{
 			ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
 			tool->Delay(1000);
-			for(i = 0 ; i < 76480 ; i=i+320)
+			for(i = 0 ; i < 10 ; i++)
 			{
-				for(h = i ; h < (i+10) ; h++)
+				for(h = 0 ; h < 240 ; h=h+12)
 				{
-					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ h ] == FileColor)
+					if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 					{
 						LC_danger_right=true;
 						ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
 						//tool->Delay(500);
 						break;
 					}
-					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ h ] == TrdColor)
+					else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == TrdColor)
 					{
 						LC_danger_right=true;
 						ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
@@ -3775,18 +3592,26 @@ void KidsizeStrategy::AvoidDrop()
 				}
 			}
 			LC_danger_count=0;
+			liftandcarryinfo->Laststate = SmallFront;
 			ros_com->sendBodyAuto(LeftShiftX,LeftShiftY,0,LeftShiftTha,WalkingMode::ContinuousStep,SensorMode(LeftShiftimu));
 		}	
 		else
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 || liftandcarryinfo->WhichStair == Stair_2)
 			{
-				if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
-				{
-					LC_danger_count++;
-					LC_danger_left=false;
-				}
+				//if(liftandcarryinfo->Laststate == SmallRightShift || liftandcarryinfo->Laststate == RightShift || liftandcarryinfo->Laststate == SmallLeftShift || liftandcarryinfo->Laststate == LeftShift)
+				//{
+					gettimeofday(&tADstart, NULL);
+						if((((1000000*(tADstart.tv_sec - tADend.tv_sec) + (tADstart.tv_usec - tADend.tv_usec))/1000)>1000)||LC_danger_count==0)
+						{
+							LC_danger_count++;
+							gettimeofday(&tADend, NULL);
+							LC_danger_right=false;
+						}
+				//}
 			}
 		}
+	break;
 	}
+	
 }
