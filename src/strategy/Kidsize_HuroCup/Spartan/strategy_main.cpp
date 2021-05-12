@@ -154,7 +154,7 @@ void KidsizeStrategy::StrategyInitial()
 		liftandcarryinfo->StrategyState = CalSlope;
 		liftandcarryinfo->BodyState = Find_Wood;
 		liftandcarryinfo->HoleState = Left;
-		liftandcarryinfo->Calculate = true;
+		//liftandcarryinfo->Calculate = true;
 		liftandcarryinfo->IMUenable = false;		//IMU
 		liftandcarryinfo->AviodHole = false;
 		liftandcarryinfo->LeftSlopeFlag = false;
@@ -221,7 +221,7 @@ void KidsizeStrategy::StrategyBody()
 			liftandcarryinfo->Delaytime = LC_DownDelay;
 			liftandcarryinfo->rightrotatcount = 0;
 			liftandcarryinfo->leftrotatcount = 0;
-			liftandcarryinfo->Calculate = true;//4.21
+			//liftandcarryinfo->Calculate = true;//4.21
 			//------------------------------//
 			if (liftandcarryinfo->RobotUp)//上坡階段
 			{
@@ -3420,7 +3420,7 @@ void KidsizeStrategy::ShiftDanger()
 }
 void KidsizeStrategy::AvoidDrop()
 {
-	int i,h;
+	/*int i,h;
 	bool a;
 	if(liftandcarryinfo->BodyState == SmallRightShift)
 	{
@@ -3640,6 +3640,6 @@ void KidsizeStrategy::AvoidDrop()
 			//tool->Delay(500);
 			
 		}
-	}
+	}*/
 }
 
