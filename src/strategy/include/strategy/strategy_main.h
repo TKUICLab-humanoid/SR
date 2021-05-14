@@ -47,11 +47,14 @@ class KidsizeStrategy
 		void strategymain();
 		void systemtransform(int x, int y, double headangle,double distance);
 		void MoveHead(HeadMotorID ID, int Position, int Speed);
+		void trajectory_plan(tku_msgs::PointData endpoint);
+		fMatrix motion_effect_offset(double waist_angle, fMatrix end_point_l);
 
 		int HorizontalHeadPosition;
 		int VerticalHeadPosition;
 
 		bool first_flag = true;
+		bool hand_state_change = true; 
 
 
 		tku_msgs::PointData endpoint_temp;
