@@ -28,7 +28,7 @@ enum Strategy_STATE
 
 enum ACTION_STATE
 {
-    Spr, Up, Zero, SmallFront, SmallLeftRotation, SmallRightRotation, BigLeftRotation, BigRightRotation, RightShift, LeftShift,SmallLeftShift,SmallRightShift, BigFront, Find_Wood, CBD //
+    Spr, Up, Zero, SmallFront, SmallLeftRotation, SmallRightRotation, BigLeftRotation, BigRightRotation, RightShift, LeftShift,SmallLeftShift,SmallRightShift, BigFront, Find_Wood //
 };
 
 enum ACTION_Hole
@@ -99,9 +99,6 @@ class LiftAndCarryInfo
         int rightrotatcount;
         int leftrotatcount;
         bool IMUenable;
-        bool Calculate;//4.20
-        bool RightFindWoodFlag;//
-        bool LeftFindWoodFlag;//
         bool Start;
         bool Hole_x0Flag;
         bool Hole_x1Flag;

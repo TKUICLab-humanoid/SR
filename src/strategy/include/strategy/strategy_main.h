@@ -56,7 +56,6 @@ class KidsizeStrategy
 		void ShiftDanger();
 		void Initial_IMUdata();
 		void Theta_Offset();
-		void AvoidDrop();
 		double timeuse,timeuse_stragegy;
 		struct timeval tstart, tend;
 		struct timeval tstart_stragegy,tend_stragegy;
@@ -65,8 +64,6 @@ class KidsizeStrategy
 		double IMUoffset;
 		double leftslope,rightslope;
 		bool shiftdanger;
-		bool LC_danger_right,LC_danger_left;
-		int LC_danger_count;
 		int Theta_offset;
 		int countdistance;
 		string parameter_path="N";
