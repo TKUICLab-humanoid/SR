@@ -55,6 +55,7 @@ class KidsizeStrategy
 
 		bool first_flag = true;
 		bool hand_state_change = true; 
+		bool hand_motion_act = false; 
 
 
 		tku_msgs::PointData endpoint_temp;

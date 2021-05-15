@@ -20,9 +20,14 @@ void KidsizeStrategy::strategymain()
 {
 	if(!strategy_info->getStrategyStart())	//策略指撥開關沒開啟
 	{
-		ros_com->sendBodySector(29);
-        tool->Delay(2000);
-		hand_state_change = true;
+		if(hand_state_change == false)
+		{
+			ros_com->sendBodySector(29);
+        	tool->Delay(2000);
+			hand_state_change = true;
+			hand_motion_act = false;
+			first_flag = true;
+		}
 	}
 	else//策略指撥開關開啟
 	{
@@ -31,63 +36,75 @@ void KidsizeStrategy::strategymain()
 		if(first_flag)
 		{
 			ros_com->sendBodySector(29);
-        	tool->Delay(2000);
+        	tool->Delay(200);
 			MoveHead(HeadMotorID::HorizontalID,2048, 200);
 			MoveHead(HeadMotorID::VerticalID,1800, 200);
 
 			first_flag =false;	
 		}	
 		// MoveHead(HeadMotorID::VerticalID,1900, 200);
-		ROS_INFO("red object cnt = %d ",strategy_info->color_mask_subject_cnts[5]);		
-		for (int i = 0; i < strategy_info->color_mask_subject_cnts[5]; i++)
-        {
-			if (strategy_info->color_mask_subject[5][i].size > 300)
-        	{	
+		ROS_INFO("red object cnt = %d ",strategy_info->color_mask_subject_cnts[5]);	
+		if(hand_motion_act == false)
+		{
+			for (int i = 0; i < strategy_info->color_mask_subject_cnts[2]; i++)
+        	{
+				if (strategy_info->color_mask_subject[2][i].size > 3000)
+        		{
 
-
-				strategy_info->get_image_flag = true;
-    			ros::spinOnce();
-    			while(abs(strategy_info->color_mask_subject[5][i].YMin - 120) > 0)//頭部上下轉動直到對準籃框的水平中心線
-    			{
-    			    if(strategy_info->color_mask_subject[5][i].YMin == 0)
-    			    {
-    			        MoveHead(HeadMotorID::VerticalID,1800, 200);
-    			    } 
-    			    else if((strategy_info->color_mask_subject[5][i].YMin - 120) > 2)
-    			    {
-    			        MoveHead(HeadMotorID::VerticalID,VerticalHeadPosition - 1, 200);
-    			    }
-    			    else if((strategy_info->color_mask_subject[5][i].YMin - 120) < -2)
-    			    {
-    			        MoveHead(HeadMotorID::VerticalID,VerticalHeadPosition + 1, 200);
-    			    }
-					else
-					{
-						strategy_info->get_image_flag = true;
-    					ros::spinOnce();
-						break;
-					}
-    			    strategy_info->get_image_flag = true;
-    				ros::spinOnce();
-    			}
-				p_x = strategy_info->color_mask_subject[5][i].X;
-				p_y = strategy_info->color_mask_subject[5][i].YMin;
-				ROS_INFO("red object X = %d ",strategy_info->color_mask_subject[5][i].X);
-				ROS_INFO("red object ymax = %d ",strategy_info->color_mask_subject[5][i].YMin);
-
+				}
 			}
 
-		}
 
+			for (int i = 0; i < strategy_info->color_mask_subject_cnts[5]; i++)
+        	{
+				if (strategy_info->color_mask_subject[5][i].size > 3000)
+        		{	
+
+
+					strategy_info->get_image_flag = true;
+    				ros::spinOnce();
+    				while(abs(strategy_info->color_mask_subject[5][i].YMin - 120) > 0)//頭部上下轉動直到對準籃框的水平中心線
+    				{
+    				    if(strategy_info->color_mask_subject[5][i].YMin == 0)
+    				    {
+    				        MoveHead(HeadMotorID::VerticalID,1800, 200);
+    				    } 
+    				    else if((strategy_info->color_mask_subject[5][i].YMin - 120) > 2)
+    				    {
+    				        MoveHead(HeadMotorID::VerticalID,VerticalHeadPosition - 1, 200);
+    				    }
+    				    else if((strategy_info->color_mask_subject[5][i].YMin - 120) < -2)
+    				    {
+    				        MoveHead(HeadMotorID::VerticalID,VerticalHeadPosition + 1, 200);
+    				    }
+						else
+						{
+							strategy_info->get_image_flag = true;
+    						ros::spinOnce();
+							break;
+						}
+    				    strategy_info->get_image_flag = true;
+    					ros::spinOnce();
+    				}
+					p_x = strategy_info->color_mask_subject[5][i].X;
+					p_y = strategy_info->color_mask_subject[5][i].YMin;
+					ROS_INFO("red object X = %d ",strategy_info->color_mask_subject[5][i].X);
+					ROS_INFO("red object ymax = %d ",strategy_info->color_mask_subject[5][i].YMin);
+
+				}
+
+			}
+		}
 		MoveHead(HeadMotorID::VerticalID,VerticalHeadPosition, 200);
 
 		int head_motor_d = VerticalHeadPosition;
+		ROS_INFO("Headmotor = %d", head_motor_d);
 		double head_a = (double)(head_motor_d-2048)*360/4096;
-		double error = 22.5;
-		double HeadVerticalAngle = ((double)(head_motor_d - 1024) * Scale2Deg) + head_a + error;
 		ROS_INFO("HeadAngle = %lf", head_a);
-    	double Distancenew = (4 + 3.85 * sin(HeadVerticalAngle * Deg2Rad)) * tan(HeadVerticalAngle * Deg2Rad) + 3.85 * cos(HeadVerticalAngle * Deg2Rad) + 0;
-		
+		double error = 5.35;//22.5
+		double HeadVerticalAngle = ((double)(head_motor_d - 1024) * Scale2Deg) + head_a + error;
+    	double Distancenew = (4 + 3.85 * sin(HeadVerticalAngle * Deg2Rad)) * tan(HeadVerticalAngle * Deg2Rad) + 3.85 * cos(HeadVerticalAngle * Deg2Rad) + 15;
+		ROS_INFO("headvertical = %lf", HeadVerticalAngle);
     	ROS_INFO("DistanceError = %lf", Distancenew);
 
 
@@ -153,7 +170,7 @@ void KidsizeStrategy::systemtransform(int x, int y, double headangle,double dist
 	
 	end_point_l = out_matrix_n*in_matrix_n*pixel*distance-out_matrix_n*move_l;
 	end_point_l.Show();
-	end_point_l = motion_effect_offset(30, end_point_l);
+	end_point_l = motion_effect_offset(240, end_point_l);
 	fVector end_point_vector(end_point_l.GetCol(0)); 
 	endpoint_temp.x = (int)(end_point_vector.receiveelem(0)*1000);
 	endpoint_temp.y = (int)((end_point_vector.receiveelem(1)+3.7)*1000);
@@ -170,8 +187,17 @@ void KidsizeStrategy::systemtransform(int x, int y, double headangle,double dist
 	{
 		if(hand_state_change == true)
 		{
+
 			trajectory_plan(endpoint_temp);
-			hand_state_change = false;	
+			hand_state_change = false;
+			tool->Delay(2000);
+			ros_com->sendBodySector(3);
+        	tool->Delay(2000);
+			ros_com->sendBodySector(4);
+        	tool->Delay(16000);
+			ros_com->sendBodySector(5);
+        	tool->Delay(16000);
+			hand_motion_act = true;	
 		}
 	}
 
@@ -181,19 +207,27 @@ fMatrix KidsizeStrategy::motion_effect_offset(double waist_angle, fMatrix end_po
 {
 	//211.5mm upper body long
 	endpoint_temp.x = endpoint_temp.x - 21.15*sin((waist_angle*360/4096)*Deg2Rad);
-	endpoint_temp.z = endpoint_temp.z + (21.15 - 21.15*cos((waist_angle*360/4096)*Deg2Rad));
+	endpoint_temp.z = (-endpoint_temp.z) + (21.15 - 21.15*cos((waist_angle*360/4096)*Deg2Rad));
 	
 	Float waist_m[3] ={ -21.15*sin((waist_angle*360/4096)*Deg2Rad),
 			        	0 , 
 			        	21.15 - 21.15*cos((waist_angle*360/4096)*Deg2Rad) };//cm 3.123 7.4 8.525
 
 	fMatrix waist_move(waist_m, 3, 1);
+// waist_move.Show();
+	Float negative[9] ={ 1,0,0,
+			        	 0,1,0,
+			        	 0,0,-1 };//cm 3.123 7.4 8.525
+
+	fMatrix end_nagative(negative, 3, 3);
+
+	end_point_l = end_nagative*end_point_l;
 
 	end_point_l = end_point_l + waist_move;
 
 	end_point_l.Show();
 
-	double yaw_angle[3] = {0,-waist_angle,0};
+	double yaw_angle[3] = {0,-(waist_angle*360/4096),0};
 	double s_r = sin(yaw_angle[0]*Deg2Rad);
 	double c_r = cos(yaw_angle[0]*Deg2Rad);
 
@@ -210,6 +244,7 @@ fMatrix KidsizeStrategy::motion_effect_offset(double waist_angle, fMatrix end_po
 	fMatrix transfer_matrix(T, 3, 3);			  
 
 	end_point_l = transfer_matrix*end_point_l;
+	end_point_l.Show();
 
 	return end_point_l;
 
@@ -270,7 +305,7 @@ void KidsizeStrategy::trajectory_plan(tku_msgs::PointData endpoint)
 		// else if(strategy_info->DIOValue.Switch.D0 == 1 && strategy_info->DIOValue.Switch.D1 == 1 && strategy_info->DIOValue.Switch.D1 == 1 && strategy_info->DIOValue.Switch.D1 == 1)
 		// {
 			ROS_INFO("end point");
-			endpoint.z = endpoint.z + 0.5*1000;
+			endpoint.z = endpoint.z ;
 			Endpoint_Publish.publish(endpoint);
 			tool->Delay(500);
 		// }
