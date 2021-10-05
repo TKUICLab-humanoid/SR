@@ -227,8 +227,7 @@ void KidsizeStrategy::StrategyBody()
 					woodshape[i]=-1;
 				//------------------------------//
 				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-				tool->Delay(800);
-
+				tool->Delay(1500);
 //				ros_com->sendBodyAuto(0,0,0,0,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
 //				tool->Delay(1500);
 				ros_com->sendBodySector(29);

@@ -22,7 +22,7 @@ LiftAndCarryInfo::LiftAndCarryInfo(void)
     RightFoot.XMax = RightFoot.XMin + 50;//6.5
     RightFoot.YMin = 130;//83
     RightFoot.YMax = RightFoot.YMin + 80;//10
-    LeftFoot.XMin = 131 - 45 ;
+    LeftFoot.XMin = 131 - 25;
     LeftFoot.XMax = LeftFoot.XMin + 50;
     LeftFoot.YMin = 130;
     LeftFoot.YMax = LeftFoot.YMin + 80;
