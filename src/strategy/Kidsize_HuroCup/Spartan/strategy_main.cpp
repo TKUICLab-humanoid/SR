@@ -1272,7 +1272,7 @@ void KidsizeStrategy::CW_StrategyClassify()
 			{
 	//			ros_com->sendContinuousValue(st0_SmallFrontX,st0_SmallFrontY,0,st0_SmallFrontTha+Theta_offset,SensorMode(st0_SmallFrontimu));
 				ros_com->sendBodyAuto(SmallFrontX,SmallFrontY,0,SmallFrontTha,WalkingMode::ContinuousStep,SensorMode(SmallFrontimu));
-				tool->Delay(1500);
+				tool->Delay(1000);
 				//ros_com->sendBodyAuto(SmallLeftRotationX,SmallLeftRotationY,0,SmallLeftRotationTha,WalkingMode::ContinuousStep,SensorMode(SmallLeftRotationimu));
 				//tool->Delay(1500);
 				ros_com->sendHeadMotor(HeadMotorID::HorizontalID, 2048, 400);
