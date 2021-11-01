@@ -2400,7 +2400,7 @@ void KidsizeStrategy::ShiftDanger()
 	{
 		for(i=liftandcarryinfo->RightFoot.XMax;i<=liftandcarryinfo->RightFoot.XMax + 50 ;i++)
 		{
-			for(h=liftandcarryinfo->LeftFoot.YMax; h > 0; h--)
+			for(h=liftandcarryinfo->LeftFoot.YMax; h > (liftandcarryinfo->LeftFoot.YMin + SureUpDistance); h--)
 			{
 				if(liftandcarryinfo->WhichStair == Stair_0 || liftandcarryinfo->WhichStair == Stair_4)
 				{
@@ -2449,7 +2449,7 @@ void KidsizeStrategy::ShiftDanger()
 	{
 		for(i=liftandcarryinfo->LeftFoot.XMin - 50;i<=liftandcarryinfo->LeftFoot.XMin;i++)
 		{
-			for(h=liftandcarryinfo->LeftFoot.YMax; h > 0; h--)
+			for(h=liftandcarryinfo->LeftFoot.YMax; h > (liftandcarryinfo->LeftFoot.YMin + SureUpDistance); h--)
 			{
 				if(liftandcarryinfo->WhichStair == Stair_0 || liftandcarryinfo->WhichStair == Stair_4)
 				{
@@ -2498,7 +2498,7 @@ void KidsizeStrategy::ShiftDanger()
 	{
 		for(i=liftandcarryinfo->LeftFoot.XMin - 20;i<=liftandcarryinfo->LeftFoot.XMin;i++)
 		{
-			for(h=liftandcarryinfo->LeftFoot.YMax; h > 0; h--)
+			for(h=liftandcarryinfo->LeftFoot.YMax; h > (liftandcarryinfo->LeftFoot.YMin + SureUpDistance); h--)
 			{
 				if(liftandcarryinfo->WhichStair == Stair_0 || liftandcarryinfo->WhichStair == Stair_4)
 				{
@@ -2547,7 +2547,7 @@ void KidsizeStrategy::ShiftDanger()
 	{
 		for(i=liftandcarryinfo->RightFoot.XMax;i<=liftandcarryinfo->RightFoot.XMax + 20 ;i++)
 		{
-			for(h=liftandcarryinfo->LeftFoot.YMax; h > 0; h--)
+			for(h=liftandcarryinfo->LeftFoot.YMax; h > (liftandcarryinfo->LeftFoot.YMin + SureUpDistance); h--)
 			{
 				if(liftandcarryinfo->WhichStair == Stair_0 || liftandcarryinfo->WhichStair == Stair_4)
 				{
