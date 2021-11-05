@@ -2898,14 +2898,12 @@ void KidsizeStrategy::ShiftDanger()
 void KidsizeStrategy::AvoidDrop()
 {
 	ROS_INFO("AVOIDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-	//LC_danger_left = false;
-	//LC_danger_right = false;
+	LC_danger_left = false;
+	LC_danger_right = false;
 	int i,h;
-	//ros_com->sendContinuousValue(0,0,0,0,SensorMode(st0_SmallFrontimu));
-	//tool->Delay(1000);
 	for(i = liftandcarryinfo->LeftFoot.XMin ; i > liftandcarryinfo->LeftFoot.XMin - 1; i--)
 	{
-		for (h = liftandcarryinfo->LeftFoot.YMax ; h > 0 ; h--)
+		for (h = liftandcarryinfo->LeftFoot.YMin ; h > 0 ; h-=5)
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 			{
@@ -2917,15 +2915,15 @@ void KidsizeStrategy::AvoidDrop()
 				LC_danger_left = true;
 				break;
 			}
-			else
+			/*else
 			{
 				LC_danger_left = false;
-			}
+			}*/
 		}
 	}
 	for(i = liftandcarryinfo->RightFoot.XMax ; i < liftandcarryinfo->RightFoot.XMax + 1; i++)
 	{
-		for (h = liftandcarryinfo->RightFoot.YMax ; h > 0 ; h--)
+		for (h = liftandcarryinfo->RightFoot.YMin ; h > 0 ; h-=5)
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 			{
@@ -2937,10 +2935,10 @@ void KidsizeStrategy::AvoidDrop()
 				LC_danger_right = true;
 				break;
 			}
-			else
+			/*else
 			{
 				LC_danger_right = false;
-			}
+			}*/
 		}
 	}
 	if(LC_danger_left && LC_danger_right)
@@ -2952,7 +2950,7 @@ void KidsizeStrategy::AvoidDrop()
 				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
 				{
 					ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
-					liftandcarryinfo->BodyState = BigLeftRotation;
+					//liftandcarryinfo->BodyState = BigLeftRotation;
 					//tool->Delay(5000);
 					LC_danger_left = false;
 					break;	
@@ -2960,7 +2958,7 @@ void KidsizeStrategy::AvoidDrop()
 				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
 				{
 					ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
-					liftandcarryinfo->BodyState = BigLeftRotation;
+					//liftandcarryinfo->BodyState = BigLeftRotation;
 					//tool->Delay(5000);
 					LC_danger_left = false;
 					break;
@@ -2978,7 +2976,7 @@ void KidsizeStrategy::AvoidDrop()
 				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
 				{
 					ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
-					liftandcarryinfo->BodyState = BigRightRotation;
+					//liftandcarryinfo->BodyState = BigRightRotation;
 					//tool->Delay(5000);
 					LC_danger_right = false;
 					break;	
@@ -2986,7 +2984,7 @@ void KidsizeStrategy::AvoidDrop()
 				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
 				{
 					ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
-					liftandcarryinfo->BodyState = BigRightRotation;
+					//liftandcarryinfo->BodyState = BigRightRotation;
 					//tool->Delay(5000);
 					LC_danger_right = false;
 					break;
