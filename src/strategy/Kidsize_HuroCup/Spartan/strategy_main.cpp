@@ -2901,9 +2901,11 @@ void KidsizeStrategy::AvoidDrop()
 	LC_danger_left = false;
 	LC_danger_right = false;
 	int i,h;
+	bool Left = false,
+		 Right = false;
 	for(i = liftandcarryinfo->LeftFoot.XMin ; i > liftandcarryinfo->LeftFoot.XMin - 1; i--)
 	{
-		for (h = liftandcarryinfo->LeftFoot.YMin ; h > 0 ; h-=5)
+		for (h = liftandcarryinfo->LeftFoot.YMax ; h > 0 ; h-=5)
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 			{
@@ -2915,15 +2917,15 @@ void KidsizeStrategy::AvoidDrop()
 				LC_danger_left = true;
 				break;
 			}
-			/*else
-			{
-				LC_danger_left = false;
-			}*/
+		}
+		if(LC_danger_left)
+		{
+			break;
 		}
 	}
 	for(i = liftandcarryinfo->RightFoot.XMax ; i < liftandcarryinfo->RightFoot.XMax + 1; i++)
 	{
-		for (h = liftandcarryinfo->RightFoot.YMin ; h > 0 ; h-=5)
+		for (h = liftandcarryinfo->RightFoot.YMax ; h > 0 ; h-=5)
 		{
 			if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == FileColor)
 			{
@@ -2935,67 +2937,88 @@ void KidsizeStrategy::AvoidDrop()
 				LC_danger_right = true;
 				break;
 			}
-			/*else
-			{
-				LC_danger_right = false;
-			}*/
+		}
+		if(LC_danger_right)
+		{
+			break;
 		}
 	}
 	if(LC_danger_left && LC_danger_right)
 	{
-		for(i = liftandcarryinfo->LeftFoot.YMax ; i > 0; i-=20)
+		for(i = liftandcarryinfo->LeftFoot.YMax ; i > 0; i-=10)
 		{
 			for(h = liftandcarryinfo->LeftFoot.XMin ; h > 0 ; h--)
 			{
 				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
 				{
-					ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
+					//ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
 					//liftandcarryinfo->BodyState = BigLeftRotation;
-					//tool->Delay(5000);
-					LC_danger_left = false;
+					Left = true;
 					break;	
 				}
 				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
 				{
-					ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
+					//ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
 					//liftandcarryinfo->BodyState = BigLeftRotation;
-					//tool->Delay(5000);
-					LC_danger_left = false;
+					Left = true;
 					break;
 				}
-				/*else
-				{
-					LC_danger_left = false;
-				}*/
+				//else
+				//{
+					//Left = false;
+				//}
+			}
+			if(Left)
+			{
+				break;
 			}
 		}
-		for(i = liftandcarryinfo->RightFoot.YMax ; i > 0; i-=20)
+		for(i = liftandcarryinfo->RightFoot.YMax ; i > 0; i-=10)
 		{
 			for(h = liftandcarryinfo->RightFoot.XMax ; h < 320 ; h++)
 			{
 				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
 				{
-					ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
+					//ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
 					//liftandcarryinfo->BodyState = BigRightRotation;
-					//tool->Delay(5000);
-					LC_danger_right = false;
+					//ROS_INFO("1111111111111111111111111111");
+					Right = true;
 					break;	
 				}
 				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
 				{
-					ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
+					//ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
 					//liftandcarryinfo->BodyState = BigRightRotation;
-					//tool->Delay(5000);
-					LC_danger_right = false;
+					//ROS_INFO("2222222222222222222222222222");
+					Right = true;
 					break;
 				}
-				/*else
-				{
-					LC_danger_right = false;
-				}*/
+				//else
+				//{
+					//Right = false;
+				//}
+			}
+			if(Right)
+			{
+				break;
 			}
 		}
-		if(LC_danger_left && LC_danger_right)
+		if(Left && Right)
+		{
+			ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
+			liftandcarryinfo->BodyState = BigLeftRotation;
+		}
+		else if(!Left && Right)
+		{
+			ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
+			liftandcarryinfo->BodyState = BigRightRotation;
+		}
+		else if(Left && !Right)
+		{
+			ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
+			liftandcarryinfo->BodyState = BigLeftRotation;
+		}
+		else if(!Left && !Right)
 		{
 			ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
 			liftandcarryinfo->BodyState = BigLeftRotation;
