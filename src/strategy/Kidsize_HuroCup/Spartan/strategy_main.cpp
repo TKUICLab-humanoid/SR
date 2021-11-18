@@ -2972,6 +2972,10 @@ void KidsizeStrategy::AvoidDrop()
 			{
 				break;
 			}
+			else
+			{
+				break;
+			}
 		}
 		for(i = liftandcarryinfo->RightFoot.YMax ; i > 0; i-=10)
 		{
@@ -3001,6 +3005,10 @@ void KidsizeStrategy::AvoidDrop()
 			if(Right)
 			{
 				break;
+			}
+			else
+			{
+				Right = false;
 			}
 		}
 		if(Left && Right)
