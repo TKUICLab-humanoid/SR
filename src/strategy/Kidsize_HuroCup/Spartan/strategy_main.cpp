@@ -2949,39 +2949,35 @@ void KidsizeStrategy::AvoidDrop()
 		{
 			for(h = liftandcarryinfo->LeftFoot.XMin ; h > 0 ; h--)
 			{
-				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
+				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
 				{
 					//ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
 					//liftandcarryinfo->BodyState = BigLeftRotation;
 					Left = true;
 					break;	
 				}
-				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
+				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
 				{
 					//ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
 					//liftandcarryinfo->BodyState = BigLeftRotation;
 					Left = true;
 					break;
 				}
-				//else
-				//{
-					//Left = false;
-				//}
 			}
 			if(Left)
 			{
 				break;
 			}
-			else
-			{
-				break;
-			}
+			//else
+			//{
+				//Left = false;
+			//}
 		}
 		for(i = liftandcarryinfo->RightFoot.YMax ; i > 0; i-=10)
 		{
 			for(h = liftandcarryinfo->RightFoot.XMax ; h < 320 ; h++)
 			{
-				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
+				if(liftandcarryinfo->WhichStair == Stair_1 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
 				{
 					//ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
 					//liftandcarryinfo->BodyState = BigRightRotation;
@@ -2989,7 +2985,7 @@ void KidsizeStrategy::AvoidDrop()
 					Right = true;
 					break;	
 				}
-				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == SecColor)
+				else if(liftandcarryinfo->WhichStair == Stair_2 && strategy_info->label_model[ ImageWidth * h + i ] == TopColor)
 				{
 					//ros_com->sendContinuousValue(BigRightRotationX,BigRightRotationY,0,BigRightRotationTha,SensorMode(BigRightRotationimu));
 					//liftandcarryinfo->BodyState = BigRightRotation;
@@ -2997,20 +2993,17 @@ void KidsizeStrategy::AvoidDrop()
 					Right = true;
 					break;
 				}
-				//else
-				//{
-					//Right = false;
-				//}
 			}
 			if(Right)
 			{
 				break;
 			}
-			else
-			{
-				Right = false;
-			}
+			//else
+			//{
+				//Right = false;
+			//}
 		}
+		ROS_INFO("====== %s %s",(Left == true ? "true" : "false"),(Right == true ? "true" : "false"));
 		if(Left && Right)
 		{
 			ros_com->sendContinuousValue(BigLeftRotationX,BigLeftRotationY,0,BigLeftRotationTha,SensorMode(BigLeftRotationimu));
