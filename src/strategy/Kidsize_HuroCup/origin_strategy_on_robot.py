@@ -3,14 +3,10 @@
 import rospy
 import numpy as np
 from Python_API import Sendmessage
-from SR_API_check import Send_distance
+from SR_API_on_robot import Send_distance
 import time
 
 imgdata = [[None for high in range(240)]for width in range (320)]
-# lrdistance = 0
-# lldistance = 0
-# rldistance = 0
-# rrdistance = 0
 
 if __name__ == '__main__':
     try:
@@ -53,6 +49,8 @@ if __name__ == '__main__':
 
             elif send.is_start == False:
                 # print('web',send.Web)
+                send.__init__()
+                distance.__init__()
                 if distance.stop_flag == 0:
                     print("turn off")
                     distance.theta = 0

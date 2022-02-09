@@ -45,6 +45,46 @@ class Send_distance():
         self.layer = [8,32,2,4]     #用在labelMode
         self.direction=0       #0 上板 1 下板
 
+        #校正變數
+        self.rc_theta=0
+        self.lc_theta=0
+
+
+        #角度設定 左旋
+        self.l_theta_1=1+self.lc_theta
+        self.l_theta_2=2+self.lc_theta
+        self.l_theta_3=3+self.lc_theta
+        self.l_theta_4=4+self.lc_theta
+        self.l_theta_5=5+self.lc_theta
+        #角度設定 右旋
+        self.r_theta_1=-1+self.rc_theta
+        self.r_theta_2=-2+self.rc_theta
+        self.r_theta_3=-3+self.rc_theta
+        self.r_theta_4=-4+self.rc_theta
+        self.r_theta_5=-5+self.rc_theta
+        #速度
+        self.speed_1=100
+        self.speed_2=200
+        self.speed_3=300
+        self.speed_4=400
+        self.speed_5=500
+        #上板腳離板子差
+        self.up_bd_1=10
+        self.up_bd_2=30
+        self.up_bd_3=60
+        self.up_bd_4=100
+        #下板腳離板子差
+        self.down_bd_1=10
+        self.down_bd_2=80
+        self.down_bd_3=60
+        self.down_bd_4=60
+        
+
+        #腳前距離差
+        self.feet_distance_1=3
+        self.feet_distance_2=4       
+        self.feet_distance_3=6
+        self.feet_distance_4=8
 
 
         
@@ -125,144 +165,53 @@ class Send_distance():
 
     def parallel_board_setup(self):#上板的角度調整
         print('parallel_board_setup func')
-        if(self.up_distance[1]<=30 or self.up_distance[2]<=30):
-            self.speed=50
+        if(self.up_distance[1]<=self.up_bd_2 or self.up_distance[2]<=self.up_bd_2):
+            self.speed=self.speed_1
             self.yspeed=0
-            # if (self.up_distance[2]-self.up_distance[1]>2) or (self.up_distance[3]-self.up_distance[0]>3) :
-            #     self.theta = 2
-            #     print("turn left")
-            # elif self.up_distance[1]-self.up_distance[2]>2 or (self.up_distance[0]-self.up_distance[3]>3):
-            #     self.theta = -2
-            #     print("turn right")
-            if(self.up_distance[0]-self.up_distance[3]>5):
-                self.theta=-2
-                print("turn left")
-            elif(self.up_distance[3]-self.up_distance[0]>5):
-                self.theta=2
-                print("turn right")
-            elif(self.up_distance[0]-self.up_distance[0]>2):
-                self.theta=-1
-                print("turn left")
-            elif(self.up_distance[3]-self.up_distance[0]>2):
-                self.theta=1
-                print("turn right")
-            else:
-                self.theta=0
-                print("walk forward")
+            self.theta_func()
+            
         # #上板直角
         elif((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]>50 or self.up_distance[1]>50 or self.up_distance[2]>50 or self.up_distance[3]>50):
-             self.up_board_90()
-        elif(self.up_distance[1]<60 or self.up_distance[2]<60):
+            self.up_board_90()
+
+        elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
             self.speed=100
             self.yspeed=0
-            if (self.up_distance[2]-self.up_distance[1]>2) or (self.up_distance[3]-self.up_distance[0]>4):
-                self.theta=2
-                print("turn left")
-            elif (self.up_distance[1]-self.up_distance[2]>2) or (self.up_distance[0]-self.up_distance[3]>4):
-                self.theta=-2
-                print("turn right")
-            else:
-                self.theta=0
-                print("walk forward")
-        elif(self.up_distance[1]<70) or (self.up_distance[2]<70):
+            self.theta_func()
+        elif(self.up_distance[1]<self.up_bd_4) or (self.up_distance[2]<self.up_bd_4):
             self.speed=300
             self.yspeed=0
-            if (self.up_distance[2]-self.up_distance[1]>4) or (self.up_distance[3]-self.up_distance[0]>8):
-                self.theta=2
-                print("turn left")
-            elif self.up_distance[1]-self.up_distance[2]>4 or (self.up_distance[0]-self.up_distance[3]>8):
-                self.theta=-2
-                print("turn right")
-            else:
-                self.theta=0
-                print("walk forward")
-        # elif(self.up_distance[0]<70 or self.up_distance[3]<70):
-        #     self.speed=200
-        #     # self.yspeed=0
-        #     if self.up_distance[2]-self.up_distance[1]>4 or (self.up_distance[3]-self.up_distance[0]>8):
-        #         self.theta=4
-        #         print("turn left")
-        #     elif self.up_distance[1]-self.up_distance[2]>4 or (self.up_distance[3]-self.up_distance[0]>8):
-        #         self.theta=-4
-        #         print("turn right")
-        #     else:
-        #         self.theta=0
-        #         print("walk forward")
-        elif(self.up_distance[1]<100) and (self.up_distance[2]<100):
-            self.speed=500
-            self.yspeed=0
-            if self.up_distance[3]-self.up_distance[0]>5:
-                self.theta=3
-                print("turn left")
-            elif self.up_distance[0]-self.up_distance[3]>5:
-                self.theta=-3
-                print("turn right")
-            else:
-                self.theta=0
-                print("walk forward")
+            self.theta_func()
         else:
             self.speed=700
             self.yspeed=0
-            if self.up_distance[3]-self.up_distance[0]>8:
-                self.theta=3
-                print("turn left")
-            elif self.up_distance[0]-self.up_distance[3]>8:
-                self.theta=-3
-                print("turn right")
-            else:
-                self.theta=0
-                print("walk forward")
+            self.theta_func()
 
     
     def down_parallel_board_setup(self): #下板角度調整
         print('down_parallel_board_setup func')
-        if self.down_distance[0] < 21 or self.down_distance[3] < 21:#距離在60的時候
-            print('distance < 21')
+        if self.down_distance[0] < self.down_bd_2 or self.down_distance[3] < self.down_bd_2:#距離在60的時候
             self.speed = 100
-            if self.down_distance[0]-self.down_distance[3]>4:#太左旋了
-                print('turn right')
-                self.theta = -2
-                
-            elif self.down_distance[3]-self.down_distance[0]>4:#太右旋了
-                print('turn left')
-                self.theta = 2
-            else:
-                print('walk forward')
-                self.theta = 0
+            self.yspeed=0
+            self.theta_func()
 
-        elif self.down_distance[0] <=60 or self.down_distance[3] <= 60:#距離在60的時候
-            print('distance <= 60')
+        elif self.down_distance[0] <=self.down_bd_3 or self.down_distance[3] <= self.down_bd_3:#距離在60的時候
             self.speed = 400
-            if self.down_distance[0]-self.down_distance[3]>8:#太左旋了
-                print('turn right')
-                self.theta = -2
-            elif self.down_distance[3]-self.down_distance[0]>8:#太右旋了
-                print('turn left')
-                self.theta = 2
-            else:
-                print('walk forward')
-                self.theta = 0
+            self.yspeed=0
+            self.theta_func()
 
-        elif self.down_distance[0] > 60 or self.down_distance[3] > 60:#距離在大於60的時候
-            print("distance>60")
+        elif self.down_distance[0] > self.down_bd_4 or self.down_distance[3] > self.down_bd_4:#距離在大於60的時候
             self.speed = 700
-            if self.down_distance[0]-self.down_distance[3]>10:#太左旋了
-                print('turn right')
-                self.theta = -5
-            elif self.down_distance[3]-self.down_distance[0]>10:#太右旋了
-                print('turn left')
-                self.theta = 5
-            else:
-                print('walk forward')
-                self.theta = 0
+            self.yspeed=0
+            self.theta_func()
 
         
 
     def up_board(self): #要上板了
         print('up_board_func')
         self.parallel_board_setup()
-        # self.print_state()
-        if (self.up_distance[0]<5) and (self.up_distance[3]<5):
+        self.print_state()
+        if (self.up_distance[0]<self.up_bd_1) and (self.up_distance[3]<self.up_bd_1):
             if self.stop_flag==0 and self.up_board_flag==0:
                 print('ready upboard')
                 self.speed=0
@@ -276,12 +225,11 @@ class Send_distance():
                 self.up_distance = [999,999,999,999]
                 send.sendBodyAuto(8500,0,0,0,2,0)
                 time.sleep(5)
-                # self.print_state()               
+                            
         else:
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
             print('cant upboard')
             time.sleep(0.5)
-            # self.print_state()
         
             
 
@@ -318,10 +266,14 @@ class Send_distance():
                 send.sendContinuousValue(0,-200,0,-5,0)
                 time.sleep(0.5)
             
+        elif (self.f_ll-self.point_x)*(self.f_rr-self.point_x):
+            send.sendContinuousValue(0,-200,0,-5,0)
+        
         else:
             print('foward')
             send.sendContinuousValue(self.speed,0,0,self.theta,0)
             time.sleep(0.5)
+            self.theta_func()
             
 
 
@@ -329,13 +281,13 @@ class Send_distance():
         print('up_board_90 func')
         self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][0]
         self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][0]
-        if((self.m_xmax-self.point_x>self.point_x-self.m_xmin) or (self.up_distance[0]-self.up_distance[3])>10):
+        if((self.m_xmax-self.point_x>self.point_x-self.m_xmin) or (self.up_distance[0]-self.up_distance[3])>self.up_bd_2):
                 self.speed=-50
                 self.yspeed=-100
                 self.theta=0
                 time.sleep(0.5)
                 print("move  right 90")
-        elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin )or self.up_distance[3]-self.up_distance[0]>10:
+        elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin )or self.up_distance[3]-self.up_distance[0]>self.up_bd_2:
                 self.speed=-50
                 self.yspeed=100
                 self.theta=0
@@ -345,9 +297,9 @@ class Send_distance():
 
     def down_board_90(self): #下板90度狀況
         print('down_board_90 func')
-        self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][0]
-        self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][0]
-                            
+        send.sendContinuousValue(0,-200,0,-5,0)
+        
+
     
     def next_board(self):
         if self.direction==0 and self.layer_n<3:
@@ -356,6 +308,38 @@ class Send_distance():
             self.layer_n-=1
         elif self.layer_n == 3:
             self.direction = 1
+
+
+
+    def theta_func(self):
+        feet_distance=self.down_distance[3]-self.down_distance[0]
+
+        if(feet_distance>0 and feet_distance<8):
+            print('turn left')
+        elif (feet_distance<0 and feet_distance>-8):
+            print('turn right')
+        else:
+            print('walk forward')
+
+        if(feet_distance)<(-1*self.feet_distance_4):
+            self.theta = -6-self.rc_theta
+        elif(feet_distance)<(-1*self.feet_distance_3):
+            self.theta = -3-self.rc_theta
+        elif(feet_distance)<(-1*self.feet_distance_2):
+            self.theta = -2-self.rc_theta
+        elif(feet_distance)<(-1*self.feet_distance_1):
+            self.theta = -1-self.rc_theta
+        elif(feet_distance)>self.feet_distance_4:
+            self.theta = 6+self.lc_theta
+        elif(feet_distance)>self.feet_distance_3:
+            self.theta = 3+self.lc_theta
+        elif(feet_distance)>self.feet_distance_2:
+            self.theta = 2+self.lc_theta
+        elif(feet_distance)>self.feet_distance_1:
+            self.theta = 1+self.lc_theta
+        else:
+            self.theta = 0
+
 
 
 
