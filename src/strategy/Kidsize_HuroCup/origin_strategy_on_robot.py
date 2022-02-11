@@ -12,10 +12,10 @@ if __name__ == '__main__':
     try:
         send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
         distance = Send_distance()#建立名稱,順便歸零
-
+        r = rospy.Rate(30)
         while not rospy.is_shutdown():
             #判斷Humanoid Interface的按鈕
-            if send.is_start == True:
+            if send.Web == True:
                 distance.print_state()
                 send.drawImageFunction(1,0,0,320,230,230,255,0,0)#膝蓋的橫線
                 send.drawImageFunction(2,0,150,150,0,240,255,0,0)#lr的線
@@ -47,23 +47,23 @@ if __name__ == '__main__':
                         distance.down_board()
 
 
-            elif send.is_start == False:
+            elif send.Web == False:
                 # print('web',send.Web)
-                send.__init__()
-                distance.__init__()
                 if distance.stop_flag == 0:
                     print("turn off")
                     distance.theta = 0
                     distance.speed = 0
                     distance.yspeed=0
                     send.sendBodyAuto(0,0,0,0,1,0)
+                    send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
+                    distance = Send_distance()#建立名稱,順便歸零
                     distance.stop_flag = 1
                     time.sleep(0.5)
                     send.sendBodySector(29)
                 send.sendHeadMotor(1,2048,100)#水平
                 send.sendHeadMotor(2,1402,100)#垂直
                 time.sleep(0.5)
-                
+            r.sleep()    
                     
 
     except rospy.ROSInterruptException:
