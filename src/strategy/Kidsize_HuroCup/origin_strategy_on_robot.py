@@ -15,7 +15,8 @@ if __name__ == '__main__':
         r = rospy.Rate(30)
         while not rospy.is_shutdown():
             #判斷Humanoid Interface的按鈕
-            if send.Web == True:
+            if send.is_start ==True:
+                #send.Web == True:
                 distance.print_state()
                 send.drawImageFunction(1,0,0,320,230,230,255,0,0)#膝蓋的橫線
                 send.drawImageFunction(2,0,150,150,0,240,255,0,0)#lr的線
@@ -47,7 +48,7 @@ if __name__ == '__main__':
                         distance.down_board()
 
 
-            elif send.Web == False:
+            elif send.is_start ==False:
                 # print('web',send.Web)
                 if distance.stop_flag == 0:
                     print("turn off")
