@@ -46,8 +46,8 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 
         #校正變數
-        self.rc_theta=2
-        self.lc_theta=2
+        self.rc_theta=-4
+        self.lc_theta=-4
 
 
         #角度設定 左旋
@@ -63,7 +63,7 @@ class Send_distance():
         self.r_theta_4 = -4 + self.rc_theta
         self.r_theta_5 = -5 + self.rc_theta
         #上板速度
-        self.up_b_speed=8300
+        self.up_b_speed=7500
         self.speed_1=100
         self.speed_2=200
         self.speed_3=300
@@ -76,7 +76,7 @@ class Send_distance():
         #上板補償的平移
         self.c_up_yspeed = 0
         #下板補償的平移
-        self.c_down_yspeed = 0
+        self.c_down_yspeed = -300
         #上板腳離板子差
         self.up_bd_1=13
         self.up_bd_2=30
@@ -248,14 +248,14 @@ class Send_distance():
         print('up_board_func')
         self.parallel_board_setup()
         #self.print_state()
-        if (self.up_distance[1]<self.up_bd_1) and (self.up_distance[2]<self.up_bd_1) :
+        if (self.up_distance[0]<self.up_bd_1) and (self.up_distance[3]<self.up_bd_1) :
             if self.stop_flag==0 and self.up_board_flag==0:
                 print('ready upboard')
                 self.speed=0
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(5)
+                time.sleep(3)
                 self.stop_flag=1
                 self.up_board_flag=1
                 self.next_board()
@@ -302,15 +302,15 @@ class Send_distance():
             self.speed = -100
             self.yspeed = -700
             self.theta = -5
-            send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)#之後可能要變成變數
+            send.sendContinuousValue(self.speed,-self.yspeed,0,self.theta,0)#之後可能要變成變數
             time.sleep(0.5)
             
         elif (self.f_ll-self.point_x)*(self.f_rr-self.point_x)<0:
             print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
             self.speed = -100
-            self.yspeed = 0+self.c_down_yspeed
+            self.yspeed = -700+self.c_down_yspeed
             self.theta = -5
-            send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)#之後可能要變成變數
+            send.sendContinuousValue(self.speed,-self.yspeed,0,self.theta,0)#之後可能要變成變數
             time.sleep(0.5)
         
         else:
