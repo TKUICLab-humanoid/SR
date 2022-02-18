@@ -15,8 +15,8 @@ if __name__ == '__main__':
         r = rospy.Rate(30)
         while not rospy.is_shutdown():
             #判斷Humanoid Interface的按鈕
+            # if send.Web == True:
             if send.is_start ==True:
-                #send.Web == True:
                 distance.print_state()
                 send.drawImageFunction(1,0,0,320,230,230,255,0,0)#膝蓋的橫線
                 send.drawImageFunction(2,0,150,150,0,240,255,0,0)#lr的線
@@ -27,7 +27,7 @@ if __name__ == '__main__':
                 send.drawImageFunction(7,0,215,215,0,240,255,0,0)#rr的線
                 send.sendHeadMotor(1,2048,100)#水平
                 send.sendHeadMotor(2,1402,100)#垂直
-               
+                start=time.time()
                 #機器人暫停且不是在做上板
                 if distance.stop_flag == 1 and distance.up_board_flag == 0:
                     send.sendBodyAuto(700,0,0,0,1,0)
@@ -46,8 +46,10 @@ if __name__ == '__main__':
                     elif distance.direction==1:
                         distance.find_down_board()
                         distance.down_board()
+                end=time.time()
+                print(end-start)
 
-
+            # elif send.Web == False:
             elif send.is_start ==False:
                 # print('web',send.Web)
                 if distance.stop_flag == 0:
