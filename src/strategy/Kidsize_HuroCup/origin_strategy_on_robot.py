@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 from Python_API import Sendmessage
-from SR_API_on_robot import Send_distance
+from SR_API import Send_distance
 import time
 
 imgdata = [[None for high in range(240)]for width in range (320)]
@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 # send.drawImageFunction(6,0,182,182,0,240,255,0,0)#rm的線
                 send.drawImageFunction(7,0,215,215,0,240,255,0,0)#rr的線
                 send.sendHeadMotor(1,2048,100)#水平
-                send.sendHeadMotor(2,1402,100)#垂直
+                send.sendHeadMotor(2,1450,100)#垂直
                 start=time.time()
                 #機器人暫停且不是在做上板
                 if distance.stop_flag == 1 and distance.up_board_flag == 0:
@@ -64,7 +64,7 @@ if __name__ == '__main__':
                     time.sleep(0.5)
                     send.sendBodySector(29)
                 send.sendHeadMotor(1,2048,100)#水平
-                send.sendHeadMotor(2,1402,100)#垂直
+                send.sendHeadMotor(2,1450,100)#垂直
                 time.sleep(0.5)
             r.sleep()    
                     
