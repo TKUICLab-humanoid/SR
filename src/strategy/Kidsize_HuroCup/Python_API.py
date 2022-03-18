@@ -23,7 +23,9 @@ class Sendmessage:
         self.sensor_pub = rospy.Publisher("sensorset",SensorSet, queue_size=100)
         
         self.Web = False
+
         self.Label_Model = [0 for i in range(320*240)]
+
         # self.Label_Model = np.zeros([320*240])
         self.bridge = CvBridge()
         self.color_mask_subject_cnts = [0 for i in range(8)]
@@ -142,14 +144,14 @@ class Sendmessage:
     def startFunction(self,msg):
         self.Web = msg.data
     def getLabelModel(self,msg):
-        self.Label_Model = msg.LabelModel    #創矩陣
+        self.Label_Model = msg.LabelModel    
     def getObject(self,msg):
         time_start = time.time()
         for i in range (8):
-            self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt   #是在第幾個
-            for j in range (self.color_mask_subject_cnts[i]):#有幾個就有幾個
+            self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt
+            for j in range (self.color_mask_subject_cnts[i]):
 
-                self.color_mask_subject_X[i][j] = msg.Objectlist[i].Colorarray[j].X   #目標勿中心點
+                self.color_mask_subject_X[i][j] = msg.Objectlist[i].Colorarray[j].X
                 self.color_mask_subject_Y[i][j] = msg.Objectlist[i].Colorarray[j].Y
                 self.color_mask_subject_XMin[i][j] = msg.Objectlist[i].Colorarray[j].XMin
                 self.color_mask_subject_YMin[i][j] = msg.Objectlist[i].Colorarray[j].YMin
