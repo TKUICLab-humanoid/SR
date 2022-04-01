@@ -35,10 +35,7 @@ class Send_distance():
         self.m_xmin=0
         self.m_xmax=0
         
-        #角度速度初始化
-        self.theta = -6
-        self.speed = 500
-        self.yspeed =0
+        
         #旗標初始化
         self.stop_flag = 1      # 1表示停止
         self.up_board_flag =0
@@ -48,20 +45,25 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 
         #校正變數
-        self.rc_theta=-6
-        self.lc_theta=-6
+        self.rc_theta=-3
+        self.lc_theta=-3
         #上板校正的
-        self.c_speed=-400
+        self.c_speed=-300
         #上板校正的平移
-        self.c_up_yspeed =0
+        self.c_up_yspeed =-400
         #下板校正的
         self.c_speed=-400
         # 下板校正的平移
-        self.c_down_yspeed =0
+        self.c_down_yspeed =-300
         #上板x
         self.up_x=6800
         #下板x
         self.down_x=8300
+
+        #角度速度初始化
+        self.theta = 0+self.rc_theta
+        self.speed = 500+self.c_speed
+        self.yspeed =0+self.c_up_yspeed
 
         #角度設定 左旋
         self.l_theta_1 = 1 + self.lc_theta
@@ -91,13 +93,13 @@ class Send_distance():
         self.down_speed_3=500+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=6
+        self.up_bd_1=3
         self.up_bd_2=30
         self.up_bd_3=60
         self.up_bd_4=100
         
         # 離板太近距離
-        self.back_dis=5
+        self.back_dis=1
         self.back_speed=-100+self.c_speed
 
         # 空間不夠距離
@@ -391,7 +393,7 @@ class Send_distance():
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(4)
+                time.sleep(6)
                 send.sendBodySector(1)
                 time.sleep(3)
                 self.stop_flag=1
@@ -401,7 +403,7 @@ class Send_distance():
                 send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 time.sleep(5)
                 send.sendBodySector(29)
-                time.sleep(3)
+                time.sleep(5)
                             
         else:
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
