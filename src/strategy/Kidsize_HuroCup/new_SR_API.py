@@ -45,18 +45,18 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 
         #校正變數
-        self.rc_theta=-7
-        self.lc_theta=-7
+        self.rc_theta=-5
+        self.lc_theta=-5
         #上板校正的
-        self.c_speed=-500
+        self.c_speed=-400
         #上板校正的平移
-        self.c_up_yspeed =-500
+        self.c_up_yspeed =0
         #下板校正的
-        self.c_speed=-500
+        self.c_speed=-400
         # 下板校正的平移
-        self.c_down_yspeed =-500
+        self.c_down_yspeed =0
         #上板x
-        self.up_x=6800
+        self.up_x=7000
         #下板x
         self.down_x=8300
 
@@ -81,11 +81,11 @@ class Send_distance():
        
         
         #上板速度
-        self.speed_1=100+self.c_speed
-        self.speed_2=200+self.c_speed
-        self.speed_3=300+self.c_speed
-        self.speed_4=400+self.c_speed
-        self.speed_5=500+self.c_speed
+        self.speed_1=300+self.c_speed
+        self.speed_2=400+self.c_speed
+        self.speed_3=400+self.c_speed
+        self.speed_4=500+self.c_speed
+        self.speed_5=700+self.c_speed
 
         #下板速度
         self.down_speed_1=100+self.c_speed
@@ -394,7 +394,10 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
-                send.sendBodySector(1)
+                if self.layer_n==1:
+                    send.sendBodySector(1)
+                else:
+                    send.sendBodySector(2)
                 time.sleep(2)
                 self.stop_flag=1
                 self.up_board_flag=1
