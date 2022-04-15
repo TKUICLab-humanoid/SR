@@ -148,7 +148,7 @@ class Sendmessage:
     def getObject(self,msg):
         time_start = time.time()
         for i in range (8):
-            self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt
+            self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt#拉下來顏色
             for j in range (self.color_mask_subject_cnts[i]):
 
                 self.color_mask_subject_X[i][j] = msg.Objectlist[i].Colorarray[j].X

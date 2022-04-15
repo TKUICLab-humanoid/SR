@@ -45,20 +45,20 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 
         #校正變數
-        self.rc_theta=-5
-        self.lc_theta=-5
+        self.rc_theta=1
+        self.lc_theta=1
         #上板校正的
-        self.c_speed=-400
+        self.c_speed=-200
         #上板校正的平移
-        self.c_up_yspeed =0
+        self.c_up_yspeed =-300
         #下板校正的
-        self.c_speed=-400
+        self.c_speed=-200
         # 下板校正的平移
-        self.c_down_yspeed =0
+        self.c_down_yspeed =-300
         #上板x
-        self.up_x=7000
+        self.up_x=8000
         #下板x
-        self.down_x=8300
+        self.down_x=8000
 
         #角度速度初始化
         self.theta = 0+self.rc_theta
