@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 from Python_API import Sendmessage
-from SR_API_on_robot_2 import Send_distance
+from super_strategy import Send_distance
 import time
 
 imgdata = [[None for high in range(240)]for width in range (320)]
@@ -18,6 +18,7 @@ if __name__ == '__main__':
             # if send.Web == True:
             if send.is_start ==True:
                 distance.print_state()
+                print(distance.direction)
                 send.drawImageFunction(1,0,0,320,215,215,255,0,0)#膝蓋的橫線
                 send.drawImageFunction(2,0,150,150,0,240,255,0,0)#lr的線
                 # send.drawImageFunction(3,0,132,132,0,240,255,0,0)#lm的線
@@ -53,16 +54,17 @@ if __name__ == '__main__':
             # elif send.Web == False:
             elif send.is_start ==False:
                 # print('web',send.Web)
-                if distance.stop_flag == 0:
+                if distance.stop_flag == 0 or distance.up_board_flag == 1:
                     print("turn off")
                     distance.theta = 0
                     distance.speed = 0
                     distance.yspeed=0
-                    send.sendBodyAuto(0,0,0,0,1,0)
+                    if distance.stop_flag == 0:
+                        send.sendBodyAuto(0,0,0,0,1,0)
                     send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
                     distance = Send_distance()#建立名稱,順便歸零
-                    distance.layer_n= 1
-                    distance.stop_flag = 1
+                    # distance.layer_n= 1
+                    # distance.stop_flag = 1
                     time.sleep(0.5)
                     send.sendBodySector(29)
                 send.sendHeadMotor(1,2048,100)#水平
