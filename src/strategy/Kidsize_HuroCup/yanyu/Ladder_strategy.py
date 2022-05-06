@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 from Python_API import Sendmessage
-from SR_Climb_API import Send_Climb
+from Ladder_API import Send_Climb
 import time
 
 #imgdata = [[None for high in range(240)]for width in range (320)]

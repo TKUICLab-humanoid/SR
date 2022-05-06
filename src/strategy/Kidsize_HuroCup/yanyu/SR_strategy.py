@@ -3,7 +3,7 @@
 import rospy
 import numpy as np
 from Python_API import Sendmessage
-from super_strategy import Send_distance
+from SR_API import Send_distance
 import time
 
 imgdata = [[None for high in range(240)]for width in range (320)]
@@ -63,8 +63,8 @@ if __name__ == '__main__':
                         send.sendBodyAuto(0,0,0,0,1,0)
                     send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
                     distance = Send_distance()#建立名稱,順便歸零
-                    # distance.layer_n= 1
-                    # distance.stop_flag = 1
+                    distance.layer_n= 1
+                    distance.stop_flag = 1
                     time.sleep(0.5)
                     send.sendBodySector(29)
                 send.sendHeadMotor(1,2048,100)#水平
