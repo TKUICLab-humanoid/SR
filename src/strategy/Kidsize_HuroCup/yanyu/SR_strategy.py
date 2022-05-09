@@ -18,7 +18,6 @@ if __name__ == '__main__':
             # if send.Web == True:
             if send.is_start ==True:
                 distance.print_state()
-                print(distance.direction)
                 send.drawImageFunction(1,0,0,320,215,215,255,0,0)#膝蓋的橫線
                 send.drawImageFunction(2,0,150,150,0,240,255,0,0)#lr的線
                 # send.drawImageFunction(3,0,132,132,0,240,255,0,0)#lm的線
