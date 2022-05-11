@@ -120,6 +120,63 @@ class Ladder_send_distance():
     #定值
         self.SendBodyAuto_Start = 400                #停下x值。只是用作停下機器人的x值，相當於定值
 
+#///////////////////////////////////////////////////////////////////////////////////////////////////////
+        #腳掌標準線x值
+        self.knee=215
+        self.f_ll=98
+        self.f_lr=150
+        self.f_rl=188
+        self.f_rr=240
+
+        #距離矩陣初始化
+        self.climb_distance = [999,999,999,999]
+
+        self.layer = [32]
+
+        #旗標初始化
+        self.stop_flag = 1      # 1表示停止
+        self.up_ladder_flag =0
+#//////////////////////////////////////////////////////////
+        #校正變數
+        self.c_theta=-7
+        #上板校正的平移
+        self.c_speed=-500
+        # 下板校正的平移
+        self.c_yspeed =-500
+#///////////////////////////////////////////////////////////////
+        #角度速度初始化
+        self.theta = 0 + self.c_theta
+        self.speed = 500 + self.c_speed
+        self.yspeed =0 + self.c_yspeed
+
+        self.up_1 = 14
+        self.up_2 = 30
+
+        self.speed_1 = 100 + self.c_speed
+        self.speed_2 = 500 + self.c_speed
+
+        #角度設定 左旋
+        self.l_theta_1 = 1 + self.c_theta
+        self.l_theta_2 = 2 + self.c_theta
+        self.l_theta_3 = 3 + self.c_theta
+        self.l_theta_4 = 4 + self.c_theta
+        self.l_theta_5 = 5 + self.c_theta
+        #角度設定 右旋
+        self.r_theta_1 = -1 + self.c_theta
+        self.r_theta_2 = -2 + self.c_theta
+        self.r_theta_3 = -3 + self.c_theta
+        self.r_theta_4 = -4 + self.c_theta
+        self.r_theta_5 = -5 + self.c_theta
+
+        #旋轉差
+        self.feet_distance_1=3
+        self.feet_distance_2=6      
+        self.feet_distance_3=8
+        self.feet_distance_4=10
+
+        #3-0
+        self.climb_feet_distance = 0
+
 
 # 機器人上梯子前位置/距離校正
     def Ladder_revision(self):
@@ -180,7 +237,7 @@ class Ladder_send_distance():
 
 
 #上梯子磁區呼叫
-    def Up_ladder(self):
+    def Up_ladder_henry(self):
         if self.walk_flag == False and self.up_ladder_flag == True:
             send.sendBodySector(15)
             time.sleep(2)
@@ -191,7 +248,7 @@ class Ladder_send_distance():
 #/////////////////////////////////////////////////////////////////////////////////////
 
 # 色模找梯子
-    def Find_ladder(self):
+    def Find_ladder_henry(self):
         # 距離偵測值初始化
             # LL代表左腳左線
             # LR代表左腳右線
@@ -303,3 +360,8 @@ class Ladder_send_distance():
         print(' //////////////////')                                                              #作為分隔線
         print(' [L,W]: ', self.Ladder_L,self.Ladder_W,end = '\n\n ')
     #////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+    

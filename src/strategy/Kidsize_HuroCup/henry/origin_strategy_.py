@@ -7,6 +7,9 @@ import numpy as np
 from Python_API import Sendmessage
 from SR_API import Send_distance
 from SR_API_2 import Ladder_send_distance
+
+from SR_API_ladder  import Climb_ladder
+
 import time
 
 imgdata = [[None for high in range(240)]for width in range (320)]
@@ -17,6 +20,8 @@ if __name__ == '__main__':
         send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
         distance = Send_distance()#建立名稱,順便歸零
         Ladder = Ladder_send_distance()
+
+        Climb = Climb_ladder()
 
         send.is_start = False
         while not rospy.is_shutdown():
@@ -31,6 +36,9 @@ if __name__ == '__main__':
                 send.drawImageFunction(6,0,15,15,0,240,255,0,0)#lll的線                          #左邊界
                 send.drawImageFunction(7,0,300,300,0,240,255,0,0)#rrr的線                   #右邊界
 
+                send.drawImageFunction(9,0,0,320,Climb.eyeline_y,Climb.eyeline_y,255,255,255)   #眼睛的橫線
+                send.drawImageFunction(10,0,Climb.eyeline_x,Climb.eyeline_x,0,240,255,255,255)   #垂直線
+                
                 send.sendHeadMotor(1,2048,100)                                                                          #設定頭部水平位置
                 send.sendHeadMotor(2,1405,100)                                                                          #設定頭部垂直位置
 #==============================================================================================
@@ -130,16 +138,35 @@ if __name__ == '__main__':
 
                 elif Ladder.walk_flag == True and Ladder.up_ladder_flag == True:
                     if Ladder.Times ==1:
-                        Ladder.Find_ladder()                                                                                            #呼叫SR_API的find_board
+
+                        if Climb.read_ladder_p < Climb.ladder_n:
+                            Climb.find_up_ladder()
+                            Climb.rise_head()
+                            Climb.print_state()
+                        elif Climb.read_ladder_p == Climb.ladder_n:
+                            Climb.find_ladder_hight()
+                        else:
+                            send.sendHeadMotor(2,1300,100)#頭回到原位
+
+                        Ladder.Find_ladder_henry()  
+                        
+                        Climb.ladder_distance()
+                        Climb.find_up_ladder()
+                        Climb.rise_head()
+                        Climb.find_ladder_hight()
+                        Climb.robot_high_cal
+                        Climb.print_state
+
                         Ladder.Ladder_revision()
                         Ladder.Direction_Deviation()
 
                 elif Ladder.walk_flag == False and Ladder.up_ladder_flag == True:
-                        Ladder.Find_ladder_gap()
-                        Ladder.Up_ladder
+                        Ladder.Find_ladder_henry
 
-            if send.is_start == False:
+            elif send.is_start == False:
                 if Ladder.walk_flag == True:
+                    send.sendHeadMotor(2,1300,100)#頭回到原位
+
                     send.sendBodyAuto(200,0,0,0,1,0)
                     Ladder.walk_flag = False
                     Ladder.up_ladder_flag = False

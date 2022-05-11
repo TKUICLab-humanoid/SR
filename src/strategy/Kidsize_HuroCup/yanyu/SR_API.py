@@ -604,7 +604,7 @@ class Send_distance():
                     self.board_ture=1
                     break
         else:
-            ptint("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu")
+            print("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu")
             self.color_true_times = 0#無用
         
 
