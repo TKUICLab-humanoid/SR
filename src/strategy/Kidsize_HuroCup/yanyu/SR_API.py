@@ -1,4 +1,4 @@
-# 4/19
+# 5/15
 #!/usr/bin/env python
 #coding=utf-8
 import rospy
@@ -57,16 +57,16 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=0
-        self.lc_theta=0
+        self.rc_theta=2
+        self.lc_theta=2
         #上板校正的
-        self.c_speed=-200
+        self.c_speed=0
         #上板校正的平移
-        self.c_up_yspeed =-400
+        self.c_up_yspeed =-200
         #下板校正的
-        self.c_speed=-200
+        self.c_speed=0
         # 下板校正的平移
-        self.c_down_yspeed =-400
+        self.c_down_yspeed =-200
         #上板x
         self.up_x=8000
         #下板x
@@ -121,7 +121,7 @@ class Send_distance():
         self.space_dd=80
 
         #下板腳離板子差
-        self.down_bd_1=5
+        self.down_bd_1=1
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
@@ -160,50 +160,49 @@ class Send_distance():
                     break
 
         # self.return_distance(self.up_distance,self.layer_n)
-
         #左左腳距離 x=115
         for ll in range(self.knee,10,-1):#下往上掃
             # if send.Label_Model[320*ll+self.f_ll] == self.layer[self.layer_n]:
-            if send.Label_Model[320*ll+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-1)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-2)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-3)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-4)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-5)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-6)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-7)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-8)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-9)+self.f_ll] == self.layer[self.layer_n] and send.Label_Model[320*(ll-10)+self.f_ll] == self.layer[self.layer_n]:
+            if self.return_real_board(ll,self.f_ll,self.layer_n):
                 self.up_distance[0] = self.knee - ll
                 break
         #左右腳距離 x=150
         for lr in range(self.knee,10,-1):
             # if send.Label_Model[320*lr+self.f_lr] == self.layer[self.layer_n]:
-            if send.Label_Model[320*lr+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-1)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-2)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-3)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-4)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-5)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-6)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-7)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-8)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-9)+self.f_lr] == self.layer[self.layer_n] and send.Label_Model[320*(lr-10)+self.f_lr] == self.layer[self.layer_n]:
+            if self.return_real_board(lr,self.f_lr,self.layer_n):
                 self.up_distance[1] = self.knee - lr
                 break
         #右左腳距離 x=165
         for rl in range(self.knee,10,-1):
             # if send.Label_Model[320*rl+self.f_rl] == self.layer[self.layer_n]:
-            if send.Label_Model[320*rl+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-1)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-2)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-3)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-4)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-5)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-6)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-7)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-8)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-9)+self.f_rl] == self.layer[self.layer_n] and send.Label_Model[320*(rl-10)+self.f_rl] == self.layer[self.layer_n]:
+            if self.return_real_board(rl,self.f_rl,self.layer_n):
                 self.up_distance[2] = self.knee - rl
                 break
         #右右腳距離 x=200
         for rr in range(self.knee,10,-1):
             # if send.Label_Model[320*rr+self.f_rr] == self.layer[self.layer_n]:
-            if send.Label_Model[320*rr+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-1)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-2)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-3)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-4)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-5)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-6)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-7)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-8)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-9)+self.f_rr] == self.layer[self.layer_n] and send.Label_Model[320*(rr-10)+self.f_rr] == self.layer[self.layer_n]:
+            if self.return_real_board(rr,self.f_rr,self.layer_n):
                 self.up_distance[3] = self.knee - rr
                 break
-
+        
         if self.layer_n<=2:
             self.next_up_distance=[999,999,999,999]
             for ll_2 in range(ll,10,-1):     #找下下一層 從原本掃過得地方再往前掃
-                if send.Label_Model[320*ll_2+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-1)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-2)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-3)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-4)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-5)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-6)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-7)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-8)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-9)+self.f_ll] == self.layer[self.layer_n+1] and send.Label_Model[320*(ll_2-10)+self.f_ll] == self.layer[self.layer_n+1]:
+                if self.return_real_board(ll_2,self.f_ll,self.layer_n+1):
                     self.next_up_distance[0] = ll-ll_2
                     break
             for lr_2 in range(lr,10,-1):
-                if send.Label_Model[320*lr_2+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-1)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-2)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-3)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-4)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-5)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-6)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-7)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-8)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-9)+self.f_lr] == self.layer[self.layer_n+1] and send.Label_Model[320*(lr_2-10)+self.f_lr] == self.layer[self.layer_n+1]:
+                if self.return_real_board(lr_2,self.f_lr,self.layer_n+1):
                     self.next_up_distance[1] = lr-lr_2
                     break
             
             for rl_2 in range(rl,10,-1):
-                if send.Label_Model[320*rl_2+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-1)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-2)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-3)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-4)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-5)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-6)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-7)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-8)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-9)+self.f_rl] == self.layer[self.layer_n+1] and send.Label_Model[320*(rl_2-10)+self.f_rl] == self.layer[self.layer_n+1]:
+                if self.return_real_board(rl_2,self.f_rl,self.layer_n+1):
                     self.next_up_distance[2] = rl-rl_2
                     break
             
             for rr_2 in range(rr,10,-1):
-                if send.Label_Model[320*rr_2+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-1)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-2)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-3)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-4)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-5)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-6)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-7)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-8)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-9)+self.f_rr] == self.layer[self.layer_n+1] and send.Label_Model[320*(rr_2-10)+self.f_rr] == self.layer[self.layer_n+1]:
+                if self.return_real_board(rr_2,self.f_rr,self.layer_n+1):
                     self.next_up_distance[3] = rr-rr_2
                     break
         else:
@@ -232,27 +231,52 @@ class Send_distance():
 
         #左左腳距離  #找要下的層
         for ll in range(self.knee,10,-1):      
-            if send.Label_Model[320*ll+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-1)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-2)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-3)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-4)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-5)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-6)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-7)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-8)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-9)+self.f_ll] == self.layer[self.layer_n -1] and send.Label_Model[320*(ll-10)+self.f_ll] == self.layer[self.layer_n -1]:
+            if self.return_real_board(ll,self.f_ll,self.layer_n-1):
                 self.down_distance[0] = self.knee - ll
                 break
         #左右腳距離
         for lr in range(self.knee,10,-1):
-            if send.Label_Model[320*lr+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-1)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-2)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-3)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-4)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-5)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-6)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-7)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-8)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-9)+self.f_lr] ==  self.layer[self.layer_n -1] and send.Label_Model[320*(lr-10)+self.f_lr] ==  self.layer[self.layer_n -1]:
+            if self.return_real_board(lr,self.f_lr,self.layer_n-1):
                 self.down_distance[1] = self.knee - lr
                 break
 
         #右左腳距離
         for rl in range(self.knee,10,-1):
-            if send.Label_Model[320*rl+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-1)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-2)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-3)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-4)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-5)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-6)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-7)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-8)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-9)+self.f_rl] ==  self.layer[self.layer_n-1] and send.Label_Model[320*(rl-10)+self.f_rl] ==  self.layer[self.layer_n-1]:
+            if self.return_real_board(rl,self.f_rl,self.layer_n-1):
                 self.down_distance[2] = self.knee - rl
                 break
 
         #右右腳距離
         for rr in range(self.knee,10,-1):
-            if send.Label_Model[320*rr+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-1)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-2)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-3)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-4)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-5)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-6)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-7)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-8)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-9)+self.f_rr] == self.layer[self.layer_n-1] and send.Label_Model[320*(rr-10)+self.f_rr] == self.layer[self.layer_n-1]:
+            if self.return_real_board(rr,self.f_rr,self.layer_n-1):
                 self.down_distance[3] = self.knee - rr
                 break
         
+        #找下一板可踩空間
+        if self.layer_n>=2:
+            for ll_2 in range(ll,10,-1):     
+                if self.return_real_board(ll_2,self.f_ll,self.layer_n-2):
+                    self.next_down_distance[0] = ll-ll_2
+                    break
+            for lr_2 in range(lr,10,-1):
+                if self.return_real_board(lr_2,self.f_lr,self.layer_n-2):
+                    self.next_down_distance[1] = lr - lr_2
+                    break
+            
+            for rl_2 in range(rl,10,-1):
+                if self.return_real_board(rl_2,self.f_rl,self.layer_n-2):
+                    self.next_down_distance[2] = rl - rl_2
+                    break
+            
+            for rr_2 in range(rr,10,-1):
+                if self.return_real_board(rr_2,self.f_rr,self.layer_n-2):
+                    self.next_down_distance[3] = rr - rr_2
+                    break
+        else:
+            self.next_down_distance=[999,999,999,999]
+
+
+
         # #找下一板可踩空間
         # if self.layer_n>=2:
         #     for ll_2 in range(ll,5,-1):     
@@ -273,8 +297,8 @@ class Send_distance():
         #         if send.Label_Model[320*rr_2+self.f_rr] == self.layer[self.layer_n-2]:
         #             self.next_down_distance[3] = rr - rr_2
         #             break
-        else:
-            self.next_down_distance=[999,999,999,999]
+        # else:
+        #     self.next_down_distance=[999,999,999,999]
 
     def parallel_board_setup(self):#上板的角度調整
         # print('parallel_board_setup func')
@@ -295,7 +319,7 @@ class Send_distance():
             #self.find_real_board_model(self.color_model[self.layer_n])
             #self.up_horizontal_2=send.color_mask_subject_X[self.color_model[self.layer_n]][self.board_model]
             # 上板直角
-            if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (20<self.up_distance[0]<100 or 20<self.up_distance[1]<100 or 20<self.up_distance[2]<100 or 20<self.up_distance[3]<100):
+            if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]<100 or self.up_distance[1]<100 or self.up_distance[2]<100 or self.up_distance[3]<100):
                 #print("90")
                 self.up_board_90()
                 
@@ -306,22 +330,18 @@ class Send_distance():
                 self.no_up_board()
 
             elif(self.up_distance[0]<=self.up_bd_2 and self.up_distance[3]<=self.up_bd_2):#30
-                #print("1111111111111111111111111111111")
                 self.speed=self.speed_1
                 self.yspeed = self.c_up_yspeed
                 self.up_theta_func()
             elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
-                #print("2222222222222222222222222222222")
                 self.speed=self.speed_2
                 self.yspeed = self.c_up_yspeed
                 self.up_theta_func()
             elif(self.up_distance[1]<self.up_bd_4) or (self.up_distance[2]<self.up_bd_4):
-                #print("333333333333333333333333333")
                 self.speed=self.speed_3
                 self.yspeed = self.c_up_yspeed
                 self.up_theta_func()
             else:
-                #print("44444444444444444444444444444444")
                 self.speed=self.speed_5
                 self.yspeed = self.c_up_yspeed
                 self.up_theta_func()
@@ -339,40 +359,6 @@ class Send_distance():
                     self.speed = -100+self.c_speed
                     self.yspeed = self.yspeed
                     self.up_theta_func()
-
-    
-    # def down_parallel_board_setup(self): #下板角度調整
-
-    #     if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.down_distance[0]>40 or self.down_distance[1]>40 or self.down_distance[2]>40 or self.down_distance[3]>40):
-    #         self.down_board_90()
-    #     # print('down_parallel_board_setup func')
-    #     if self.down_distance[0] < self.down_bd_2 or self.down_distance[3] < self.down_bd_2:#距離在60的時候
-    #         self.speed = self.down_speed_1
-    #         self.yspeed = self.c_down_yspeed
-    #         self.down_theta_func()
-
-    #     elif self.down_distance[0] <=self.down_bd_3 or self.down_distance[3] <= self.down_bd_3:#距離在60的時候
-    #         self.speed = self.down_speed_2
-    #         self.yspeed = self.c_down_yspeed
-    #         self.down_theta_func()
-
-    #     elif self.down_distance[0] > self.down_bd_4 or self.down_distance[3] > self.down_bd_4:#距離在大於60的時候
-    #         self.speed = self.down_speed_3
-    #         self.yspeed = self.c_down_yspeed
-    #         self.down_theta_func()
-
-    #     if self.layer_n != 1 and self.next_down_distance[0] < self.space_nud and self.down_distance[0] < self.space_ud and self.down_distance[1] < self.space_ud:
-    #         # print('self.next_up_distance[0] = ',self.next_up_distance[0])
-    #         # print('space not enoughhhhhhhhhhh')
-    #         if self.yspeed==self.c_down_yspeed:
-    #             self.speed = -100+self.c_speed
-    #             self.yspeed = -1000+self.yspeed
-    #             self.up_theta_func()
-
-    #         else:
-    #             self.speed = -100+self.c_speed
-    #             self.yspeed = self.yspeed
-    #             self.up_theta_func()
 
     def down_parallel_board_setup(self): #下板角度調整       
         # 下板直角
@@ -398,7 +384,7 @@ class Send_distance():
                 if self.layer_n == 3:
                     self.speed = self.c_speed
                     self.yspeed = self.c_down_yspeed 
-                    self.theta = -3 +self.rc_theta
+                    self.theta = -5 +self.rc_theta
                 else:
                     self.speed = -100+self.c_speed
                     self.yspeed = -800+self.c_down_yspeed 
@@ -434,7 +420,7 @@ class Send_distance():
                 send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 time.sleep(5)
                 send.sendBodySector(29)
-                time.sleep(5)
+                time.sleep(3)
                             
         else:
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
@@ -452,31 +438,20 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(3)
+                # if self.layer_n == 1:
+                #     send.sendBodySector(1)
+                # else:
                 #send.sendBodySector(1)
+                time.sleep(2)
                 self.stop_flag = 1
                 self.up_board_flag = 1
                 self.next_board()
                 self.down_distance = [999,999,999,999]
                 self.next_down_distance = [999,999,999,999]
-                # send.sendBodyAuto(self.down_x,0,0,0,2,0)
+                send.sendBodyAuto(self.down_x,0,0,0,2,0)
                 time.sleep(5)
                 send.sendBodySector(29)
-                time.sleep(5)
-        # elif self.layer_n != 1 and self.next_down_distance[0] < self.space_ndd and self.down_distance[0] < self.space_dd and self.down_distance[1] < self.space_dd:#距離不夠
-        #     print('self.next_down_distance[0] = ',self.next_down_distance[0])
-        #     # print('space not enoughhhhhhh')
-        #     self.speed = -100+self.c_speed
-        #     self.yspeed =self.c_down_yspeed
-        #     self.theta = -5
-        #     send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)#之後可能要變成變數
-            
-        # elif (self.f_ll-self.point_x)*(self.f_rr-self.point_x)<0:#90度
-        #     # print('aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')
-        #     self.speed = -100+self.c_speed
-        #     self.yspeed = self.c_down_yspeed
-        #     self.theta = -5
-        #     send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)#之後可能要變成變數
-            
+                time.sleep(3)
         else:
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
 
@@ -549,20 +524,18 @@ class Send_distance():
         if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
             self.speed=self.c_speed
             self.yspeed=-800+self.c_up_yspeed
-            self.theta=2 + self.lc_theta
-            #self.theta=0 + self.lc_theta   #為什麼這邊是0
+            self.theta=0 + self.lc_theta   #為什麼這邊是0
             #print("move  right 90")
         elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
             self.speed=self.c_speed
             self.yspeed=800+self.c_up_yspeed
-            self.theta=-2 + self.rc_theta
-            #self.theta=0 + self.rc_theta   #為什麼這邊是0
+            self.theta=0 + self.rc_theta   #為什麼這邊是0
             #print("move  left 90") 
 
     def down_board_90(self): #下板90度狀況
         #self.find_real_board_model(self.color_model[self.layer_n])
-        self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][self.board_model]
-        self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][self.board_model]
+        self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][self.color_loc]
+        self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][self.color_loc]
         if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
         #if((self.m_xmax-self.point_x>self.point_x-self.m_xmin) or (self.up_distance[0]-self.up_distance[3])>self.up_bd_2):
         # if self.point_x<=160:
@@ -611,7 +584,6 @@ class Send_distance():
                 else:
                     self.board_ture=0
         else:
-            #print("uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu")
             self.color_true_times = 0#無用
         
 
@@ -675,23 +647,16 @@ class Send_distance():
         else:
             print('walk forward')
 
-    def return_distance(self,array,layer_n):
-        foot_array=[self.f_ll,self.f_lr,self.f_rl,self.f_rr]
-        distance_true=0
-        for f_xx in range (4):
-            for line in range(self.knee,10,-1):#下往上掃
-                if send.Label_Model[320*line+foot_array[f_xx]] == self.layer[layer_n]:
-                    distance_true=1
-                    for i in range(0,10):
-                        distance_true = distance_ture and (send.Label_Model[320*(line-i)+foot_array[f_xx]] == self.layer[layer_n])
-                        if distance_true==0:
-                            break
-                # if distance_true==1:
-                #     array[f_xx] = self.knee - line
-                #     break
-                else:
-                    array[f_xx] = 999
-
+# ////////////////只針對10個點拿出來//////////////////   
+    def return_real_board(self,y,x,layer):
+        real_distance_flag=0
+        real_distance_flag=send.Label_Model[320*y+x] == self.layer[layer]
+        if real_distance_flag==1:
+            for i in range(0,10):
+                real_distance_flag=real_distance_flag and send.Label_Model[320*(y-i)+x] == self.layer[layer]
+                if real_distance_flag==0:
+                    break
+        return real_distance_flag
             
 
 
@@ -786,7 +751,7 @@ class Send_distance():
                     print("move  left 90")
 
             if self.layer_n != 1 and self.next_down_distance[0] < self.space_ndd and self.down_distance[0] < self.space_dd and self.down_distance[1] < self.space_dd:
-                if self.yspeed==self.c_down_yspeed or self.speed == -100+self.c_speed:#沒進90度
+                if self.yspeed==self.c_down_yspeed:
                     if self.layer_n == 3:
                         print("空間不夠,沒進90 : 右旋")
                     else:
