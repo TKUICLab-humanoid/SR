@@ -57,16 +57,16 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=2
-        self.lc_theta=2
+        self.rc_theta=3
+        self.lc_theta=3
         #上板校正的
-        self.c_speed=0
+        self.c_speed=-200
         #上板校正的平移
-        self.c_up_yspeed =-200
+        self.c_up_yspeed =100
         #下板校正的
         self.c_speed=0
         # 下板校正的平移
-        self.c_down_yspeed =-200
+        self.c_down_yspeed =100
         #上板x
         self.up_x=8000
         #下板x
@@ -103,7 +103,7 @@ class Send_distance():
         self.down_speed_3=400+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=8                      #小白 6  小黑 3
+        self.up_bd_1=9                      #小白 6  小黑 3
         self.up_bd_2=15
         self.up_bd_3=60
         self.up_bd_4=100
