@@ -57,16 +57,16 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=3
-        self.lc_theta=3
+        self.rc_theta=0
+        self.lc_theta=0
         #上板校正的
-        self.c_speed=-200
+        self.c_speed=-300
         #上板校正的平移
-        self.c_up_yspeed =100
+        self.c_up_yspeed =0
         #下板校正的
-        self.c_speed=0
+        self.c_speed=-300
         # 下板校正的平移
-        self.c_down_yspeed =100
+        self.c_down_yspeed =0
         #上板x
         self.up_x=8000
         #下板x
@@ -103,14 +103,14 @@ class Send_distance():
         self.down_speed_3=400+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=9                      #小白 6  小黑 3
+        self.up_bd_1=8                      #小白 6  小黑 3
         self.up_bd_2=15
         self.up_bd_3=60
         self.up_bd_4=100
         
         # 離板太近距離
         self.back_dis=6                     #小白 4  小黑 1
-        self.back_speed=-300+self.c_speed
+        self.back_speed=-200+self.c_speed
 
         # 空間不夠距離
         #上板
@@ -306,10 +306,19 @@ class Send_distance():
         # [0][1][2][3]都不能<0
         if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
             if self.up_distance[3]-self.up_distance[0] > 3 or self.up_distance[0]-self.up_distance[3] >3:
-                # print("back back back back back back back back")
+                print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.yspeed = self.c_up_yspeed
                 self.up_theta_func()
+                
+            elif ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.up_distance[0]-self.up_distance[3])>30:
+                print("back 90")
+                self.up_board_90()
+                self.speed=self.back_speed
+
+                
+
+            
             else:
                 self.speed=self.speed_1
                 self.yspeed = self.c_up_yspeed
@@ -523,12 +532,12 @@ class Send_distance():
         self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][self.color_loc]
         if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
             self.speed=self.c_speed
-            self.yspeed=-800+self.c_up_yspeed
+            self.yspeed=-900+self.c_up_yspeed
             self.theta=0 + self.lc_theta   #為什麼這邊是0
             #print("move  right 90")
         elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
             self.speed=self.c_speed
-            self.yspeed=800+self.c_up_yspeed
+            self.yspeed=900+self.c_up_yspeed
             self.theta=0 + self.rc_theta   #為什麼這邊是0
             #print("move  left 90") 
 
