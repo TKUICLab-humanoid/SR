@@ -25,8 +25,8 @@ if __name__ == '__main__':
                 send.drawImageFunction(5,0,188,188,0,240,255,0,0)#rl的線
                 # send.drawImageFunction(6,0,182,182,0,240,255,0,0)#rm的線
                 send.drawImageFunction(7,0,240,240,0,240,255,0,0)#rr的線
-                send.sendHeadMotor(1,2048,100)#水平
-                send.sendHeadMotor(2,1375,100)#垂直
+                send.sendHeadMotor(1,2014,100)#水平
+                send.sendHeadMotor(2,1367,100)#垂直
                 start=time.time()
                 #機器人暫停且不是在做上板
                 if distance.stop_flag == 1 and distance.up_board_flag == 0:
@@ -66,8 +66,8 @@ if __name__ == '__main__':
                     distance.stop_flag = 1
                     time.sleep(0.5)
                     send.sendBodySector(29)
-                send.sendHeadMotor(1,2048,100)#水平
-                send.sendHeadMotor(2,1375,100)#垂直
+                send.sendHeadMotor(1,2014,100)#水平
+                send.sendHeadMotor(2,1369,100)#垂直
                 time.sleep(0.5)
             r.sleep()    
                     
