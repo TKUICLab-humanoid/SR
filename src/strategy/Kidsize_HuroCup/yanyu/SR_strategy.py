@@ -62,8 +62,8 @@ if __name__ == '__main__':
                         send.sendBodyAuto(0,0,0,0,1,0)
                     send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
                     distance = Send_distance()#建立名稱,順便歸零
-                    distance.layer_n= 1
-                    distance.stop_flag = 1
+                    # distance.layer_n= 1
+                    # distance.stop_flag = 1
                     time.sleep(0.5)
                     send.sendBodySector(29)
                 send.sendHeadMotor(1,2014,100)#水平
