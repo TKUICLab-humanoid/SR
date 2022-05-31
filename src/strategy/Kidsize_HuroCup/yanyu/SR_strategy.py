@@ -18,14 +18,15 @@ if __name__ == '__main__':
             # if send.Web == True:
             if send.is_start ==True:
                 distance.print_state()
-                send.drawImageFunction(1,0,0,320,215,215,255,0,0)#膝蓋的橫線
-                send.drawImageFunction(2,0,150,150,0,240,255,0,0)#lr的線
+                send.drawImageFunction(1,0,0,320,distance.knee,distance.knee,255,0,0)#膝蓋的橫線
+                send.drawImageFunction(2,0,distance.f_lr,distance.f_lr,0,240,255,0,0)#lr的線
                 # send.drawImageFunction(3,0,132,132,0,240,255,0,0)#lm的線
-                send.drawImageFunction(4,0,98,98,0,240,255,0,0)#ll的線
-                send.drawImageFunction(5,0,188,188,0,240,255,0,0)#rl的線
+                send.drawImageFunction(4,0,distance.f_ll,distance.f_ll,0,240,255,0,0)#ll的線
+                send.drawImageFunction(5,0,distance.f_rl,distance.f_rl,0,240,255,0,0)#rl的線
                 # send.drawImageFunction(6,0,182,182,0,240,255,0,0)#rm的線
-                send.drawImageFunction(7,0,240,240,0,240,255,0,0)#rr的線
+                send.drawImageFunction(7,0,distance.f_rr,distance.f_rr,0,240,255,0,0)#rr的線
                 send.sendHeadMotor(1,2014,100)#水平
+                #send.sendHeadMotor(2,1402,100)#垂直
                 send.sendHeadMotor(2,1367,100)#垂直
                 start=time.time()
                 #機器人暫停且不是在做上板

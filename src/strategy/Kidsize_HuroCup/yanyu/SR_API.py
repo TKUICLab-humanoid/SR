@@ -20,9 +20,9 @@ class Send_distance():
         #腳掌標準線x值
         self.knee=215
         self.f_ll=98
-        self.f_lr=150
-        self.f_rl=188
-        self.f_rr=240
+        self.f_lr=self.f_ll+52
+        self.f_rl=165
+        self.f_rr=self.f_rl+52
         #距離矩陣初始化
         self.up_distance = [999,999,999,999]        #要上的層
         self.down_distance = [999,999,999,999]              #要下的層
@@ -57,8 +57,8 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=0
-        self.lc_theta=0
+        self.rc_theta=2
+        self.lc_theta=2
         #前進量校正
         self.c_speed=-400
         #平移校正
@@ -301,21 +301,49 @@ class Send_distance():
         #條件要調整！！！
         # [0][1][2][3]都不能<0
         if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
-            if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.up_distance[0]-self.up_distance[3])>30:
-                print("back 90")
-                self.up_board_90()
-                self.speed=self.back_speed
+            if self.up_distance[3]-self.up_distance[0] >15:
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                self.speed=self.c_speed
+                self.yspeed = -500
+                self.theta = self.rc_theta
+
+            elif self.up_distance[0]-self.up_distance[3] >15:
+                print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+                self.speed=self.c_speed
+                self.yspeed = 500
+                self.theta = self.rc_theta
 
             elif self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
-                #print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
+                print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.yspeed = self.c_yspeed
                 self.up_theta_func()
-            
+
+            elif ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0:
+                print("back 90")
+                self.down_board_90()
+                self.speed=self.back_speed
+           
             else:
+                print("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
                 self.speed=self.speed_1
                 self.yspeed = self.c_yspeed
                 self.up_theta_func()
+            # if self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
+            #     #print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
+            #     self.speed=self.back_speed
+            #     self.yspeed = self.c_yspeed
+            #     self.up_theta_func()
+
+            # elif ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0:
+            #     print("back 90")
+            #     self.up_board_90()
+            #     self.speed=self.back_speed
+            
+            # else:
+            #     self.speed=self.speed_1
+            #     self.yspeed = self.c_yspeed
+            #     self.up_theta_func()
         else :
             #self.up_mask=send.color_mask_subject_cnts[self.color_model[self.layer_n]]
             #self.find_real_board_model(self.color_model[self.layer_n])
@@ -365,16 +393,28 @@ class Send_distance():
     def down_parallel_board_setup(self): #下板角度調整       
         # 下板直角
         if(self.down_distance[0]<=self.back_dis or self.down_distance[1]<=self.back_dis or self.down_distance[2]<=self.back_dis or self.down_distance[3]<=self.back_dis): 
-            if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.down_distance[0]-self.down_distance[3])>30:
-                print("back 90")
-                self.down_board_90()
-                self.speed=self.back_speed
+            if self.down_distance[3]-self.down_distance[0] >15:
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                self.speed=self.c_speed
+                self.yspeed = -500
+                self.theta = self.rc_theta
 
-            elif self.down_distance[3]-self.down_distance[0] >5 or self.down_distance[0]-self.down_distance[3] >5:
-                print("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+            elif self.down_distance[0]-self.down_distance[3] >15:
+                print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+                self.speed=self.c_speed
+                self.yspeed = 500
+                self.theta = self.rc_theta
+
+            elif self.down_distance[3]-self.down_distance[0] > 5 or self.down_distance[0]-self.down_distance[3] >5:
+                print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.yspeed = self.c_yspeed
                 self.up_theta_func()
+
+            elif ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0:
+                print("back 90")
+                self.down_board_90()
+                self.speed=self.back_speed
            
             else:
                 print("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
@@ -436,6 +476,7 @@ class Send_distance():
                 self.up_board_flag=1
                 self.next_board()
                 self.up_distance = [999,999,999,999]
+                self.next_up_distance = [999,999,999,999]
                 send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 time.sleep(5)
                 send.sendBodySector(29)
@@ -449,7 +490,6 @@ class Send_distance():
     
     def down_board(self): #要下板了
         # print('down_board_func')
-        self.down_parallel_board_setup()
         if self.down_distance[0] < self.down_bd_1 and self.down_distance[1] < self.down_bd_1 and self.down_distance[2] < self.down_bd_1 and self.down_distance[3] < self.down_bd_1 :
             if self.stop_flag == 0 and self.up_board_flag == 0:
                 print('ready upboard')
@@ -473,6 +513,7 @@ class Send_distance():
                 send.sendBodySector(29)
                 time.sleep(3)
         else:
+            self.down_parallel_board_setup()
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
 
 
@@ -544,12 +585,12 @@ class Send_distance():
         if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
             self.speed=self.c_speed
             self.yspeed=-900+self.c_yspeed
-            self.theta=0 + self.lc_theta   #為什麼這邊是0
+            self.theta= self.lc_theta   #為什麼這邊是0
             #print("move  right 90")
         elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
             self.speed=self.c_speed
             self.yspeed=900+self.c_yspeed
-            self.theta=0 + self.rc_theta   #為什麼這邊是0
+            self.theta=self.rc_theta   #為什麼這邊是0
             #print("move  left 90") 
 
     def down_board_90(self): #下板90度狀況
@@ -658,7 +699,7 @@ class Send_distance():
         elif(self.down_feet_distance)>self.feet_distance_1:
             self.theta = self.l_theta_1
         else:
-            self.theta = 0
+            self.theta = 0+self.lc_theta
 
         if(self.down_feet_distance>self.feet_distance_1):
             print('turn left')
@@ -768,13 +809,14 @@ class Send_distance():
             print("next_down_distance           : ",self.next_down_distance)
             print('next_down_distance[0]        : ',self.next_down_distance[0])
             if(self.down_distance[0]<=self.back_dis or self.down_distance[1]<=self.back_dis or self.down_distance[2]<=self.back_dis or self.down_distance[3]<=self.back_dis):
-                if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.down_distance[0]-self.down_distance[3])>30:
-                    print("back 90")
-                elif self.down_distance[3]-self.down_distance[0] >5 or self.down_distance[0]-self.down_distance[3] >5:
-                    print("back back back back back back back back")
+                pass
+                #     if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.down_distance[0]-self.down_distance[3])>30:
+                #         print("back 90")
+                #     elif self.down_distance[3]-self.down_distance[0] >5 or self.down_distance[0]-self.down_distance[3] >5:
+                #         print("back back back back back back back back")
 
-                else:
-                    print("有進back back,但角度可以繼續直走")
+                #     else:
+                #         print("有進back back,但角度可以繼續直走")
             else:
                 if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.down_distance[0]>40 or self.down_distance[1]>40 or self.down_distance[2]>40 or self.down_distance[3]>40):
                     if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
