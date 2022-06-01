@@ -52,17 +52,17 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 1       #現在站的層,從1開始
+        self.layer_n= 3       #現在站的層,從1開始
         self.layer = [8,32,2,4]     #用在labelMode
-        self.direction = 0      #0 上板 1 下板
+        self.direction = 1      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=2
-        self.lc_theta=2
+        self.rc_theta=3 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=3 # 哭啊
         #前進量校正
-        self.c_speed=-400
+        self.c_speed=-200
         #平移校正
-        self.c_yspeed =-400
+        self.c_yspeed =-200
         #上板x
         self.up_x=8000
         #下板x
@@ -117,7 +117,7 @@ class Send_distance():
         self.space_dd=80
 
         #下板腳離板子差
-        self.down_bd_1=1
+        self.down_bd_1=2
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
@@ -301,19 +301,31 @@ class Send_distance():
         #條件要調整！！！
         # [0][1][2][3]都不能<0
         if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
-            if self.up_distance[3]-self.up_distance[0] >15:
+            if abs(self.up_distance[3]-self.up_distance[0]) >15:
                 print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                self.speed=self.c_speed
+                self.yspeed = self.c_yspeed#-500
+                self.theta = self.r_theta_3#rc_theta
+
+            elif abs(self.up_distance[0]-self.up_distance[3]) >15:
+                print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+                self.speed=self.c_speed
+                self.yspeed = self.c_yspeed#500
+                self.theta = self.l_theta_3#rc_theta
+            
+            elif abs(self.up_distance[3]-self.up_distance[0]) >50:
+                print("maxrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
                 self.speed=self.c_speed
                 self.yspeed = -500
                 self.theta = self.rc_theta
 
-            elif self.up_distance[0]-self.up_distance[3] >15:
-                print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+            elif abs(self.up_distance[0]-self.up_distance[3]) >50:
+                print("maxllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
                 self.speed=self.c_speed
                 self.yspeed = 500
                 self.theta = self.rc_theta
 
-            elif self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
+            elif abs(self.up_distance[3]-self.up_distance[0]) > 5 or abs(self.up_distance[0]-self.up_distance[3]) >5:
                 print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.yspeed = self.c_yspeed
@@ -393,19 +405,58 @@ class Send_distance():
     def down_parallel_board_setup(self): #下板角度調整       
         # 下板直角
         if(self.down_distance[0]<=self.back_dis or self.down_distance[1]<=self.back_dis or self.down_distance[2]<=self.back_dis or self.down_distance[3]<=self.back_dis): 
-            if self.down_distance[3]-self.down_distance[0] >15:
-                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+            
+            # for i in range(self.f_ll,self.f_ll-10,-1):
+            #     if send.Label_Model[320*200+i] != self.layer[self.layer_n]:
+            #         for i in range(self.f_rr,self.f_rr+10,1):
+            #             if send.Label_Model[320*200+i] != self.layer[self.layer_n]:
+            #                 print("back1111111111")
+            #                 self.speed=self.back_speed
+            #                 self.yspeed = self.c_yspeed
+            #                 self.theta = self.rc_theta
+            #             else:
+            #                 print("right move")
+            #                 self.speed=self.c_speed
+            #                 self.yspeed = -1000
+            #                 self.theta = self.rc_theta
+            # for i in range(self.f_rr,self.f_rr+10,1):
+            #     if send.Label_Model[320*200+i] != self.layer[self.layer_n]:
+            #         for i in range(self.f_ll,self.f_ll-10,-1):
+            #             if send.Label_Model[320*200+i] != self.layer[self.layer_n]:
+            #                 print("back2222222222222")
+            #                 self.speed=self.back_speed
+            #                 self.yspeed = self.c_yspeed
+            #                 self.theta = self.rc_theta
+            #             else:
+            #                 print("left move")
+            #                 self.speed=self.c_speed
+            #                 self.yspeed = 1000
+            #                 self.theta = self.rc_theta
+                    
+            if abs(self.down_distance[3]-self.down_distance[0]) >15:
+                print("llllllllllllllllllllllllllllllllllllllllllll")
+                self.speed=self.c_speed
+                self.yspeed = self.c_yspeed#-500
+                self.theta = self.l_theta_3#rc_theta
+            elif abs(self.down_distance[0]-self.down_distance[3]) >15:
+                print("rrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
+                self.speed=self.c_speed
+                self.yspeed = self.c_yspeed#500
+                self.theta = self.r_theta_3#rc_theta
+                   
+            elif abs(self.down_distance[3]-self.down_distance[0]) >80:
+                print("maxrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr")
                 self.speed=self.c_speed
                 self.yspeed = -500
                 self.theta = self.rc_theta
-
-            elif self.down_distance[0]-self.down_distance[3] >15:
-                print("llllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
+            
+            elif abs(self.down_distance[0]-self.down_distance[3]) >80:
+                print("maxllllllllllllllllllllllllllllllllllllllllllllllllllllllllllll")
                 self.speed=self.c_speed
                 self.yspeed = 500
                 self.theta = self.rc_theta
 
-            elif self.down_distance[3]-self.down_distance[0] > 5 or self.down_distance[0]-self.down_distance[3] >5:
+            elif abs(self.down_distance[3]-self.down_distance[0]) > 5 or abs(self.down_distance[0]-self.down_distance[3]) >5:
                 print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.yspeed = self.c_yspeed
@@ -497,12 +548,12 @@ class Send_distance():
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(3)
+                time.sleep(4)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(1)
                 # else:
-                send.sendBodySector(1)
-                time.sleep(2)
+                send.sendBodySector(47)
+                time.sleep(3)
                 self.stop_flag = 1
                 self.up_board_flag = 1
                 self.next_board()
