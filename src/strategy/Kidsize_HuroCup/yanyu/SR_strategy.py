@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 # send.drawImageFunction(6,0,182,182,0,240,255,0,0)#rm的線
                 send.drawImageFunction(7,0,distance.f_rr,distance.f_rr,0,240,255,0,0)#rr的線
                 send.sendHeadMotor(1,2014,100)#水平
-                #send.sendHeadMotor(2,1402,100)#垂直
+                # send.sendHeadMotor(2,1402,100)#垂直
                 send.sendHeadMotor(2,1367,100)#垂直
                 start=time.time()
                 #機器人暫停且不是在做上板
