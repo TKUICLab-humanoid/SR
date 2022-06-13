@@ -27,7 +27,7 @@ if __name__ == '__main__':
                 send.drawImageFunction(4,0,188,188,0,240,255,0,0)#rl的線
                 send.drawImageFunction(5,0,240,240,0,240,255,0,0)#rr的線
                 send.sendHeadMotor(1,2048,100)#水平
-                send.sendHeadMotor(2,1375,100)#垂直
+                send.sendHeadMotor(2,1425,100)#垂直
 
                 if climb.stop_flag == 1 and climb.up_ladder_flag == 0:
                     send.sendBodyAuto(500,0,0,0,1,0)
