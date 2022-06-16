@@ -138,10 +138,10 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(1)
+                send.sendBodySector(15)
                 time.sleep(30)
-                send.sendBodySector(2)
-                time.sleep(30)
+                # send.sendBodySector(2)
+                # time.sleep(30)
                 self.climb_distance = [999,999,999,999]                 
         else:
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)

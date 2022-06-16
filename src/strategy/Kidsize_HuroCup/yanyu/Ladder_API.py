@@ -38,22 +38,22 @@ class Send_Climb():
         self.up_ladder_flag =0
 #//////////////////////////////////////////////////////////
         #校正變數
-        self.c_theta=0
+        self.c_theta=-1
         #上板校正的平移
-        self.c_speed=-300
+        self.c_speed=-600
         # 下板校正的平移
-        self.c_yspeed =0
+        self.c_yspeed =-400
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
         self.speed = 500 + self.c_speed
         self.yspeed =0 + self.c_yspeed
 
-        self.up_1 = 14
-        self.up_2 = 30
+        self.up_1 = 28
+        self.up_2 = 35
 
-        self.speed_1 = 100 + self.c_speed
-        self.speed_2 = 500 + self.c_speed
+        self.speed_1 = 200 + self.c_speed
+        self.speed_2 = 600 + self.c_speed
 
         #角度設定 左旋
         self.l_theta_1 = 1 + self.c_theta
@@ -97,17 +97,17 @@ class Send_Climb():
                 break
         #左右腳距離 x=150
         for lr in range(self.knee,5,-1):
-            if send.Label_Model[320*lr+self.f_lr] == self.layer[0] and send.Label_Model[320*(lr-5)+self.f_lr] == self.layer[0]:
+            if send.Label_Model[320*ll+self.f_ll] == self.layer[0] and send.Label_Model[320*(lr-5)+self.f_lr] == self.layer[0]:
                 self.climb_distance[1] = self.knee - lr
                 break
         #右左腳距離 x=165
         for rl in range(self.knee,5,-1):
-            if send.Label_Model[320*rl+self.f_rl] == self.layer[0] and send.Label_Model[320*(rl-5)+self.f_rl] == self.layer[0]:
+            if send.Label_Model[320*ll+self.f_ll] == self.layer[0] and send.Label_Model[320*(rl-5)+self.f_rl] == self.layer[0]:
                 self.climb_distance[2] = self.knee - rl
                 break
         #右右腳距離 x=200
         for rr in range(self.knee,5,-1):
-            if send.Label_Model[320*rr+self.f_rr] == self.layer[0] and send.Label_Model[320*(rr-5)+self.f_rr] == self.layer[0]:
+            if send.Label_Model[320*ll+self.f_ll] == self.layer[0] and send.Label_Model[320*(rr-5)+self.f_rr] == self.layer[0]:
                 self.climb_distance[3] = self.knee - rr
                 break
 
@@ -127,7 +127,7 @@ class Send_Climb():
 
     
     def up_ladder(self): #要上梯了
-        self.parallel_setup()
+        print('climb_distance',self.climb_distance[1])
         if ((self.climb_distance[1]<self.up_1) and (self.climb_distance[2]<self.up_1)) and (abs(self.climb_distance[3]-self.climb_distance[0])<self.feet_distance_1) :
             if self.stop_flag==0 and self.up_ladder_flag==0:
                 print('ready upladder')
@@ -138,12 +138,13 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(1)
+                send.sendBodySector(15)
                 time.sleep(30)
-                send.sendBodySector(2)
-                time.sleep(30)
+                # send.sendBodySector(2)
+                # time.sleep(30)
                 self.climb_distance = [999,999,999,999]                 
         else:
+            self.parallel_setup()
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
 
     def theta_func(self):
