@@ -23,6 +23,8 @@ class Send_distance():
         self.f_lr=self.f_ll+52
         self.f_rl=165
         self.f_rr=self.f_rl+52
+        self.head_Horizontal = 2014
+        self.head_Vertical = 1425
         #距離矩陣初始化
         self.up_distance = [999,999,999,999]        #要上的層
         self.down_distance = [999,999,999,999]              #要下的層
@@ -60,13 +62,13 @@ class Send_distance():
         self.rc_theta=-2 #分左分右然後給一樣  ？？？？？
         self.lc_theta=-2 # 哭啊
         #前進量校正
-        self.c_speed=-300
+        self.c_speed=-400
         #平移校正
-        self.c_yspeed =-200
+        self.c_yspeed =-400
         #上板x
-        self.up_x=7000
+        self.up_x=8000
         #下板x
-        self.down_x=7000
+        self.down_x=7800
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -415,13 +417,13 @@ class Send_distance():
                 if self.down_distance.index(max(self.down_distance)) == 3 :
                     print("index : ",self.down_distance.index(min(self.down_distance)))
                     print("back right right right")
-                    self.speed=self.down_speed_1
+                    self.speed=self.back_speed
                     self.yspeed = -800+self.c_yspeed
                     self.up_theta_func()
                 elif self.down_distance.index(max(self.down_distance)) == 0 :
                     print("index : ",self.down_distance.index(min(self.down_distance)))
                     print("back left left left")
-                    self.speed=self.down_speed_1
+                    self.speed=self.back_speed
                     self.yspeed = 1200+self.c_yspeed
                     self.up_theta_func()
             else:
@@ -475,11 +477,14 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
-                send.sendBodySector(50)
-                # if self.layer_n == 1:
-                #     send.sendBodySector(1)
-                # else:
-                #     send.sendBodySector(1)
+                send.sendSensorReset()
+                #send.sendBodySector(50)
+                if self.layer_n == 1:
+                    send.sendBodySector(1)
+                elif self.layer_n == 2:
+                    send.sendBodySector(2)
+                elif self.layer_n == 3:
+                    send.sendBodySector(2)
                 time.sleep(2)
                 self.stop_flag=1
                 self.up_board_flag=1
@@ -507,10 +512,10 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                # if self.layer_n == 1:
-                #     send.sendBodySector(1)
-                # else:
-                send.sendBodySector(47)
+                if self.layer_n == 1:
+                    send.sendBodySector(43)
+                else:
+                    send.sendBodySector(47)
                 time.sleep(3)
                 self.stop_flag = 1
                 self.up_board_flag = 1
@@ -631,6 +636,7 @@ class Send_distance():
             self.layer_n-=1
         elif self.layer_n == 3:
             self.direction = 1
+        
 
     
     def find_real_board_model(self,find):
