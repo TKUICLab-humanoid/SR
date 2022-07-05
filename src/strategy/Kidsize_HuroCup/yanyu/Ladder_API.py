@@ -138,7 +138,7 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(15)
+                # send.sendBodySector(15)
                 time.sleep(30)
                 # send.sendBodySector(2)
                 # time.sleep(30)

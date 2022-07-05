@@ -5,6 +5,8 @@ import numpy as np
 from Python_API import Sendmessage
 from SR_API import Send_distance
 from Ladder_API import Send_Climb
+from find_ladder_API import Find_ladder
+
 import time
 
 imgdata = [[None for high in range(240)]for width in range (320)]
@@ -13,7 +15,9 @@ if __name__ == '__main__':
     try:
         send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
         distance = Send_distance()#建立名稱,順便歸零
-        climb = Send_Climb()
+        climb = Send_Climb()        
+        ladder = Find_ladder()
+
         r = rospy.Rate(5)
         while not rospy.is_shutdown():
             #判斷Humanoid Interface的按鈕
@@ -55,27 +59,48 @@ if __name__ == '__main__':
                     print(end-start)
 
                 else:
-                    send.drawImageFunction(1,0,0,320,215,215,255,0,0)#膝蓋的橫線
-                    send.drawImageFunction(2,0,98,98,0,240,255,0,0)#ll的線
-                    send.drawImageFunction(3,0,150,150,0,240,255,0,0)#lr的線
-                    send.drawImageFunction(4,0,188,188,0,240,255,0,0)#rl的線
-                    send.drawImageFunction(5,0,240,240,0,240,255,0,0)#rr的線
-                    send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                    #還沒找梯距
+                    if ladder.find_ladder_flag == 0:
+                        print('finding ladder')
+                        send.drawImageFunction(1,0,0,320,ladder.eyeline_y,ladder.eyeline_y,255,0,0)#y基準線
+                        send.drawImageFunction(2,0,ladder.eyeline_x,ladder.eyeline_x,0,240,255,0,0)#x基準線
+                        if ladder.read_ladder_p < ladder.ladder_n:
+                            ladder.find_ladder_theta()
+                            ladder.down_head()
+                            ladder.print_state()
+                        elif ladder.read_ladder_p == ladder.ladder_n :
+                            print('calculate_hight')
+                            ladder.calculate_ladder_hight()
+                            ladder.find_ladder_flag = 1
+                            send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                            time.sleep(3)
+                        else:
+                            send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                            time.sleep(3)
 
-                    if climb.stop_flag == 1 and climb.up_ladder_flag == 0:
-                        send.sendBodyAuto(500,0,0,0,1,0)
-                        climb.stop_flag = 0
-                    elif climb.stop_flag == 1 and climb.up_ladder_flag == 1:
-                        send.sendBodyAuto(0,0,0,0,1,0)
-                        climb.stop_flag = 0
-                        climb.up_ladder_flag = 0
+                    else :
+                        send.drawImageFunction(1,0,0,320,distance.knee,distance.knee,255,0,0)#膝蓋的橫線
+                        send.drawImageFunction(2,0,distance.f_ll,distance.f_ll,0,240,255,0,0)#ll的線
+                        send.drawImageFunction(3,0,distance.f_lr,distance.f_lr,0,240,255,0,0)#lr的線
+                        send.drawImageFunction(4,0,distance.f_rl,distance.f_rl,0,240,255,0,0)#rl的線
+                        send.drawImageFunction(5,0,distance.f_rr,distance.f_rr,0,240,255,0,0)#rr的線
+                        send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
+                        send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+
+                        if climb.stop_flag == 1 and climb.up_ladder_flag == 0:
+                            send.sendBodyAuto(500,0,0,0,1,0)
+                            climb.stop_flag = 0
+                        elif climb.stop_flag == 1 and climb.up_ladder_flag == 1:
+                            send.sendBodyAuto(0,0,0,0,1,0)
+                            climb.stop_flag = 0
+                            climb.up_ladder_flag = 0
 
 
-                    elif climb.stop_flag == 0 :
-                        climb.find_ladder()
-                        climb.up_ladder()
-                
+                        elif climb.stop_flag == 0 :
+                            climb.find_ladder()
+                            climb.up_ladder()
+
+                        ladder.print_state()
 
             # elif send.Web == False:
             elif send.is_start ==False:
@@ -98,6 +123,18 @@ if __name__ == '__main__':
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(0.5)
                 else:
+                    print("ladder turn off")
+                    ladder.head_init = ladder.head_highest
+                    ladder.head_now  = ladder.head_init
+                    ladder.find_ladder_flag = 0
+                    ladder.read_ladder_p=0
+                    ladder.read_ladder_f=0
+                    ladder.ladder_dis=[999,999]
+                    ladder.head_theta=[0 for i in range(ladder.ladder_n)]                   #0數量要等於階數
+                    ladder.head_360=[0 for i in range(ladder.ladder_n)]
+                    ladder.ladder_hight=[0 for i in range(ladder.ladder_n)]
+                    
+
                     if climb.stop_flag == 0:
                         print("turn off")
                         climb.theta = 0
