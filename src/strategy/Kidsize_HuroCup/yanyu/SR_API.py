@@ -59,12 +59,12 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=-2 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=-2 # 哭啊
+        self.rc_theta=1 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=1 # 哭啊
         #前進量校正
-        self.c_speed=-400
+        self.c_speed=-500
         #平移校正
-        self.c_yspeed =-400
+        self.c_yspeed =100
         #上板x
         self.up_x=8000
         #下板x
