@@ -59,16 +59,16 @@ class Send_distance():
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=1 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=1 # 哭啊
+        self.rc_theta=-1 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=-1 # 哭啊
         #前進量校正
-        self.c_speed=-500
+        self.c_speed=-400
         #平移校正
-        self.c_yspeed =100
+        self.c_yspeed =-900
         #上板x
         self.up_x=8000
         #下板x
-        self.down_x=7800
+        self.down_x=8000
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -76,11 +76,11 @@ class Send_distance():
         self.yspeed =0+self.c_yspeed
 
         #角度設定 左旋
-        self.l_theta_1 = 6 + self.lc_theta
-        self.l_theta_2 = 7 + self.lc_theta
-        self.l_theta_3 = 8 + self.lc_theta
-        self.l_theta_4 = 9 + self.lc_theta
-        self.l_theta_5 = 10 + self.lc_theta
+        self.l_theta_1 = 4 + self.lc_theta
+        self.l_theta_2 = 5 + self.lc_theta
+        self.l_theta_3 = 6 + self.lc_theta
+        self.l_theta_4 = 7 + self.lc_theta
+        self.l_theta_5 = 8 + self.lc_theta
         #角度設定 右旋
         self.r_theta_1 = -4 + self.rc_theta
         self.r_theta_2 = -5 + self.rc_theta
@@ -101,7 +101,7 @@ class Send_distance():
         self.down_speed_3=600+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=5                      #小白 6  小黑 3
+        self.up_bd_1=4                      #小白 6  小黑 3
         self.up_bd_2=15
         self.up_bd_3=60
         self.up_bd_4=100
@@ -119,7 +119,7 @@ class Send_distance():
         self.space_dd=80
 
         #下板腳離板子差
-        self.down_bd_1=3
+        self.down_bd_1=4
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
@@ -482,9 +482,9 @@ class Send_distance():
                 if self.layer_n == 1:
                     send.sendBodySector(1)
                 elif self.layer_n == 2:
-                    send.sendBodySector(2)
+                    send.sendBodySector(1)
                 elif self.layer_n == 3:
-                    send.sendBodySector(2)
+                    send.sendBodySector(1)
                 time.sleep(2)
                 self.stop_flag=1
                 self.up_board_flag=1
@@ -513,9 +513,9 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
                 if self.layer_n == 1:
-                    send.sendBodySector(43)
+                    send.sendBodySector(2)
                 else:
-                    send.sendBodySector(47)
+                    send.sendBodySector(2)
                 time.sleep(3)
                 self.stop_flag = 1
                 self.up_board_flag = 1

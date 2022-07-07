@@ -29,7 +29,7 @@ class Find_ladder():
         self.eyeline_y=120        #眼睛基準線（y值)
         self.eyeline_x=100        #眼睛左線
         self.init_robot_distance=20
-        self.find_ladder_flag = 0
+        self.find_ladder_flag = 1
         
         #機器人高
         self.robot_high=43
