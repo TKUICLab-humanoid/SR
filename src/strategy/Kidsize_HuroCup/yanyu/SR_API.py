@@ -54,21 +54,21 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 1       #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         self.layer = [8,32,2,4]     #用在labelMode
         self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta=-1 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=-1 # 哭啊
+        self.rc_theta= 4 #分左分右然後給一樣  ？？？？？
+        self.lc_theta= 4 # 哭啊
         #前進量校正
-        self.c_speed=-400
+        self.c_speed=-300
         #平移校正
-        self.c_yspeed =-900
+        self.c_yspeed =0
         #上板x
         self.up_x=8000
         #下板x
-        self.down_x=8000
+        self.down_x=7800
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -76,17 +76,17 @@ class Send_distance():
         self.yspeed =0+self.c_yspeed
 
         #角度設定 左旋
-        self.l_theta_1 = 4 + self.lc_theta
-        self.l_theta_2 = 5 + self.lc_theta
-        self.l_theta_3 = 6 + self.lc_theta
-        self.l_theta_4 = 7 + self.lc_theta
-        self.l_theta_5 = 8 + self.lc_theta
+        self.l_theta_1 = 5 + self.lc_theta
+        self.l_theta_2 = self.l_theta_1+1
+        self.l_theta_3 = self.l_theta_1+2
+        self.l_theta_4 = self.l_theta_1+3
+        self.l_theta_5 = self.l_theta_1+4
         #角度設定 右旋
-        self.r_theta_1 = -4 + self.rc_theta
-        self.r_theta_2 = -5 + self.rc_theta
-        self.r_theta_3 = -6 + self.rc_theta
-        self.r_theta_4 = -7 + self.rc_theta
-        self.r_theta_5 = -8 + self.rc_theta
+        self.r_theta_1 = -7 + self.rc_theta
+        self.r_theta_2 = -1 + self.l_theta_1
+        self.r_theta_3 = -2 + self.l_theta_1
+        self.r_theta_4 = -3 + self.l_theta_1
+        self.r_theta_5 = -4 + self.l_theta_1
         
         #上板速度
         self.speed_1=200+self.c_speed
@@ -101,13 +101,13 @@ class Send_distance():
         self.down_speed_3=600+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=4                      #小白 6  小黑 3
+        self.up_bd_1=3                      #小白 6  小黑 3
         self.up_bd_2=15
         self.up_bd_3=60
         self.up_bd_4=100
         
         # 上板離板太近距離
-        self.back_dis=2                     #小白 4  小黑 1
+        self.back_dis=6                   #小白 4  小黑 1
         self.back_speed=-200+self.c_speed
 
         # 空間不夠距離
@@ -119,7 +119,7 @@ class Send_distance():
         self.space_dd=80
 
         #下板腳離板子差
-        self.down_bd_1=4
+        self.down_bd_1=3
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
@@ -453,11 +453,11 @@ class Send_distance():
                 if self.yspeed==self.c_yspeed:#沒進90度
                     if self.layer_n == 3:
                         self.speed = self.c_speed
-                        self.yspeed = self.c_yspeed 
+                        self.yspeed = self.c_yspeed1 
                         self.theta = -5 +self.rc_theta
                     else:
                         self.speed = -100+self.c_speed
-                        self.yspeed = -800+self.c_yspeed 
+                        self.yspeed = -800+self.c_yspeed1 
                         self.down_theta_func()
 
                 else:#有進90度
@@ -479,12 +479,12 @@ class Send_distance():
                 time.sleep(5)
                 send.sendSensorReset()
                 #send.sendBodySector(50)
-                if self.layer_n == 1:
-                    send.sendBodySector(1)
-                elif self.layer_n == 2:
-                    send.sendBodySector(1)
-                elif self.layer_n == 3:
-                    send.sendBodySector(1)
+                # if self.layer_n == 1:
+                #     send.sendBodySector(1)
+                # elif self.layer_n == 2:
+                #     send.sendBodySector(1)
+                # elif self.layer_n == 3:
+                #     send.sendBodySector(1)
                 time.sleep(2)
                 self.stop_flag=1
                 self.up_board_flag=1
@@ -512,11 +512,11 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                if self.layer_n == 1:
-                    send.sendBodySector(2)
-                else:
-                    send.sendBodySector(2)
-                time.sleep(3)
+                # if self.layer_n == 1:
+                #     send.sendBodySector(2)
+                # else:
+                #     send.sendBodySector(2)
+                # time.sleep(3)
                 self.stop_flag = 1
                 self.up_board_flag = 1
                 self.next_board()
