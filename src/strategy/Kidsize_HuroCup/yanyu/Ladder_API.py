@@ -38,18 +38,18 @@ class Send_Climb():
         self.up_ladder_flag =0
 #//////////////////////////////////////////////////////////
         #校正變數
-        self.c_theta=0
+        self.c_theta=-2
         
         self.c_speed=-400
         # 下板校正的平移
-        self.c_yspeed =-500
+        self.c_yspeed =400
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
         self.speed = 500 + self.c_speed
         self.yspeed =0 + self.c_yspeed
 
-        self.up_1 = 25
+        self.up_1 = 23
         self.up_2 = 35
 
         self.speed_1 = 200 + self.c_speed
