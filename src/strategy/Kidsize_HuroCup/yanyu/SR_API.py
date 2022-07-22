@@ -56,22 +56,22 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 2     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= -1 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=-1 # 哭啊
+        self.rc_theta= 0 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=0 # 哭啊
         #前進量校正
-        self.c_speed=-400
+        self.c_speed=-300
         #平移校正
         self.c_yspeed =0
         #上板x
         self.up_x=7000
         #下板x
-        self.down_x=7800
+        self.down_x=7000
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -85,7 +85,7 @@ class Send_distance():
         self.l_theta_4 = self.l_theta_1+3
         self.l_theta_5 = self.l_theta_1+4
         #角度設定 右旋
-        self.r_theta_1 = -10 + self.rc_theta
+        self.r_theta_1 = -8 + self.rc_theta
         self.r_theta_2 = -1 + self.r_theta_1
         self.r_theta_3 = -2 + self.r_theta_1
         self.r_theta_4 = -4 + self.r_theta_1
@@ -111,7 +111,7 @@ class Send_distance():
         
         # 上板離板太近距離
         self.back_dis=2                   #小白 4  小黑 1
-        self.back_speed   = -270+self.c_speed
+        self.back_speed   = -300+self.c_speed
         self.back_speed_2 = -700+self.c_speed
 
         # 空間不夠距離
@@ -484,7 +484,7 @@ class Send_distance():
                         self.theta = 15+self.rc_theta
                         print('llllllllllllllllllll')
                         send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
-                        time.sleep(8)
+                        time.sleep(7)
                         
 
                 # else:#有進90度
