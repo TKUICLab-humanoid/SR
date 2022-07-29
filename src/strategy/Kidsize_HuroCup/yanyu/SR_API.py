@@ -56,14 +56,14 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= 0 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=0 # 哭啊
+        self.rc_theta= 1 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=1 # 哭啊
         #前進量校正
         self.c_speed=-400
         #平移校正
@@ -116,14 +116,14 @@ class Send_distance():
 
         # 空間不夠距離
         #上板
-        self.space_nud=90
-        self.space_ud=60
+        self.space_nud=40
+        self.space_ud=30
         #下板
         self.space_ndd=25
         self.space_dd=30
 
         #下板腳離板子差
-        self.down_bd_1=23
+        self.down_bd_1=8
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
@@ -331,7 +331,7 @@ class Send_distance():
             #     self.yspeed = self.c_yspeed
             #     self.up_theta_func()
 
-            elif self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
+            if self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
                 print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.yspeed = self.c_yspeed
@@ -354,7 +354,7 @@ class Send_distance():
                 self.up_board_90()
                 
             #找不到板
-            elif self.layer_n > 1 and self.up_distance[0]>250 and self.up_distance[3]>250:#數值我想測試
+            if self.layer_n > 1 and self.up_distance[0]>250 and self.up_distance[3]>250:#數值我想測試
             # elif self.board_ture==0:
                 print("no")
                 self.no_up_board()
@@ -422,7 +422,7 @@ class Send_distance():
                 self.speed = 300
                 self.yspeed = self.c_yspeed
                 self.down_theta_func()
-            elif self.down_distance[0]<=30 or self.next_down_distance[0] < 35:
+            elif self.down_distance[0]<=3 or self.next_down_distance[0] < 35:
                 print("晏宇y")
                 self.speed = 0+self.c_speed
                 self.yspeed = -1200+self.c_yspeed
@@ -570,7 +570,7 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
                 send.sendSensorReset()
-                #send.sendBodySector(3)
+                send.sendBodySector(2)
                 #send.sendBodySector(89)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(1)
@@ -605,6 +605,7 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
+                send.sendSensorReset()
                 send.sendBodySector(1)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
