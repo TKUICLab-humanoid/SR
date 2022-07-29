@@ -56,10 +56,10 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
         self.rc_theta= 1 #分左分右然後給一樣  ？？？？？
@@ -104,7 +104,7 @@ class Send_distance():
         self.down_speed_3=600+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=6                      #小白 6  小黑 3
+        self.up_bd_1=4                      #小白 6  小黑 3
         self.up_bd_2=15
         self.up_bd_3=60
         self.up_bd_4=100
@@ -116,7 +116,7 @@ class Send_distance():
 
         # 空間不夠距離
         #上板
-        self.space_nud=40
+        self.space_nud=60
         self.space_ud=30
         #下板
         self.space_ndd=25
@@ -149,7 +149,10 @@ class Send_distance():
         self.big_to_small_down_distance = [999,999,999,999]
 
 
-        
+        self.counter =0
+        self.counter_max = 15
+        self.not_enough_flag=0
+
 
 
         
@@ -159,7 +162,7 @@ class Send_distance():
         
         self.find_real_board_model(self.color_model[self.layer_n])
         self.up_distance=[999,999,999,999]
-        #self.next_up_distance = [999,999,999,999]
+        self.next_up_distance = [999,999,999,999]
         self.point_x=0    #色模Ymax的x值
         self.point_y=0
 
@@ -178,6 +181,7 @@ class Send_distance():
             if self.return_real_board(ll,self.f_ll,self.layer_n):
                 self.up_distance[0] = self.knee - ll
                 break
+
         #左右腳距離 x=150
         for lr in range(self.knee,10,-1):
             # if send.Label_Model[320*lr+self.f_lr] == self.layer[self.layer_n]:
@@ -198,6 +202,7 @@ class Send_distance():
                 break
         
         if self.layer_n<=2:
+            # 需要嗎
             self.next_up_distance=[999,999,999,999]
             for ll_2 in range(ll,10,-1):     #找下下一層 從原本掃過得地方再往前掃
                 if self.return_real_board(ll_2,self.f_ll,self.layer_n+1):
@@ -224,7 +229,7 @@ class Send_distance():
         # print('find down board func')
         self.find_real_board_model(self.color_model[self.layer_n])
         self.down_distance = [999,999,999,999]
-        #self.next_down_distance=[999,999,999,999]
+        self.next_down_distance=[999,999,999,999]
         self.point_x=0    #色模Ymax的x值
         self.point_y=0
 
@@ -290,53 +295,15 @@ class Send_distance():
 
 
 
-        # #找下一板可踩空間
-        # if self.layer_n>=2:
-        #     for ll_2 in range(ll,5,-1):     
-        #         if send.Label_Model[320*ll_2+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-1)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-2)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-3)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-4)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-5)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-6)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-7)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-8)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-9)+self.f_ll] == self.layer[self.layer_n-2] and send.Label_Model[320*(ll_2-10)+self.f_ll] == self.layer[self.layer_n-2]:
-        #             self.next_down_distance[0] = ll-ll_2
-        #             break
-        #     for lr_2 in range(lr,0,-1):
-        #         if send.Label_Model[320*lr_2+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-1)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-2)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-3)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-4)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-5)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-6)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-7)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-8)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-9)+self.f_lr] == self.layer[self.layer_n-2] and send.Label_Model[320*(lr_2-10)+self.f_lr] == self.layer[self.layer_n-2]:
-        #             self.next_down_distance[1] = lr - lr_2
-        #             break
-            
-        #     for rl_2 in range(rl,0,-1):
-        #         if send.Label_Model[320*rl_2+self.f_rl] == self.layer[self.layer_n-2] and send.Label_Model[320*(rl_2-1)+self.f_rl] == self.layer[self.layer_n-2] send.Label_Model[320*(rl_2-2)+self.f_rl] == self.layer[self.layer_n-2] and send.Label_Model[320*(rl_2-3)+self.f_rl] == self.layer[self.layer_n-2] send.Label_Model[320*(rl_2-4)+self.f_rl] == self.layer[self.layer_n-2] and send.Label_Model[320*(rl_2-1)+self.f_rl] == self.layer[self.layer_n-2] send.Label_Model[320*(rl_2-2)+self.f_rl] == self.layer[self.layer_n-2] and send.Label_Model[320*(rl_2-1)+self.f_rl] == self.layer[self.layer_n-2] send.Label_Model[320*(rl_2-2)+self.f_rl] == self.layer[self.layer_n-2] and send.Label_Model[320*(rl_2-9)+self.f_rl] == self.layer[self.layer_n-2] send.Label_Model[320*(rl_2-10)+self.f_rl] == self.layer[self.layer_n-2]:
-        #             self.next_down_distance[2] = rl - rl_2
-        #             break
-            
-        #     for rr_2 in range(rr,0,-1):
-        #         if send.Label_Model[320*rr_2+self.f_rr] == self.layer[self.layer_n-2]:
-        #             self.next_down_distance[3] = rr - rr_2
-        #             break
-        # else:
-        #     self.next_down_distance=[999,999,999,999]
-
     def parallel_board_setup(self):#上板的角度調整
         # print('parallel_board_setup func')
         #條件要調整！！！
         # [0][1][2][3]都不能<0
         if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
-            if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0:
-                # self.counter_90+=1
-                # if self.counter_90 >=3 :
-                #     self.check_90 = 1
-                # else :
-                #     self.check_90 = 0
-                
-                # if self.check_90 ==1:
-                #     self.up_board_90()
-                #     self.speed=self.back_speed_2
-
-                # else:
-                #     self.speed=self.back_speed_2
-                #     self.yspeed = self.c_yspeed
-                #     self.up_theta_func()
-
-                # print("back 90")
-                # self.up_board_90()
-                # self.speed=self.back_speed
+            # if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0:
+            #     print("back 90")
+            #     self.up_board_90()
+            #     self.speed=self.back_speed
             
             # elif self.up_distance[0]-self.up_distance[3]>30:
             #     print("back 90  right")
@@ -344,148 +311,112 @@ class Send_distance():
             #     self.yspeed = self.c_yspeed
             #     self.up_theta_func()
 
-            # if self.up_distance[3]-self.up_distance[0]>255:
-            #     print("666666666666666666666666666666666666666666666666666666666666666666666666666")
-            #     self.speed = -500+self.c_speed
-            #     self.yspeed = 1200+self.c_yspeed
-            
-            if self.up_distance[3] == 999:
-                self.speed=self.speed_1
-                self.yspeed = 1200+self.c_yspeed
-                self.up_theta_func()
-            elif self.up_distance[0] == 999:
-                self.speed=self.speed_1
-                self.yspeed = -1200+self.c_yspeed
-                self.up_theta_func()
+            # elif self.up_distance[3]-self.up_distance[0]>30:
+            #     print("back 90  left")
+            #     self.speed=self.back_speed
+            #     self.yspeed = self.c_yspeed
+            #     self.up_theta_func()
 
-
-
-            elif self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
+            if self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
                 print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
                 self.speed=self.back_speed
                 self.up_theta_func()
                 if self.theta>self.rc_theta:
-                    self.yspeed = -250+self.c_yspeed
+                    self.yspeed = -200+self.c_yspeed
                 elif self.theta<self.rc_theta:
                     self.yspeed = 250+self.c_yspeed
                 else:
                     self.yspeed = self.c_yspeed
-                
-            
+
             else:
                 print("back back back back")
-                self.speed=self.back_speed
+                self.speed=self.speed_1
                 self.yspeed = self.c_yspeed
                 self.up_theta_func()
+        
+
 
         else :
-            #self.up_mask=send.color_mask_subject_cnts[self.color_model[self.layer_n]]
-            #self.find_real_board_model(self.color_model[self.layer_n])
-            #self.up_horizontal_2=send.color_mask_subject_X[self.color_model[self.layer_n]][self.board_model]
+            # 空間不夠
+            if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
+                
+                self.speed = -100+self.c_speed
+                self.up_theta_func()
+                if self.next_up_distance[0]>self.next_up_distance[3] :
+                    self.yspeed = 800+self.c_yspeed
+                    print('space not enoughhhhhhhhhhh left')
+                elif self.next_up_distance[3]>self.next_up_distance[0]:
+                    self.yspeed = -800+self.c_yspeed
+                    print('space not enoughhhhhhhhhhh right')
+
+            
+
+            
             # 上板直角
-            if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]<130 or self.up_distance[1]<130 or self.up_distance[2]<130 or self.up_distance[3]<130) or min(self.up_distance):
-                self.counter_90 += 1
-                if self.counter_90 >=2 :
-                    self.check_90 = 1
-                else :
-                    self.check_90 = 0
+            elif((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]<70 or self.up_distance[1]<70 or self.up_distance[2]<70 or self.up_distance[3]<70):
                 #腳要掉下去
                 if self.up_distance[0]==999 or self.up_distance[0]==0:
                     self.speed=self.speed_1
-                    self.yspeed = -1200+self.c_yspeed
+                    self.yspeed = -1000+self.c_yspeed
                     self.up_theta_func()
                     print('90 move right')
                 elif self.up_distance[3]==999 or self.up_distance[3]==0:
                     self.speed=self.speed_1
-                    self.yspeed = 1200+self.c_yspeed
+                    self.yspeed = 1000+self.c_yspeed
                     self.up_theta_func()
                     print('90 move left')
                 else:
                     print("90")
-                    if self.check_90 == 1  and self.counter_90<=2:
-                        # self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][self.color_loc]
-                        # self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][self.color_loc]
-                        # if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
-                        #     self.flag_90 = 1
-                        #     self.up_board_90
-
-                        # elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
-                        #     self.flag_90 = 2
-                        #     self.up_board_90
-
-                        if (self.point_x > 160):
-                            self.flag_90 = 1
-                            self.up_board_90
-                        elif (self.point_x > 160):
-                            self.flag_90 = 2
-                            self.up_board_90
-                    else :
-                        self.up_board_90
-
-
-                        
+                    self.up_board_90()
                 
             #找不到板
-            if self.layer_n > 1 and self.up_distance[0]>250 and self.up_distance[3]>250:#數值我想測試
+            elif self.layer_n > 1 and self.up_distance[0]>250 and self.up_distance[3]>250:#數值我想測試
             # elif self.board_ture==0:
-                self.counter_90 = 0
-                self.check_90 = 0
-                self.flag_90=self.flag_90
+                #print("no")
                 self.no_up_board()
+                print("no up baord")
             else :
-                self.counter_90 = 0
-                self.check_90 = 0
-                self.flag_90=self.flag_90
                 #上紅板後
                 if self.layer_n > 1:
                     if(self.up_distance[0]<=self.up_bd_2 and self.up_distance[3]<=self.up_bd_2):#30
                         self.speed=self.speed_1
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_1")
                     elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
                         self.speed=self.speed_2
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_2")
                     else:
                         self.speed=self.speed_2
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_2")
                 #上紅板前
                 else :
                     if(self.up_distance[0]<=self.up_bd_2 and self.up_distance[3]<=self.up_bd_2):#30
                         self.speed=self.speed_1
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_1")
                     elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
                         self.speed=self.speed_2
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_2")
                     elif(self.up_distance[1]<self.up_bd_4) or (self.up_distance[2]<self.up_bd_4):
                         self.speed=self.speed_3
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_3")
                     else:
                         self.speed=self.speed_5
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
+                        print("speed_5")
             
 
-            
-            # 空間不夠
-            # 想要怎麼決定左移還右移
-            if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
-                #print('space not enoughhhhhhhhhhh')
-                if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = -500+self.c_speed
-                    self.yspeed = -1200+self.c_yspeed
-                    self.up_theta_func()
-                    print('1111111111111111111111111')
-
-                else:
-                    self.speed = -100+self.c_speed
-                    self.yspeed = self.yspeed
-                    self.up_theta_func()
-                    print('222222222222222222222222222')
 
     def down_parallel_board_setup(self): #下板角度調整       
         if  self.layer_n ==3:
@@ -630,14 +561,11 @@ class Send_distance():
                         self.speed = self.down_speed_3
                         self.yspeed = self.c_yspeed
                         self.down_theta_func()
+
         
 
     def up_board(self): #要上板了
         # print('up_board_func')
-        # if ((self.up_distance[1]<self.up_bd_1) and (self.up_distance[2]<self.up_bd_1)) and (abs(self.up_distance[3]-self.up_distance[0])<self.feet_distance_1) and (self.next_up_distance[0] < self.space_nud and self.next_up_distance[3] < self.space_nud):
-        #     self.speed = 0+self.c_speed
-        #     self.yspeed = 0+self.c_yspeed
-        #     self.theta = 15+self.rc_theta
         if ((self.up_distance[1]<self.up_bd_1) and (self.up_distance[2]<self.up_bd_1)) and (abs(self.up_distance[3]-self.up_distance[0])<self.feet_distance_1) and (self.next_up_distance[0] > self.space_nud and self.next_up_distance[3] > self.space_nud):
             if self.stop_flag==0 and self.up_board_flag==0:
                 print('ready upboard')
@@ -647,7 +575,7 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
                 send.sendSensorReset()
-                send.sendBodySector(2)
+                #send.sendBodySector(3)
                 #send.sendBodySector(89)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(1)
@@ -674,7 +602,8 @@ class Send_distance():
     
     def down_board(self): #要下板了
         # print('down_board_func')
-        if (self.down_distance[1] < self.down_bd_1 or self.down_distance[2] < self.down_bd_1) and (abs(self.down_distance[2]-self.down_distance[1])<self.feet_distance_1) and (self.next_down_distance[0] > self.space_ndd and self.next_down_distance[3] > self.space_ndd):
+        # if (self.down_distance[1] < self.down_bd_1 or self.down_distance[2] < self.down_bd_1) and (abs(self.down_distance[3]-self.down_distance[0])<self.feet_distance_1) and (self.next_down_distance[0] >= self.space_ndd and self.next_down_distance[3] >= self.space_ndd):
+        if (self.down_distance[1] < self.down_bd_1 or self.down_distance[2] < self.down_bd_1) and (abs(self.down_distance[3]-self.down_distance[0])<self.feet_distance_1) and (max(self.down_distance) - min( self.down_distance)<20) and (self.next_down_distance[0] >= self.space_ndd and self.next_down_distance[3] >= self.space_ndd):
             if self.stop_flag == 0 and self.up_board_flag == 0:
                 print('ready upboard')
                 self.speed=0
@@ -683,7 +612,7 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
                 send.sendSensorReset()
-                send.sendBodySector(1)
+                #send.sendBodySector(3)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
                 # else:
@@ -719,15 +648,15 @@ class Send_distance():
                 #self.find_real_board_model(self.color_model[self.layer_n-2])
                 self.up_horizontal=send.color_mask_subject_X[self.color_model[self.layer_n-2]][0]
                 if self.up_horizontal<self.f_mid:
-                    self.speed = 100 + self.c_speed
-                    self.yspeed = self.c_yspeed
-                    self.theta = -15 + self.rc_theta
+                    self.speed = 0 + self.c_speed
+                    self.yspeed = -200+self.c_yspeed
+                    self.theta = -13 + self.rc_theta
                     # print("cant find board : turn left")
                     # send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
                 elif self.up_horizontal>self.f_mid and self.up_horizontal<999:
-                    self.speed = 100 + self.c_speed
-                    self.yspeed = self.c_yspeed
-                    self.theta = 15 + self.lc_theta 
+                    self.speed = 0 + self.c_speed
+                    self.yspeed = 200+self.c_yspeed
+                    self.theta = 13 + self.lc_theta 
 
         else:
             #print("有囉")
@@ -746,39 +675,43 @@ class Send_distance():
                 #print("cant find board : turn right")
                 #send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
 
-    # def no_up_board(self):#看不到板子時
-    #     self.up_horizontal=send.color_mask_subject_X[self.color_model[self.layer_n]][0]
-    #         if self.up_horizontal<self.f_ll:
-    #             self.speed = 300 + self.c_speed
-    #             self.yspeed = self.c_yspeed
-    #             self.theta = 5 + self.lc_theta
-    #             # print("cant find board : turn left")
-    #             # send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
-    #         elif self.up_horizontal>self.f_rr and self.up_horizontal<999:
-    #             self.speed = 300 + self.c_speed
-    #             self.yspeed = self.c_yspeed
-    #             self.theta = -5 + self.lc_theta            
-    #             #print("cant find board : turn right")
-    #             #send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
-
-
-
     def up_board_90(self): #上板90度狀況
         # print('up_board_90 func')
         #self.find_real_board_model(self.color_model[self.layer_n])
-        # self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][self.color_loc]
-        # self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][self.color_loc]
-        if(self.flag_90==1):
+        self.m_xmin=send.color_mask_subject_XMin[self.color_model[self.layer_n]][self.color_loc]
+        self.m_xmax=send.color_mask_subject_XMax[self.color_model[self.layer_n]][self.color_loc]
+        # if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
+        #     self.speed=self.c_speed
+        #     self.yspeed=-1200+self.c_yspeed
+        #     self.theta= self.lc_theta   #為什麼這邊是0
+        #     #print("move  right 90")
+        # elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
+        #     self.speed=self.c_speed
+        #     self.yspeed=1200+self.c_yspeed
+        #     self.theta=self.rc_theta   #為什麼這邊是0
+        #     #print("move  left 90") 
+
+        if(self.up_distance[0]>self.up_distance[3]) and (self.up_distance[0]>70 and self.up_distance[3]>70):
+            self.speed=self.c_speed
+            self.yspeed=-1200+self.c_yspeed
+            self.theta= self.lc_theta   
+            print("move  left 90")
+        elif (self.up_distance[3]>self.up_distance[0]) and (self.up_distance[0]>70 and self.up_distance[3]>70):
             self.speed=self.c_speed
             self.yspeed=1200+self.c_yspeed
             self.theta= self.lc_theta   
             print("move  right 90")
-        elif(self.flag_90==2):
-            self.speed=self.c_speed
-            self.yspeed=-1200+self.c_yspeed
-            self.theta=self.rc_theta   
-            print("move  left 90")
-        
+        else:
+            if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
+                self.speed=self.c_speed
+                self.yspeed=-1200+self.c_yspeed
+                self.theta= self.lc_theta   
+                print("move  right 90 not use distance")
+            elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
+                self.speed=self.c_speed
+                self.yspeed=1200+self.c_yspeed
+                self.theta=self.rc_theta   
+                print("move  left 90 not use distance")
 
 
     def down_board_90(self): #下板90度狀況
@@ -911,123 +844,164 @@ class Send_distance():
                 if real_distance_flag==0:
                     break
         return real_distance_flag
-            
 
 
-    def print_state(self):
-        print("/////////////////////////////////////////////////////////")
-# //////////////////                     test                           //////////////////////////////
-        # print("real board model             : ",self.board_model)
-        # print("board size                   : ",send.color_mask_subject_size[self.color_model[self.layer_n]][self.board_model])
-# ////////////////////////////////////////////////////////////////////////////////////////////////////  
-        print("point   y                    : ",self.point_y)
-        print("point   x                    : ",self.point_x)
-        print("stop_flag                    : ",self.stop_flag)
-        print("up board flag                : ",self.up_board_flag)
-        print("speed                        : ",self.speed)
-        print("yspeed                       : ",self.yspeed)
-        print("theta                        : ",self.theta)
-        print("layer_now                    : ",self.layer_n)
-        if(self.direction==0):
-            print("direction                    :  up board")
-            print("up_distance                  : ",self.up_distance)
-            print("next_up_distance             : ",self.next_up_distance)
-            print('next_up_distance[0]          : ',self.next_up_distance[0])
-            print("next board x point           : ",self.up_horizontal_2)
 
-            print("flag_90                      :",self.flag_90)
-            print("counter_90                      :",self.counter_90)
-            print("check_90                      :",self.check_90)
-            if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
-                # if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.up_distance[0]-self.up_distance[3])>30:
-                #     print("back 90")
-                # elif self.up_distance[3]-self.up_distance[0] > 3 or self.up_distance[0]-self.up_distance[3] >3:
-                #     print("back back back back back back back back")
 
-                # else:
-                #     print("有進back back,但角度可以繼續直走")
-                pass
+    def print_state(self): 
+            print("/////////////////////////////////////////////////////////")
+            print("counter         :  ",self.counter)
+            print("not enough flag :  ",self.not_enough_flag)
+            print("/////////////////////////////////////////////////////////")
+    # //////////////////                     test                           //////////////////////////////
+            # print("real board model             : ",self.board_model)
+            # print("board size                   : ",send.color_mask_subject_size[self.color_model[self.layer_n]][self.board_model])
+    # ////////////////////////////////////////////////////////////////////////////////////////////////////  
+            print("speed                        : ",self.speed)
+            print("yspeed                       : ",self.yspeed)
+            print("theta                        : ",self.theta)
+            print("point   y                    : ",self.point_y)
+            print("point   x                    : ",self.point_x)
+            print("stop_flag                    : ",self.stop_flag)
+            print("up board flag                : ",self.up_board_flag)
+           
+            print("layer_now                    : ",self.layer_n)
+            if(self.direction==0):
+                print("direction                    :  up board")
+                print("up_distance                  : ",self.up_distance)
+                print("next_up_distance             : ",self.next_up_distance)
+                print('next_up_distance[0]          : ',self.next_up_distance[0])
+                print("next board x point           : ",self.up_horizontal_2)
 
-            else:
-                #90度
-                if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]<100 or self.up_distance[1]<100 or self.up_distance[2]<100 or self.up_distance[3]<100):
-                    if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
-                        print("move  right 90")
-                    elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
-                        print("move  left 90")
-                #找不到板
-                elif self.layer_n > 1 and self.up_distance[0]>250 and self.up_distance[3]>250:
-                #elif self.layer_n > 1 and (self.up_mask==0 or self.f_ll<self.up_horizontal_2<self.f_rr):
-                    if self.board_ture==0:
-                        print("cant find board")
-                        if self.up_mask2==0:
-                            print("cant find green board : forward")
+
+                if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
+                    
+                    if self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
+                        print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
+                    else:
+                        print("back back back back")
+                        
+
+
+                else :
+                    # 空間不夠
+                    if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
+                        
+                        if self.next_up_distance[0]>self.next_up_distance[3] :
+                            print('space not enoughhhhhhhhhhh left')
+                        elif self.next_up_distance[3]>self.next_up_distance[0]:
+                            print('space not enoughhhhhhhhhhh right')
+
+                    
+
+                    
+                    # 上板直角
+                    elif((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]<90 or self.up_distance[1]<90 or self.up_distance[2]<90 or self.up_distance[3]<90):
+                        #腳要掉下去
+                        if self.up_distance[0]==999 or self.up_distance[0]==0:
+                            print('90 move right')
+                        elif self.up_distance[3]==999 or self.up_distance[3]==0:
+                            print('90 move left')
                         else:
-                            if self.up_horizontal<self.f_ll:
-                                print("find green board : turn right")
-                            elif self.up_horizontal>self.f_rr and self.up_horizontal<999:
-                                print("find green board : turn left")
+                            print("90")
+                        
+                    #找不到板
+                    elif self.layer_n > 1 and self.up_distance[0]>250 and self.up_distance[3]>250:#數值我想測試
+                        print("no up baord")
+                    else :
+                        #上紅板後
+                        if self.layer_n > 1:
+                            if(self.up_distance[0]<=self.up_bd_2 and self.up_distance[3]<=self.up_bd_2):#30
+                                print("speed_1")
+                            elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
+                               print("speed_2")
+                            else:
+                               print("speed_2")
+                        #上紅板前
+                        else :
+                            if(self.up_distance[0]<=self.up_bd_2 and self.up_distance[3]<=self.up_bd_2):#30
+                                print("speed_1")
+                            elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
+                                print("speed_2")
+                            elif(self.up_distance[1]<self.up_bd_4) or (self.up_distance[2]<self.up_bd_4):
+                                print("speed_3")
+                            else:
+                                print("speed_5")
+                            
+
+                
+            elif(self.direction==1):
+                print("direction                    :  down_board")
+                print("down distance                : ",self.down_distance)
+                print("next_down_distance           : ",self.next_down_distance)
+                print('next_down_distance[0]        : ',self.next_down_distance[0])
+                
+
+                # 下板距離不夠
+                if(self.down_distance[0]<=self.back_dis or self.down_distance[1]<=self.back_dis or self.down_distance[2]<=self.back_dis or self.down_distance[3]<=self.back_dis):       
+                    if max(self.down_distance)-min(self.down_distance)>25 and self.counter < self.counter_max:
+                        if (self.down_distance.index(max(self.down_distance)) == 3):
+                            print("index : ",self.down_distance.index(min(self.down_distance)))
+                            print("back right right right")
+                           
+                        elif self.down_distance.index(max(self.down_distance)) == 0:
+                            print("index : ",self.down_distance.index(min(self.down_distance)))
+                            print("back left left left")
+                           
+                    elif self.counter > self.counter_max and self.not_enough_flag==1:
+                        print('back not enough big turn')
+                    # 腳已經超過板
+                    elif (self.down_distance.count(999)+self.down_distance.count(0))>=2:
+                        print('over board')
+                        
                     else:
-                        if self.up_horizontal_2<self.f_ll:
-                            print("find board : turn left")
-                        elif self.up_horizontal_2>self.f_rr and self.up_horizontal_2<999:
-                            print("find board : turn right")
-
-                if self.layer_n != 3 and self.next_up_distance[0] < self.space_nud and self.up_distance[0] < self.space_ud and self.up_distance[1] < self.space_ud:
-                    if self.yspeed == -800+self.c_yspeed:
-                        print("空間不夠,沒進90 : 右平移")
-                    else:
-                        print("空間不夠,有進90 : 繼續90")
-
-
-
-            # print("direction                    :  up board")
-            # print("up_distance                  : ",self.up_distance)
-            # print("next_up_distance             : ",self.next_up_distance)
-            # print('next_up_distance[0] = ',self.next_up_distance[0])
-            # print("next board x point           :",self.up_horizontal)
-            # if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.up_distance[0]>40 or self.up_distance[1]>40 or self.up_distance[2]>40 or self.up_distance[3]>40):
-            #     # print('up_board_90 func')
-            #     if((self.m_xmax-self.point_x>self.point_x-self.m_xmin) or (self.up_distance[0]-self.up_distance[3])>self.up_bd_2):
-            #         print("move  right 90")
-            #     elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin )or self.up_distance[3]-self.up_distance[0]>self.up_bd_2:
-            #         print("move  left 90")
-            # elif self.layer_n != 3 and self.next_up_distance[0] < 50 and (self.up_distance[0] < 60 or self.up_distance[1] < 60):
-            #     print('self.next_up_distance[0] = ',self.next_up_distance[0])
-            #     print('space not enough')
-            # else:
-            #     print('cant upboard')
-
-
-
-
-
-        elif(self.direction==1):
-            print("direction                    :  down_board")
-            print("down distance                : ",self.down_distance)
-            print("next_down_distance           : ",self.next_down_distance)
-            print('next_down_distance[0]        : ',self.next_down_distance[0])
-            if(self.down_distance[0]<=self.back_dis or self.down_distance[1]<=self.back_dis or self.down_distance[2]<=self.back_dis or self.down_distance[3]<=self.back_dis):
-                pass
-                #     if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or abs(self.down_distance[0]-self.down_distance[3])>30:
-                #         print("back 90")
-                #     elif self.down_distance[3]-self.down_distance[0] >5 or self.down_distance[0]-self.down_distance[3] >5:
-                #         print("back back back back back back back back")
-
-                #     else:
-                #         print("有進back back,但角度可以繼續直走")
-            else:
-                if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.down_distance[0]>40 or self.down_distance[1]>40 or self.down_distance[2]>40 or self.down_distance[3]>40):
-                    if(self.m_xmax-self.point_x>self.point_x-self.m_xmin):
-                        print("move  right 90")
-                    elif(self.m_xmax-self.point_x<self.point_x-self.m_xmin):
-                        print("move  left 90")
-
-            if self.layer_n != 1 and self.next_down_distance[0] < self.space_ndd and self.down_distance[0] < self.space_dd and self.down_distance[1] < self.space_dd:
-                if self.yspeed==self.c_yspeed:
-                    if self.layer_n == 3:
-                        print("空間不夠,沒進90 : 右旋")
-                    else:
-                        print("空間不夠,沒進90 : 右平移")
+                        print(" down back back back bcak")
+                        
+                
+                    
                 else:
-                    print("空間不夠,有進90 : 繼續90")
+                   
+                    # 空間不夠
+                    if self.layer_n != 1 and (self.next_down_distance[0] < self.space_ndd or self.next_down_distance[1] < self.space_ndd or self.next_down_distance[2] < self.space_ndd or self.next_down_distance[3] < self.space_ndd) and (self.down_distance[0] < self.space_dd or self.down_distance[3] < self.space_dd):
+                        
+                        if self.layer_n == 3 and self.counter < self.counter_max:
+                           
+                            if self.next_down_distance[0]>self.next_down_distance[3]:
+                                print('layer 3 counter<max turn left')    
+                            else:
+                                print('layer 3 counter<max turn right')
+                        elif self.counter >= self.counter_max:
+                            if self.next_down_distance[0]>self.space_ndd :
+                                print('counter>max move left')
+
+                            elif self.next_down_distance[3]>self.space_ndd:
+                                print('counter>max move right') 
+                            else:
+                                print('counter>max big turn') 
+
+                        else:
+                            
+                            #直接設定遇到空間不夠轉哪邊 
+                            # self.theta = 8 +self.rc_theta 
+                            # print("counter<max big turn by input")
+                            # 讓他透過哪邊空間大設定轉向
+                            if self.next_down_distance[0]>self.next_down_distance[3]:
+                                print('counter<max move right') 
+                            
+                            else:
+                                print('counter<max move left')
+                        
+
+                    elif self.down_distance[0] <= self.down_bd_2 and self.down_distance[3] <= self.down_bd_2:#距離小於30的時候
+                        print('normal <30')
+                    elif self.down_distance[0] <=self.down_bd_3 and self.down_distance[3] <= self.down_bd_3:#距離小於60的時候
+                        print('normal <60')
+
+                    
+                    else:
+                        # 空間大的時候如果能直走就直走
+                        if self.layer_n==3:
+                            print('layer3 forward')
+                        else:
+                            print('other layer normal')
+
