@@ -56,14 +56,14 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= 4 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=4 # 哭啊
+        self.rc_theta= 0 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=0 # 哭啊
         #前進量校正
         self.c_speed=-300
         #平移校正
@@ -85,7 +85,7 @@ class Send_distance():
         self.l_theta_4 = self.l_theta_1+3
         self.l_theta_5 = self.l_theta_1+4
         #角度設定 右旋
-        self.r_theta_1 = -6 + self.rc_theta
+        self.r_theta_1 = -8 + self.rc_theta
         self.r_theta_2 = -1 + self.r_theta_1
         self.r_theta_3 = -2 + self.r_theta_1
         self.r_theta_4 = -4 + self.r_theta_1
@@ -111,7 +111,7 @@ class Send_distance():
         
         # 上板離板太近距離
         self.back_dis=2                   #小白 4  小黑 1
-        self.back_speed   = -300+self.c_speed
+        self.back_speed   = -200+self.c_speed
         self.back_speed_2 = -700+self.c_speed
 
         # 空間不夠距離
@@ -123,7 +123,7 @@ class Send_distance():
         self.space_dd=15
 
         #下板腳離板子差
-        self.down_bd_1=6
+        self.down_bd_1=4
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
@@ -320,7 +320,7 @@ class Send_distance():
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = -500+self.c_speed
-                    self.yspeed = -1200+self.c_yspeed
+                    self.yspeed = 1200+self.c_yspeed
                     self.up_theta_func()
                     print('1111111111111111111111111')
 
@@ -355,7 +355,7 @@ class Send_distance():
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = -500+self.c_speed
-                    self.yspeed = -1200+self.c_yspeed
+                    self.yspeed = 1200+self.c_yspeed
                     self.up_theta_func()
                     print('1111111111111111111111111')
 
@@ -446,12 +446,12 @@ class Send_distance():
                 self.speed = 300 + self.c_speed
                 self.yspeed = self.c_yspeed
                 self.down_theta_func()
-            elif self.down_distance[0]<=3 or self.next_down_distance[0] < 65:
+            elif self.down_distance[0]<=5 or self.next_down_distance[0] < 55:
                 print("晏宇y")
                 self.speed = 0+self.c_speed
                 self.yspeed = -1200+self.c_yspeed
                 self.theta = 0+self.rc_theta
-            elif self.down_distance[3]<=3 or self.next_down_distance[3] < 65:
+            elif self.down_distance[3]<=5 or self.next_down_distance[3] < 55:
                 print("晏宇好走")
                 self.speed = 0+self.c_speed
                 self.yspeed = 1200+self.c_yspeed
