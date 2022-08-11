@@ -55,20 +55,20 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= 4 
-        self.lc_theta=4 
+        self.rc_theta= 3 
+        self.lc_theta=3 
         #前進量校正
-        self.c_speed=-200
+        self.c_speed=-100
         #平移校正
-        self.c_yspeed =-100
+        self.c_yspeed =100
         #上板x
-        self.up_x=7000
+        self.up_x=6800
         #下板x
         self.down_x=6000
 #////////////////////////////////////////////////////////////////////////
@@ -84,7 +84,7 @@ class Send_distance():
         self.l_theta_4 = self.l_theta_1+3
         self.l_theta_5 = self.l_theta_1+4
         #角度設定 右旋
-        self.r_theta_1 = -8 + self.rc_theta
+        self.r_theta_1 = -6 + self.rc_theta
         self.r_theta_2 = -1 + self.r_theta_1
         self.r_theta_3 = -2 + self.r_theta_1
         self.r_theta_4 = -4 + self.r_theta_1
@@ -103,7 +103,7 @@ class Send_distance():
         self.down_speed_3=900+self.c_speed
        
         #上板腳離板子差
-        self.up_bd_1=4                      #小白 6  小黑 3
+        self.up_bd_1=5                      #小白 6  小黑 3
         self.up_bd_2=15
         self.up_bd_3=60
         self.up_bd_4=100
@@ -714,7 +714,7 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
                 send.sendSensorReset()
-                #send.sendBodySector(1)
+                send.sendBodySector(6)
                 #send.sendBodySector(89)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(1)
@@ -751,7 +751,7 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
                 send.sendSensorReset()
-                #send.sendBodySector(3)
+                send.sendBodySector(6)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
                 # else:
