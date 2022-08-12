@@ -38,18 +38,18 @@ class Send_Climb():
         self.up_ladder_flag =0
 #//////////////////////////////////////////////////////////
         #校正變數
-        self.c_theta=3
+        self.c_theta=0
         
-        self.c_speed=-100
+        self.c_speed=-200
         # 下板校正的平移
-        self.c_yspeed =100
+        self.c_yspeed =0
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
         self.speed = 500 + self.c_speed
         self.yspeed =0 + self.c_yspeed
 
-        self.up_1 = 40
+        self.up_1 = 10
         self.up_2 = 75
 
         self.speed_1 = 200 + self.c_speed
@@ -140,9 +140,9 @@ class Send_Climb():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
                 send.sendBodySector(15)
-                time.sleep(30)
+                time.sleep(15)
                 send.sendBodySector(800)
-                time.sleep(30)
+                time.sleep(20)
                 send.sendBodySector(600)
                 time.sleep(30)
                 self.climb_distance = [999,999,999,999]                 
