@@ -38,11 +38,11 @@ class Send_Climb():
         self.up_ladder_flag =0
 #//////////////////////////////////////////////////////////
         #校正變數
-        self.c_theta=0
+        self.c_theta=1
         
-        self.c_speed=-200
+        self.c_speed=-500
         # 下板校正的平移
-        self.c_yspeed =0
+        self.c_yspeed =300
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
@@ -76,6 +76,10 @@ class Send_Climb():
 
         #3-0
         self.climb_feet_distance = 0
+
+        self.sector_array=[16,17,800,600]
+        self.delay_array=[6,13,16,20]
+        
 
     # def find_ladder_mid(self):
     #     self.a = send.color_mask_subject_Y[2][0]
@@ -128,6 +132,7 @@ class Send_Climb():
     
     def up_ladder(self): #要上梯了
         print('climb_distance',self.climb_distance)
+        print(send.DIOValue)
     
         if ((self.climb_distance[0]<=self.up_1) or (self.climb_distance[1]<=self.up_1) or (self.climb_distance[2]<=self.up_1) or (self.climb_distance[3]<=self.up_1)):
             if self.stop_flag==0 and self.up_ladder_flag==0:
@@ -139,12 +144,19 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(15)
-                time.sleep(15)
-                send.sendBodySector(800)
-                time.sleep(20)
-                send.sendBodySector(600)
-                time.sleep(30)
+
+
+                for i in range (len(self.sector_array)):
+
+                    if (send.DIOValue >> 3)%2==1:
+                        send.sendBodySector(self.sector_array[i])
+                        time.sleep(self.delay_array[i])
+                        print('sector')
+                    else:
+                        send.sendBodySector(1000)
+                        print('stand 29')
+                        break
+                
                 self.climb_distance = [999,999,999,999]                 
         else:
             self.parallel_setup()
