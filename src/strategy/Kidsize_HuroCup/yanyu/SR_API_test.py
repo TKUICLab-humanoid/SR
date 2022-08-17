@@ -1,6 +1,12 @@
-# 5/15
 #!/usr/bin/env python
 #coding=utf-8
+
+# 校正變數
+# 第幾層
+# 改線
+# 上板空間不夠
+# 下板空間不夠
+
 import rospy
 import numpy as np
 from rospy import Publisher
@@ -25,7 +31,7 @@ class Send_distance():
         self.f_rr=self.f_rl+52
         self.head_Horizontal = 2040
         #self.head_Vertical = 1425
-        self.head_Vertical = 1392
+        self.head_Vertical = 1406
         #距離矩陣初始化
         self.up_distance = [999,999,999,999]        #要上的層
         self.down_distance = [999,999,999,999]              #要下的層
@@ -56,20 +62,20 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= 4 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=4 # 哭啊
+        self.rc_theta= -1 
+        self.lc_theta= -1 
         #前進量校正
-        self.c_speed=-300
+        self.c_speed=-550
         #平移校正
-        self.c_yspeed =0
+        self.c_yspeed =400
         #上板x
-        self.up_x=7000
+        self.up_x=6500
         #下板x
         self.down_x=6000
 #////////////////////////////////////////////////////////////////////////
@@ -88,48 +94,48 @@ class Send_distance():
         self.r_theta_1 = -6 + self.rc_theta
         self.r_theta_2 = -1 + self.r_theta_1
         self.r_theta_3 = -2 + self.r_theta_1
-        self.r_theta_4 = -4 + self.r_theta_1
-        self.r_theta_5 = -6 + self.r_theta_1
+        self.r_theta_4 = -3 + self.r_theta_1
+        self.r_theta_5 = -4 + self.r_theta_1
         
         #上板速度
         self.speed_1=200+self.c_speed
-        self.speed_2=500+self.c_speed
+        self.speed_2=800+self.c_speed
         self.speed_3=1300+self.c_speed
         self.speed_4=2500+self.c_speed
         self.speed_5=2500+self.c_speed
 
         #下板速度
-        self.down_speed_1=400+self.c_speed
-        self.down_speed_2=500+self.c_speed
-        self.down_speed_3=600+self.c_speed
+        self.down_speed_1=500+self.c_speed
+        self.down_speed_2=700+self.c_speed
+        self.down_speed_3=900+self.c_speed
        
         #上板腳離板子差
         self.up_bd_1=4                      #小白 6  小黑 3
-        self.up_bd_2=15
-        self.up_bd_3=60
+        self.up_bd_2=30
+        self.up_bd_3=70
         self.up_bd_4=100
         
         # 上板離板太近距離
         self.back_dis=2                   #小白 4  小黑 1
-        self.back_speed   = -300+self.c_speed
+        self.back_speed   = -200+self.c_speed
         self.back_speed_2 = -700+self.c_speed
 
         # 空間不夠距離
         #上板
-        self.space_nud=110
+        self.space_nud=90
         self.space_ud=65
         #下板
-        self.space_ndd=25
-        self.space_dd=15
+        self.space_ndd=50
+        self.space_dd=50
 
         #下板腳離板子差
-        self.down_bd_1=6
+        self.down_bd_1=4
         self.down_bd_2=30
         self.down_bd_3=60
         self.down_bd_4=60
 
         #腳前距離差
-        self.feet_distance_1=3
+        self.feet_distance_1=5
         self.feet_distance_2=6      
         self.feet_distance_3=8
         self.feet_distance_4=10
@@ -148,10 +154,36 @@ class Send_distance():
         self.next_down_max = 0
         self.big_to_small_down_distance = [999,999,999,999]
 
-
+        # space not enough counter
         self.counter =0
-        self.counter_max = 15
+        self.counter_max = 10
         self.not_enough_flag=0
+
+        # 90 counter
+        self.counter_90 =0
+        self.counter_90_max = 10
+        self.flag_90=0
+
+    # 改線
+    def set_line(self):
+        if self.layer_n==1 and self.direction==0:
+            # self.f_ll=10
+            # self.f_lr=self.f_ll+52+88
+            # self.f_rl=170
+            # self.f_rr=self.f_rl+52
+            pass
+        elif self.layer_n==1 and self.direction==1:
+            # self.f_ll=78
+            # self.f_lr=self.f_ll+52-20
+            # self.f_rl=170
+            # self.f_rr=self.f_rl+52
+            pass
+        else:
+            self.f_ll=98
+            self.f_lr=self.f_ll+52
+            self.f_rl=170
+            self.f_rr=self.f_rl+52
+
 
 
 
@@ -247,29 +279,57 @@ class Send_distance():
         #         self.point_x=mp
         #         break
 
-        #左左腳距離  #找要下的層
-        for ll in range(self.knee,10,-1):      
-            if self.return_real_board(ll,self.f_ll,self.layer_n-1):
-                self.down_distance[0] = self.knee - ll
-                break
-        #左右腳距離
-        for lr in range(self.knee,10,-1):
-            if self.return_real_board(lr,self.f_lr,self.layer_n-1):
-                self.down_distance[1] = self.knee - lr
-                break
-
-        #右左腳距離
-        for rl in range(self.knee,10,-1):
-            if self.return_real_board(rl,self.f_rl,self.layer_n-1):
-                self.down_distance[2] = self.knee - rl
-                break
-
-        #右右腳距離
-        for rr in range(self.knee,10,-1):
-            if self.return_real_board(rr,self.f_rr,self.layer_n-1):
-                self.down_distance[3] = self.knee - rr
-                break
         
+
+        if self.layer_n>=2:
+            #左左腳距離  #找要下的層
+            for ll in range(self.knee,10,-1):      
+                if self.return_real_down_board(ll,self.f_ll,self.layer_n-1):
+                    self.down_distance[0] = self.knee - ll
+                    break
+            #左右腳距離
+            for lr in range(self.knee,10,-1):
+                if self.return_real_down_board(lr,self.f_lr,self.layer_n-1):
+                    self.down_distance[1] = self.knee - lr
+                    break
+
+            #右左腳距離
+            for rl in range(self.knee,10,-1):
+                if self.return_real_down_board(rl,self.f_rl,self.layer_n-1):
+                    self.down_distance[2] = self.knee - rl
+                    break
+
+            #右右腳距離
+            for rr in range(self.knee,10,-1):
+                if self.return_real_down_board(rr,self.f_rr,self.layer_n-1):
+                    self.down_distance[3] = self.knee - rr
+                    break
+
+        else:
+            #左左腳距離  #找要下的層
+            for ll in range(self.knee,10,-1):      
+                if self.return_real_board(ll,self.f_ll,self.layer_n-1):
+                    self.down_distance[0] = self.knee - ll
+                    break
+            #左右腳距離
+            for lr in range(self.knee,10,-1):
+                if self.return_real_board(lr,self.f_lr,self.layer_n-1):
+                    self.down_distance[1] = self.knee - lr
+                    break
+
+            #右左腳距離
+            for rl in range(self.knee,10,-1):
+                if self.return_real_board(rl,self.f_rl,self.layer_n-1):
+                    self.down_distance[2] = self.knee - rl
+                    break
+
+            #右右腳距離
+            for rr in range(self.knee,10,-1):
+                if self.return_real_board(rr,self.f_rr,self.layer_n-1):
+                    self.down_distance[3] = self.knee - rr
+                    break
+
+
         #找下一板可踩空間
         if self.layer_n>=2:
             for ll_2 in range(ll,10,-1):     
@@ -316,54 +376,86 @@ class Send_distance():
             #     self.speed=self.back_speed
             #     self.yspeed = self.c_yspeed
             #     self.up_theta_func()
+
+            # 上板空間不夠
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
                 #print('space not enoughhhhhhhhhhh')
-                if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = -500+self.c_speed
+                # 在第一層
+                if self.layer_n==1:
+                    self.speed = -300+self.c_speed
+                    self.yspeed = 1200+self.c_yspeed
+                    self.up_theta_func()
+                    print('space not enough move one')
+
+                # 在第其他層
+                else:
+                    self.speed = -300+self.c_speed
                     self.yspeed = -1200+self.c_yspeed
                     self.up_theta_func()
-                    print('1111111111111111111111111')
+                    print('space not enough move other')
 
-            else:
-                self.speed = -100+self.c_speed
-                self.yspeed = self.yspeed
+            # 有出現再開
+            # elif (self.up_distance[1]<self.up_distance[0]) and (self.up_distance[1]<self.up_distance[3]) and (self.up_distance.index(min(self.up_distance))==1) and (max(self.up_distance)-min(self.up_distance)>20):
+            #     self.speed=-600+self.c_speed
+            #     self.theta=self.rc_theta
+            #     self.yspeed = -1200+self.c_yspeed
+
+            # elif (self.up_distance[2]<self.up_distance[0]) and (self.up_distance[2]<self.up_distance[3]) and (self.up_distance.index(min(self.up_distance))==2) and (max(self.up_distance)-min(self.up_distance)>20):
+            #     self.speed=-600+self.c_speed
+            #     self.theta=self.rc_theta
+            #     self.yspeed = 1200+self.c_yspeed
+                
+
+
+            # 不平行
+            elif self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
+                print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
+                #self.speed=self.back_speed
+                self.speed=-200+self.c_speed
                 self.up_theta_func()
-                print('222222222222222222222222222')
+                if self.theta>self.rc_theta:
+                    self.yspeed = -800+self.c_yspeed
+                elif self.theta<self.rc_theta:
+                    self.yspeed = 800+self.c_yspeed
+                else:
+                    self.yspeed = self.c_yspeed
 
-            # if self.up_distance[3]-self.up_distance[0] > 5 or self.up_distance[0]-self.up_distance[3] >5:
-            #     print("back back back back aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaback back back back")
-            #     self.speed=self.back_speed
-            #     self.up_theta_func()
-            #     if self.theta>self.rc_theta:
-            #         self.yspeed = -200+self.c_yspeed
-            #     elif self.theta<self.rc_theta:
-            #         self.yspeed = 250+self.c_yspeed
-            #     else:
-            #         self.yspeed = self.c_yspeed
+            
 
-            # else:
-            #     print("back back back back")
-            #     self.speed=self.speed_1
-            #     self.yspeed = self.c_yspeed
-            #     self.up_theta_func()
+
+
+            # 進 back back 但可以繼續直走
+            else:
+                print("back back back back")
+                self.speed=self.speed_1
+                self.yspeed = self.c_yspeed
+                self.up_theta_func()
         
+            # else:
+            #     self.speed = -100+self.c_speed
+            #     self.yspeed = self.yspeed
+            #     self.up_theta_func()
+            #     print('222222222222222222222222222')
 
 
         else :
-            # 空間不夠
+            # 上板空間不夠
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
                 #print('space not enoughhhhhhhhhhh')
-                if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = -500+self.c_speed
+                # 在第一層
+                if self.layer_n==1:
+                    self.speed = -300+self.c_speed
+                    self.yspeed = 1200+self.c_yspeed
+                    self.up_theta_func()
+                    print('space not enough move one')
+
+                # 在第其他層
+                else:
+                    self.speed = -300+self.c_speed
                     self.yspeed = -1200+self.c_yspeed
                     self.up_theta_func()
-                    print('1111111111111111111111111')
+                    print('space not enough move other')
 
-                else:
-                    self.speed = -100+self.c_speed
-                    self.yspeed = self.yspeed
-                    self.up_theta_func()
-                    print('222222222222222222222222222')
 
             
 
@@ -394,7 +486,7 @@ class Send_distance():
             else :
                 #上紅板後
                 if self.layer_n > 1:
-                    if(self.up_distance[0]<=self.up_bd_2 and self.up_distance[3]<=self.up_bd_2):#30
+                    if(self.up_distance[1]<=self.up_bd_2 and self.up_distance[2]<=self.up_bd_2):#30
                         self.speed=self.speed_1
                         self.yspeed = self.c_yspeed
                         self.up_theta_func()
@@ -419,17 +511,20 @@ class Send_distance():
                     elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
                         self.speed=self.speed_2
                         self.yspeed = self.c_yspeed
-                        self.up_theta_func()
+                        self.theta = self.rc_theta
+                        # self.up_theta_func()
                         print("speed_2")
                     elif(self.up_distance[1]<self.up_bd_4) or (self.up_distance[2]<self.up_bd_4):
                         self.speed=self.speed_3
                         self.yspeed = self.c_yspeed
-                        self.up_theta_func()
+                        self.theta = self.rc_theta
+                        # self.up_theta_func()
                         print("speed_3")
                     else:
                         self.speed=self.speed_5
                         self.yspeed = self.c_yspeed
-                        self.up_theta_func()
+                        self.theta = self.rc_theta
+                        # self.up_theta_func()
                         print("speed_5")
             
 
@@ -441,30 +536,40 @@ class Send_distance():
             # self.next_down_max = self.down_distance.index(max(self.down_distance))
             # self.big_to_small_down_distance = sorted(self.down_distance,reverse = True)
             # if((self.down_distance[0]<=self.back_dis or self.down_distance[0]==999) and self.next_down_distance:
-            if (self.down_distance[1] < self.down_bd_1+15 or self.down_distance[2] < self.down_bd_1+15) and (abs(self.down_distance[2]-self.down_distance[1])<self.feet_distance_1):
+            if (self.down_distance[1] < self.down_bd_1+5 or self.down_distance[2] < self.down_bd_1+5) and (abs(self.down_distance[2]-self.down_distance[1])<self.feet_distance_1):
                 print("晏宇不會走")
                 self.speed = 300 + self.c_speed
                 self.yspeed = self.c_yspeed
                 self.down_theta_func()
-            elif self.down_distance[0]<=3 or self.next_down_distance[0] < 65:
+            elif self.down_distance[0]<=5:
                 print("晏宇y")
                 self.speed = 0+self.c_speed
                 self.yspeed = -1200+self.c_yspeed
-                self.theta = 0+self.rc_theta
-            elif self.down_distance[3]<=3 or self.next_down_distance[3] < 65:
+                self.theta = -3
+            elif self.down_distance[3]<=5 :
                 print("晏宇好走")
                 self.speed = 0+self.c_speed
                 self.yspeed = 1200+self.c_yspeed
-                self.theta = 0+self.rc_theta
+                self.theta = -1
+            elif (self.next_down_distance[0] < 70 and self.down_distance[0]<=60):
+                print("晏宇y")
+                self.speed = 0+self.c_speed
+                self.yspeed = -1200+self.c_yspeed
+                self.theta = -3
+            elif (self.next_down_distance[3] < 70 and self.down_distance[3]<=60):
+                print("晏宇好走")
+                self.speed = 0+self.c_speed
+                self.yspeed = 1200+self.c_yspeed
+                self.theta = -1
+
             else:
                 print("我直走")
                 if self.down_distance[1] <= self.down_bd_2 and self.down_distance[2] <= self.down_bd_2:#距離小於30的時候
-                    self.speed = 300 + self.c_speed
+                    self.speed = self.down_speed_1
                     self.yspeed = self.c_yspeed
                     self.down_theta_func()
                 elif self.down_distance[1] <=self.down_bd_3 and self.down_distance[2] <= self.down_bd_3:#距離小於60的時候
-                    self.speed = 400 + self.c_speed
-                    self.yspeed = self.c_yspeed
+                    self.speed = self.down_speed_2
                     self.down_theta_func()
                 elif self.down_distance[1] > self.down_bd_4 or self.down_distance[2] > self.down_bd_4:#距離在大於60的時候
                     self.speed = self.down_speed_3
@@ -473,8 +578,8 @@ class Send_distance():
                 
 
 
-        
-        else:
+        # 不在第三板
+        elif self.layer_n!=3:
             if(self.down_distance[0]<=self.back_dis or self.down_distance[1]<=self.back_dis or self.down_distance[2]<=self.back_dis or self.down_distance[3]<=self.back_dis):  
                 print("我進back")   
                 # if ((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 or self.down_distance.index(max(self.down_distance)) == 1 or self.down_distance.index(max(self.down_distance)) == 2:
@@ -490,7 +595,17 @@ class Send_distance():
                 #     print("left 0")
                 #     self.speed=self.back_speed
                 #     self.yspeed = 1200+self.c_yspeed
-                #     self.up_theta_func()             
+                #     self.up_theta_func()
+
+                if self.layer_n != 1 and (self.next_down_distance[0] < self.space_ndd or self.next_down_distance[1] < self.space_ndd or self.next_down_distance[2] < self.space_ndd or self.next_down_distance[3] < self.space_ndd) and (self.down_distance[0] < self.space_dd or self.down_distance[3] < self.space_dd):
+                    self.counter +=1
+                    self.not_enough_flag=1
+                else:
+                    self.counter =0
+                    self.not_enough_flag=0
+
+
+
                 if max(self.down_distance)-min(self.down_distance)>25:
                     if self.down_distance.index(max(self.down_distance)) == 3 :
                         print("index : ",self.down_distance.index(min(self.down_distance)))
@@ -511,71 +626,83 @@ class Send_distance():
             
 
                 else:
-                    print("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
-                    self.speed=self.down_speed_1-100
+                    #print("gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
+                    self.speed=self.down_speed_1-200
                     self.yspeed = self.c_yspeed
                     self.down_theta_func()
             else:
-                # 空間不夠
-                # if self.layer_n != 1 and (self.next_down_distance[0] < self.space_ndd or self.next_down_distance[3] < self.space_ndd) and (self.down_distance[0] < self.space_dd or self.down_distance[3] < self.space_dd):
-                #     print("空間不夠") 
-                #     if self.layer_n == 3:
-                #         self.speed = self.back_speed_2 
-                #         self.yspeed = self.c_yspeed 
-                #         print('111111111111111111111111111')
+                # 下板空間不夠
+                if self.layer_n != 1 and (self.next_down_distance[0] < self.space_ndd or self.next_down_distance[1] < self.space_ndd or self.next_down_distance[2] < self.space_ndd or self.next_down_distance[3] < self.space_ndd) and (self.down_distance[0] < self.space_dd or self.down_distance[3] < self.space_dd):
+                    self.counter +=1
+                    self.not_enough_flag=1
 
-                #         if self.next_down_distance[0]>self.next_down_distance[3]:
-                #             self.theta = 8+self.lc_theta
-                #             print('lllllllllllllllllllllll')
-                #             time.sleep(1)
-                #         else:
-                #             self.theta = -15+self.rc_theta
-                #             print('rrrrrrrrrrrrrrrrrrrrrrr')
-                #             time.sleep(1)
-                #     else:
-                #         print('222222222222222222')
-                #         self.speed = -900+self.c_speed
-                #         self.yspeed = 0+self.c_yspeed
-                #         send.sendContinuousValue(self.speed,self.yspeed,0,self.lc_theta,0)
-                #         time.sleep(3)
-                #         if self.next_down_distance[0]>self.next_down_distance[3]:
-                            
-                #             self.speed = 0+self.c_speed
-                #             self.yspeed = 0+self.c_yspeed 
-                #             self.theta = -15+self.lc_theta
-                #             print('rrrrrrrrrrrrrrrrrrrrr')
-                #             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
-                #             time.sleep(1)
-                            
-                #         else:
-                #             self.speed = 0+self.c_speed
-                #             self.yspeed = 0+self.c_yspeed
-                #             self.theta = 15+self.rc_theta
-                #             print('llllllllllllllllllll')
-                #             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
-                #             time.sleep(7)
-                            
+                    if self.counter >= self.counter_max:
+                        self.speed = self.back_speed
 
-                    # else:#有進90度
-                    #     self.speed = self.speed
-                    #     self.yspeed = self.yspeed
-                    #     self.theta=self.theta
-                    #     print('3333333333333333333333333333')
-                # if((self.f_ll-self.point_x)*(self.f_rr-self.point_x))<0 and (self.down_distance[0]<40 or self.down_distance[1]<40 or self.down_distance[2]<40 or self.down_distance[3]<40):
-                #     self.down_board_90()
-                print("我直走")
-                if self.down_distance[0] <= self.down_bd_2 and self.down_distance[3] <= self.down_bd_2:#距離小於30的時候
+                        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        if self.next_down_distance[0]>self.space_ndd and self.next_down_distance[0]<999:
+                            self.yspeed = 1200+self.c_yspeed 
+                            self.down_theta_func
+                            print('counter>max move left')
+                            print('vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
+
+                        else:
+                            self.yspeed = 0+self.c_yspeed
+                            self.theta = -12 +self.rc_theta
+                            print('counter>max big turn')
+
+
+
+                    # else:
+                    #     self.speed = self.back_speed_2
+                    #     self.yspeed = 0+self.c_yspeed
+
+                    #     #直接設定遇到空間不夠轉哪邊 
+                    #     # self.theta = 8 +self.rc_theta  
+                    #     # 讓他透過哪邊空間大設定轉向
+                    #     if self.next_down_distance[0]>self.next_down_distance[3]:
+                    #         self.theta = 8+self.rc_theta
+                    #         print('counter<max turn right') 
+                        
+                    #     else:
+                    #         self.theta = -8+self.rc_theta
+                    #         print('counter<max turn left')
+
+                elif self.down_distance[0] <= self.down_bd_2 and self.down_distance[3] <= self.down_bd_2:#距離小於30的時候
+                    self.counter =0
+                    self.not_enough_flag=0
+
                     self.speed = self.down_speed_1
                     self.yspeed = self.c_yspeed
                     self.down_theta_func()
+                    print('normal 1')
                 elif self.down_distance[0] <=self.down_bd_3 and self.down_distance[3] <= self.down_bd_3:#距離小於60的時候
+                    self.counter =0
+                    self.not_enough_flag=0
+
                     self.speed = self.down_speed_2
                     self.yspeed = self.c_yspeed
                     self.down_theta_func()
+                    print('normal 2')
                 elif self.down_distance[0] > self.down_bd_4 or self.down_distance[3] > self.down_bd_4:#距離在大於60的時候
+                    self.counter =0
+                    self.not_enough_flag=0
+
                     self.speed = self.down_speed_3
                     self.yspeed = self.c_yspeed
                     self.down_theta_func()
+                    print('normal 3')
+
+                else:
+                    self.counter =0
+                    self.not_enough_flag=0
+
+                    self.speed = self.down_speed_3
+                    self.yspeed = self.c_yspeed
+                    self.down_theta_func()
+                    print('normal 4')
+
+
 
         
 
@@ -584,13 +711,15 @@ class Send_distance():
         if ((self.up_distance[1]<self.up_bd_1) and (self.up_distance[2]<self.up_bd_1)) and (abs(self.up_distance[3]-self.up_distance[0])<self.feet_distance_1) and (self.next_up_distance[0] > self.space_nud and self.next_up_distance[3] > self.space_nud):
             if self.stop_flag==0 and self.up_board_flag==0:
                 print('ready upboard')
+                # send.sendContinuousValue(self.c_speed,self.c_yspeed,0,self.rc_theta,0)
+                # time.sleep(2)
                 self.speed=0
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
                 send.sendSensorReset()
-                send.sendBodySector(1)
+                #send.sendBodySector(6)
                 #send.sendBodySector(89)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(1)
@@ -606,7 +735,7 @@ class Send_distance():
                 self.next_up_distance = [999,999,999,999]
                 send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 time.sleep(5)
-                send.sendBodySector(29)
+                send.sendBodySector(29)#這是基本站姿的磁區
                 time.sleep(3)
                             
         else:
@@ -627,7 +756,7 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
                 send.sendSensorReset()
-                #send.sendBodySector(3)
+                #send.sendBodySector(6)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
                 # else:
@@ -687,7 +816,7 @@ class Send_distance():
             elif self.up_horizontal_2>self.f_mid and self.up_horizontal_2<999:
                 self.speed = 0 + self.c_speed
                 self.yspeed = self.c_yspeed
-                self.theta = -8 + self.rc_theta            
+                self.theta = -12 + self.rc_theta            
                 #print("cant find board : turn right")
                 #send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
 
@@ -819,7 +948,7 @@ class Send_distance():
             print('walk forward')
 
     def down_theta_func(self):
-        print("怎摸不會進")
+        # print("怎摸不會進")
         self.down_feet_distance=self.down_distance[2]-self.down_distance[1]
 
         if(self.down_feet_distance)<(-1*(self.feet_distance_4-2)):#右旋
@@ -840,7 +969,7 @@ class Send_distance():
         elif(self.down_feet_distance)>self.feet_distance_1-2:
             self.theta = self.l_theta_1
         else:
-            print("齁晏宇")
+            # print("齁晏宇")
             self.theta = 0+self.lc_theta
 
         if(self.down_feet_distance>self.feet_distance_1):
@@ -853,10 +982,21 @@ class Send_distance():
 # ////////////////只針對10個點拿出來//////////////////   
     def return_real_board(self,y,x,layer):
         real_distance_flag=0
-        real_distance_flag=send.Label_Model[320*y+x] == self.layer[layer]
+        real_distance_flag= (send.Label_Model[320*y+x] == self.layer[layer])
         if real_distance_flag==1:
             for i in range(1,11):
                 real_distance_flag=real_distance_flag and send.Label_Model[320*(y-i)+x] == self.layer[layer]
+                if real_distance_flag==0:
+                    break
+        return real_distance_flag
+
+
+    def return_real_down_board(self,y,x,layer):
+        real_distance_flag=0
+        real_distance_flag= (send.Label_Model[320*y+x] == self.layer[layer]) or (send.Label_Model[320*y+x] == self.layer[layer-1])
+        if real_distance_flag==1:
+            for i in range(1,11):
+                real_distance_flag=real_distance_flag and (send.Label_Model[320*(y-i)+x] == self.layer[layer] or (send.Label_Model[320*y+x] == self.layer[layer-1]))
                 if real_distance_flag==0:
                     break
         return real_distance_flag
@@ -873,7 +1013,7 @@ class Send_distance():
             # print("real board model             : ",self.board_model)
             # print("board size                   : ",send.color_mask_subject_size[self.color_model[self.layer_n]][self.board_model])
     # ////////////////////////////////////////////////////////////////////////////////////////////////////  
-            print("speed                        : ",self.speed)
+            print("speed                        : ",self.speed )
             print("yspeed                       : ",self.yspeed)
             print("theta                        : ",self.theta)
             print("point   y                    : ",self.point_y)

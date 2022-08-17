@@ -20,6 +20,7 @@ if __name__ == '__main__':
             if send.is_start ==True:
                 if send.DIOValue == 31 or send.DIOValue == 15 or send.DIOValue == 23 or send.DIOValue == 7:
                     distance.print_state()
+                    distance.set_line()
                     send.drawImageFunction(1,0,0,320,distance.knee,distance.knee,255,0,0)#膝蓋的橫線
                     send.drawImageFunction(2,0,distance.f_lr,distance.f_lr,0,240,255,0,0)#lr的線
                     # send.drawImageFunction(3,0,132,132,0,240,255,0,0)#lm的線
@@ -78,9 +79,10 @@ if __name__ == '__main__':
                         send.sendBodyAuto(500,0,0,0,1,0)
                         climb.stop_flag = 0
                     elif climb.stop_flag == 1 and climb.up_ladder_flag == 1:
-                        send.sendBodyAuto(0,0,0,0,1,0)
-                        climb.stop_flag = 0
-                        climb.up_ladder_flag = 0
+                        #send.sendBodyAuto(0,0,0,0,1,0)
+                        #climb.stop_flag = 0
+                        #climb.up_ladder_flag = 0
+                        send.sendBodySector(29)
                     elif climb.stop_flag == 0 :
                         climb.find_ladder()
                         climb.up_ladder()
@@ -115,16 +117,17 @@ if __name__ == '__main__':
                     # ladder.head_360=[0 for i in range(ladder.ladder_n)]
                     # ladder.ladder_hight=[0 for i in range(ladder.ladder_n)]
                     if climb.stop_flag == 0:
-                            print("climb turn off")
-                            climb.theta = 0
-                            climb.speed = 0
-                            climb.yspeed=0
-                            send.sendBodyAuto(0,0,0,0,1,0)
-                            send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
-                            climb = Send_Climb()#建立名稱,順便歸零
-                            climb.stop_flag = 1
-                            time.sleep(0.5)
-                            # send.sendBodySector(29)
+                        send.sendBodyAuto(0,0,0,0,1,0)
+                    print("climb turn off")
+                    climb.theta = 0
+                    climb.speed = 0
+                    climb.yspeed=0
+                    send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
+                    climb = Send_Climb()#建立名稱,順便歸零
+                    climb.stop_flag = 1
+                    climb.up_ladder_flag = 0
+                    time.sleep(0.5)
+                    send.sendBodySector(29)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(0.5)

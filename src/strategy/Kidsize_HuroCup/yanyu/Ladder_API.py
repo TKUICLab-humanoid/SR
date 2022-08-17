@@ -25,8 +25,8 @@ class Send_Climb():
         self.knee=215
         self.f_ll=98
         self.f_lr=150
-        self.f_rl=188
-        self.f_rr=240
+        self.f_rl=170
+        self.f_rr=222
 
         #距離矩陣初始化
         self.climb_distance = [999,999,999,999]
@@ -38,19 +38,19 @@ class Send_Climb():
         self.up_ladder_flag =0
 #//////////////////////////////////////////////////////////
         #校正變數
-        self.c_theta=-2
+        self.c_theta=1
         
-        self.c_speed=-400
+        self.c_speed=-500
         # 下板校正的平移
-        self.c_yspeed =400
+        self.c_yspeed =300
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
         self.speed = 500 + self.c_speed
         self.yspeed =0 + self.c_yspeed
 
-        self.up_1 = 23
-        self.up_2 = 35
+        self.up_1 = 10
+        self.up_2 = 75
 
         self.speed_1 = 200 + self.c_speed
         self.speed_2 = 600 + self.c_speed
@@ -69,13 +69,17 @@ class Send_Climb():
         self.r_theta_5 = -5 + self.c_theta
 
         #旋轉差
-        self.feet_distance_1=3
+        self.feet_distance_1=5
         self.feet_distance_2=6      
         self.feet_distance_3=8
         self.feet_distance_4=10
 
         #3-0
         self.climb_feet_distance = 0
+
+        self.sector_array=[16,17,800,600]
+        self.delay_array=[6,13,16,20]
+        
 
     # def find_ladder_mid(self):
     #     self.a = send.color_mask_subject_Y[2][0]
@@ -127,8 +131,10 @@ class Send_Climb():
 
     
     def up_ladder(self): #要上梯了
-        print('climb_distance',self.climb_distance[1])
-        if ((self.climb_distance[1]<self.up_1) and (self.climb_distance[2]<self.up_1)) and (abs(self.climb_distance[3]-self.climb_distance[0])<self.feet_distance_1) :
+        print('climb_distance',self.climb_distance)
+        print(send.DIOValue)
+    
+        if ((self.climb_distance[0]<=self.up_1) or (self.climb_distance[1]<=self.up_1) or (self.climb_distance[2]<=self.up_1) or (self.climb_distance[3]<=self.up_1)):
             if self.stop_flag==0 and self.up_ladder_flag==0:
                 print('ready upladder')
                 self.speed=0
@@ -138,10 +144,19 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(25)
-                time.sleep(30)
-                # send.sendBodySector(2)
-                # time.sleep(30)
+
+
+                for i in range (len(self.sector_array)):
+
+                    if (send.DIOValue >> 3)%2==1:
+                        send.sendBodySector(self.sector_array[i])
+                        time.sleep(self.delay_array[i])
+                        print('sector')
+                    else:
+                        send.sendBodySector(1000)
+                        print('stand 29')
+                        break
+                
                 self.climb_distance = [999,999,999,999]                 
         else:
             self.parallel_setup()
