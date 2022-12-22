@@ -40,15 +40,15 @@ class Send_Climb():
         #校正變數
         self.c_theta=1
         
-        self.c_speed=-500
+        self.c_speed=-300
         # 下板校正的平移
-        self.c_yspeed =300
+        self.c_yspeed =200
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
         self.speed = 500 + self.c_speed
         self.yspeed =0 + self.c_yspeed
-        self.up_1 = 10
+        self.up_1 = 8
         self.up_2 = 75
 
         self.speed_1 = 200 + self.c_speed
@@ -76,8 +76,8 @@ class Send_Climb():
         #3-0
         self.climb_feet_distance = 0
 
-        self.sector_array=[16,17,800,600]
-        self.delay_array=[6,13,16,20]
+        self.sector_array=[16,17,8888,9999,7777,555,700,6666,7777]
+        self.delay_array=[6,15,9,6,25,2,2,21,30]
         
 
     # def find_ladder_mid(self):
@@ -131,7 +131,7 @@ class Send_Climb():
     
     def up_ladder(self): #要上梯了
         print('climb_distance',self.climb_distance)
-        print(send.DIOValue)
+        # print(send.DIOValue)
     
         if ((self.climb_distance[0]<=self.up_1) or (self.climb_distance[1]<=self.up_1) or (self.climb_distance[2]<=self.up_1) or (self.climb_distance[3]<=self.up_1)):
             if self.stop_flag==0 and self.up_ladder_flag==0:
@@ -150,7 +150,7 @@ class Send_Climb():
                     if (send.DIOValue >> 3)%2==1:
                         send.sendBodySector(self.sector_array[i])
                         time.sleep(self.delay_array[i])
-                        print('sector')
+                        print('sector {}'.format(self.sector_array[i]))
                     else:
                         send.sendBodySector(1000)
                         print('stand 29')
