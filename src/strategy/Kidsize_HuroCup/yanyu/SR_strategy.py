@@ -87,6 +87,7 @@ if __name__ == '__main__':
                         climb.up_ladder()
             elif send.is_start ==False:
                 # print('web',send.Web)
+                send.sendSensorReset()
                 if send.DIOValue == 31 or send.DIOValue == 15 or send.DIOValue == 23 or send.DIOValue == 7:
                     if distance.stop_flag == 0 or distance.up_board_flag == 1:
                         print("turn off")
@@ -95,12 +96,14 @@ if __name__ == '__main__':
                         distance.yspeed=0
                         if distance.stop_flag == 0:
                             send.sendBodyAuto(0,0,0,0,1,0)
-                        send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
+                        #send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
                         distance = Send_distance()#建立名稱,順便歸零
                         distance.layer_n= 1
                         distance.stop_flag = 1
                         time.sleep(0.5)
-                        send.sendBodySector(29)
+                        # send.sendBodySector(29)
+                        print('29')
+                    print("lc turn off")
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(0.5)
@@ -117,6 +120,7 @@ if __name__ == '__main__':
                     # ladder.ladder_hight=[0 for i in range(ladder.ladder_n)]
                     if climb.stop_flag == 0:
                         send.sendBodyAuto(0,0,0,0,1,0)
+                        print('29')
                     print("climb turn off")
                     climb.theta = 0
                     climb.speed = 0
@@ -126,7 +130,7 @@ if __name__ == '__main__':
                     climb.stop_flag = 1
                     climb.up_ladder_flag = 0
                     time.sleep(0.5)
-                    send.sendBodySector(29)
+                    
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(0.5)
