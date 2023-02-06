@@ -18,13 +18,13 @@ class Send_distance():
     def __init__(self):#初始化
         #腳掌標準線x值
         self.knee=215
-        self.f_ll=98
-        self.f_lr=self.f_ll+52
+        self.f_ll=94
+        self.f_lr=self.f_ll+44
         self.f_rl=170
-        self.f_rr=self.f_rl+52
-        self.head_Horizontal = 2040
+        self.f_rr=self.f_rl+44
+        self.head_Horizontal = 2048
         #self.head_Vertical = 1425
-        self.head_Vertical = 1392
+        self.head_Vertical = 1291
         #距離矩陣初始化
         self.up_distance = [999,999,999,999]        #要上的層
         self.down_distance = [999,999,999,999]              #要下的層
@@ -689,7 +689,7 @@ class Send_distance():
                 #     self.down_board_90()
                 # print("我直走")
                 # if self.down_distance[0] <= self.down_bd_2 and self.down_distance[3] <= self.down_bd_2:#距離小於30的時候
-                #     self.speed = self.down_speed_1
+                #     self.speed = self.down_speed_c_yspeed1
                 #     self.yspeed = self.c_yspeed
                 #     self.down_theta_func()
                 # elif self.down_distance[0] <=self.down_bd_3 and self.down_distance[3] <= self.down_bd_3:#距離小於60的時候
@@ -852,7 +852,7 @@ class Send_distance():
                 self.yspeed=1200+self.c_yspeed
                 self.theta=self.rc_theta   
                 print("move  left 90 not use distance")
-
+c_yspeed
 
     def down_board_90(self): #下板90度狀況
         #self.find_real_board_model(self.color_model[self.layer_n])
@@ -897,10 +897,7 @@ class Send_distance():
         #         break
         self.color_times=send.color_mask_subject_cnts[find]
         if self.color_times != 0:
-            self.color_true_times =1
-            for i in range(self.color_times):
-                self.color_size = send.color_mask_subject_size[find][i]
-                #print("全部size",self.color_size)
+            self.color_true_times =1c_yspeed_size)
                 if self.color_size >10000:#錢幣大小(要測試)
                     #print("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
                     self.color_loc = i
