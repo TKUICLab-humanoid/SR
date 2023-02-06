@@ -103,7 +103,7 @@ if __name__ == '__main__':
                         time.sleep(0.5)
                         send.sendBodySector(29)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                    send.sendHeadMotor(2,2371,100)#垂直
                     time.sleep(0.5)
                 else:
                     # print("ladder turn off")
@@ -129,7 +129,7 @@ if __name__ == '__main__':
                     time.sleep(0.5)
                     send.sendBodySector(29)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                    send.sendHeadMotor(2,2371,100)#垂直
                     time.sleep(0.5)
 
             r.sleep()    
