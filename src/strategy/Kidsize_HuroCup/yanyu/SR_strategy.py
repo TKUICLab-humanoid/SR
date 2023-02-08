@@ -105,7 +105,7 @@ if __name__ == '__main__':
                         send.sendBodySector(29)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-                    time.sleep(0.5)
+                    time.sleep(1)
                 else:
                     # print("ladder turn off")
                     # ladder.head_init = ladder.head_highest

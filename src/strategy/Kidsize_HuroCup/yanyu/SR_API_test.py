@@ -17,9 +17,9 @@ send = Sendmessage()#要放在class外面,不然不能宣告
 class Send_distance():
     def __init__(self):#初始化
         #腳掌標準線x值
-        self.knee=215
-        self.f_ll=94
-        self.f_lr=self.f_ll+44
+        self.knee=200
+        self.f_lr=138
+        self.f_ll=self.f_lr-44        
         self.f_rl=170
         self.f_rr=self.f_rl+44
         self.head_Horizontal = 2048
@@ -58,15 +58,15 @@ class Send_distance():
         self.layer_n= 3     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= 4 
-        self.lc_theta=4 
+        self.rc_theta= 0 
+        self.lc_theta=0 
         #前進量校正
-        self.c_speed=-200
+        self.c_speed=0
         #平移校正
-        self.c_yspeed =-100
+        self.c_yspeed =0
         #上板x
         self.up_x=7000
         #下板x
@@ -78,20 +78,20 @@ class Send_distance():
         self.yspeed =0+self.c_yspeed
 
         #角度設定 左旋
-        self.l_theta_1 = 6 + self.lc_theta
+        self.l_theta_1 = 3+ self.lc_theta
         self.l_theta_2 = self.l_theta_1+1
         self.l_theta_3 = self.l_theta_1+2
         self.l_theta_4 = self.l_theta_1+3
         self.l_theta_5 = self.l_theta_1+4
         #角度設定 右旋
-        self.r_theta_1 = -8 + self.rc_theta
+        self.r_theta_1 = -3 + self.rc_theta
         self.r_theta_2 = -1 + self.r_theta_1
         self.r_theta_3 = -2 + self.r_theta_1
-        self.r_theta_4 = -4 + self.r_theta_1
-        self.r_theta_5 = -6 + self.r_theta_1
+        self.r_theta_4 = -3 + self.r_theta_1
+        self.r_theta_5 = -4 + self.r_theta_1
         
         #上板速度
-        self.speed_1=200+self.c_speed
+        self.speed_1=0+self.c_speed
         self.speed_2=800+self.c_speed
         self.speed_3=1300+self.c_speed
         self.speed_4=2500+self.c_speed
@@ -110,7 +110,7 @@ class Send_distance():
         
         # 上板離板太近距離
         self.back_dis=2                   #小白 4  小黑 1
-        self.back_speed   = -300+self.c_speed
+        self.back_speed   = -500+self.c_speed
         self.back_speed_2 = -700+self.c_speed
 
         # 空間不夠距離
@@ -348,7 +348,7 @@ class Send_distance():
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = -500+self.c_speed
+                    self.speed = self.back_speed+self.c_speed
                     self.yspeed = -1200+self.c_yspeed
                     self.up_theta_func()
                     print('1111111111111111111111111')
@@ -360,7 +360,7 @@ class Send_distance():
                 self.speed=self.back_speed
                 self.up_theta_func()
                 if self.theta>self.rc_theta:
-                    self.yspeed = -200+self.c_yspeed
+                    self.yspeed = self.back_speed+self.c_yspeed
                 elif self.theta<self.rc_theta:
                     self.yspeed = 250+self.c_yspeed
                 else:
@@ -369,7 +369,7 @@ class Send_distance():
             # 進 back back 但可以繼續直走
             else:
                 print("back back back back")
-                self.speed=self.speed_1
+                self.speed=self.back_speed
                 self.yspeed = self.c_yspeed
                 self.up_theta_func()
         
@@ -728,7 +728,7 @@ class Send_distance():
                 self.next_board()
                 self.up_distance = [999,999,999,999]
                 self.next_up_distance = [999,999,999,999]
-                send.sendBodyAuto(self.up_x,0,0,0,2,0)
+                # send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 time.sleep(5)
                 send.sendBodySector(29)
                 time.sleep(3)
@@ -852,7 +852,7 @@ class Send_distance():
                 self.yspeed=1200+self.c_yspeed
                 self.theta=self.rc_theta   
                 print("move  left 90 not use distance")
-c_yspeed
+
 
     def down_board_90(self): #下板90度狀況
         #self.find_real_board_model(self.color_model[self.layer_n])
@@ -897,7 +897,9 @@ c_yspeed
         #         break
         self.color_times=send.color_mask_subject_cnts[find]
         if self.color_times != 0:
-            self.color_true_times =1c_yspeed_size)
+            self.color_true_times =1
+            for i in range(self.color_times):
+                self.color_size = send.color_mask_subject_size[find][i]
                 if self.color_size >10000:#錢幣大小(要測試)
                     #print("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
                     self.color_loc = i
