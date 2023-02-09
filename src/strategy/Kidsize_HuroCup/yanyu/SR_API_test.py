@@ -55,7 +55,7 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1    #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
         self.direction = 0      #0 上板 1 下板
@@ -68,7 +68,7 @@ class Send_distance():
         #平移校正
         self.c_yspeed =0
         #上板x
-        self.up_x=7000
+        self.up_x=17000
         #下板x
         self.down_x=6000
 #////////////////////////////////////////////////////////////////////////
@@ -349,7 +349,7 @@ class Send_distance():
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = self.back_speed+self.c_speed
-                    self.yspeed = -1200+self.c_yspeed
+                    self.yspeed = 0+self.c_yspeed
                     self.up_theta_func()
                     print('1111111111111111111111111')
 
@@ -386,7 +386,7 @@ class Send_distance():
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = -500+self.c_speed
-                    self.yspeed = -1200+self.c_yspeed
+                    self.yspeed = 0+self.c_yspeed
                     self.up_theta_func()
                     print('space not enough move yyyyyyyyyyyyy')
 
@@ -714,21 +714,14 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(5)
                 send.sendSensorReset()
-                #send.sendBodySector(1)
-                #send.sendBodySector(89)
-                # if self.layer_n == 1:
-                #     send.sendBodySector(1)
-                # elif self.layer_n == 2:
-                #     send.sendBodySector(1)
-                # elif self.layer_n == 3:
-                #     send.sendBodySector(1)
+                send.sendBodySector(30)
                 time.sleep(2)
                 self.stop_flag=1
                 self.up_board_flag=1
                 self.next_board()
                 self.up_distance = [999,999,999,999]
                 self.next_up_distance = [999,999,999,999]
-                # send.sendBodyAuto(self.up_x,0,0,0,2,0)
+                send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 time.sleep(5)
                 send.sendBodySector(29)
                 time.sleep(3)
