@@ -34,7 +34,7 @@ class Send_distance():
         self.up_horizontal_2=999
         #色模
         # self.color_model=[3,5,1,2]
-        self.color_model=[3,5,1,2]       #藍紅黃
+        self.color_model=[3,2,5,1]       #藍紅黃
         self.point_x=0    #色模Ymax的x值
         self.point_y=0    #色模Ymax
         self.m_xmin=0
@@ -55,9 +55,9 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 1   #現在站的層,從1開始
+        self.layer_n= 3   #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
-        self.layer = [8,32,2,4]         #藍紅黃
+        self.layer = [8,4,32,2]         #藍紅黃
         self.direction = 0     #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
@@ -66,7 +66,7 @@ class Send_distance():
         #前進量校正
         self.c_speed=0
         #平移校正
-        self.c_yspeed =500
+        self.c_yspeed =200
         #上板x
         self.up_x=17000
         #下板x
@@ -168,7 +168,7 @@ class Send_distance():
         #找色模（下一層）Ymax點的X座標
         if self.color_true_times ==1 and self.board_ture==1:
             self.point_y=send.color_mask_subject_YMax[self.color_model[self.layer_n]][self.color_loc]
-            for mp in range (0,320):
+            for mp in range (self.f_ll,self.f_rr):
                 if send.Label_Model[320*self.point_y+mp] == self.layer[self.layer_n]:
                     self.point_x=mp
                     break
@@ -360,7 +360,7 @@ class Send_distance():
                 self.speed=self.back_speed
                 self.up_theta_func()
                 if self.theta>self.rc_theta:
-                    self.yspeed = self.back_speed+self.c_yspeed
+                    self.yspeed = -600 + self.c_yspeed
                 elif self.theta<self.rc_theta:
                     self.yspeed = 250+self.c_yspeed
                 else:
@@ -714,17 +714,14 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(3)
                 send.sendSensorReset()
-                send.sendBodySector(987)
-                time.sleep(4)
                 self.stop_flag=1
                 self.up_board_flag=1
                 self.next_board()
                 self.up_distance = [999,999,999,999]
                 self.next_up_distance = [999,999,999,999]
-                send.sendBodyAuto(self.up_x,0,0,0,3,0)
+                send.sendBodyAuto(self.up_x,0,0,0,0,0)
                 time.sleep(4)
                 send.sendBodySector(29)
-                time.sleep(3)
                             
         else:
             self.parallel_board_setup()
@@ -906,33 +903,47 @@ class Send_distance():
 
     def up_theta_func(self):
         self.up_feet_distance=self.up_distance[3]-self.up_distance[0]
-        
-        if(self.up_feet_distance)<(-1*self.feet_distance_4):#右旋
-            self.theta = self.r_theta_4
-        elif(self.up_feet_distance)<(-1*self.feet_distance_3):
-            self.theta = self.r_theta_3
-        elif(self.up_feet_distance)<(-1*self.feet_distance_2):
-            self.theta = self.r_theta_2
-        elif(self.up_feet_distance)<(-1*self.feet_distance_1):
-            self.theta =  self.r_theta_1
-
-        elif(self.up_feet_distance)>self.feet_distance_4:#左旋
-            self.theta =  self.l_theta_4
-        elif(self.up_feet_distance)>self.feet_distance_3:
-            self.theta = self.l_theta_3
-        elif(self.up_feet_distance)>self.feet_distance_2:
-            self.theta = self.l_theta_2
-        elif(self.up_feet_distance)>self.feet_distance_1:
-            self.theta = self.l_theta_1
+        print("!!!!!!!!!!! %d",self.up_feet_distance)
+        if(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x < 160):
+            self.theta = 5
+            self.speed = -400
+            self.yspeed = -700 + self.c_yspeed
+        elif(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x > 160):
+            self.theta = -5
+            self.speed = -400
+            self.yspeed = 700 + self.c_yspeed
         else:
-            self.theta = 0+self.lc_theta
+            if(self.up_feet_distance)<(-1*self.feet_distance_4):#右旋
+                self.theta = self.r_theta_4
+            elif(self.up_feet_distance)<(-1*self.feet_distance_3):
+                self.theta = self.r_theta_3
+            elif(self.up_feet_distance)<(-1*self.feet_distance_2):
+                self.theta = self.r_theta_2
+            elif(self.up_feet_distance)<(-1*self.feet_distance_1):
+                self.theta =  self.r_theta_1
 
-        if(self.up_feet_distance>self.feet_distance_1):
-            print('turn left')
-        elif (self.up_feet_distance<(-1*self.feet_distance_1)):
-            print('turn right')
+            elif(self.up_feet_distance)>self.feet_distance_4:#左旋
+                self.theta =  self.l_theta_4
+            elif(self.up_feet_distance)>self.feet_distance_3:
+                self.theta = self.l_theta_3
+            elif(self.up_feet_distance)>self.feet_distance_2:
+                self.theta = self.l_theta_2
+            elif(self.up_feet_distance)>self.feet_distance_1:
+                self.theta = self.l_theta_1
+            else:
+                self.theta = 0+self.lc_theta
+
+        if(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x < 160):
+            print("br")
+        elif(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x > 160):
+            print("bl")
         else:
-            print('walk forward')
+            if(self.up_feet_distance>self.feet_distance_1):
+                print('turn left')
+            elif (self.up_feet_distance<(-1*self.feet_distance_1)):
+                print('turn right')
+            else:
+                print('walk forward')
 
     def down_theta_func(self):
         # print("怎摸不會進")
@@ -995,6 +1006,7 @@ class Send_distance():
             print("/////////////////////////////////////////////////////////")
             print("counter         :  ",self.counter)
             print("not enough flag :  ",self.not_enough_flag)
+            print(self.color_size)
             print("/////////////////////////////////////////////////////////")
     # //////////////////                     test                           //////////////////////////////
             # print("real board model             : ",self.board_model)
