@@ -55,7 +55,7 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3   #現在站的層,從1開始
+        self.layer_n= 1   #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
         self.direction = 0     #0 上板 1 下板
@@ -718,10 +718,15 @@ class Send_distance():
                 self.up_board_flag=1
                 self.next_board()
                 self.up_distance = [999,999,999,999]
+                send.sendBodySector(900)
+                time.sleep(4)
                 self.next_up_distance = [999,999,999,999]
                 send.sendBodyAuto(self.up_x,0,0,0,0,0)
-                time.sleep(4)
+                time.sleep(3)
                 send.sendBodySector(29)
+                time.sleep(1)
+                send.sendBodySector(989)
+                time.sleep(3)
                             
         else:
             self.parallel_board_setup()

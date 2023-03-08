@@ -111,11 +111,13 @@ if __name__ == '__main__':
                         distance = Send_distance()#建立名稱,順便歸零
                         # distance.layer_n= 1
                         # distance.stop_flag = 1
-                        time.sleep(0.5)
+                        time.sleep(1)
                         send.sendBodySector(29)
+                        time.sleep(1)
+                        send.sendBodySector(989)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-                    time.sleep(0.5)
+                    time.sleep(1)
                 else:
                     print("ladder turn off")
                     ladder.head_init = ladder.head_highest
