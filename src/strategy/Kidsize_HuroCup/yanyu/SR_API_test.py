@@ -55,10 +55,10 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 1   #現在站的層,從1開始
+        self.layer_n= 1 #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 0     #0 上板 1 下板
+        self.direction = 0    #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
         self.rc_theta= 0 
@@ -70,7 +70,7 @@ class Send_distance():
         #上板x
         self.up_x=17000
         #下板x
-        self.down_x=20000
+        self.down_x=18000
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -92,8 +92,8 @@ class Send_distance():
         
         #上板速度
         self.speed_1=0+self.c_speed
-        self.speed_2=800+self.c_speed
-        self.speed_3=1300+self.c_speed
+        self.speed_2=1000+self.c_speed
+        self.speed_3=1500+self.c_speed
         self.speed_4=2500+self.c_speed
         self.speed_5=2500+self.c_speed
 
@@ -718,15 +718,12 @@ class Send_distance():
                 self.up_board_flag=1
                 self.next_board()
                 self.up_distance = [999,999,999,999]
-                send.sendBodySector(900)
-                time.sleep(4)
                 self.next_up_distance = [999,999,999,999]
                 send.sendBodyAuto(self.up_x,0,0,0,0,0)
-                time.sleep(3)
+                print("LC finish")
+                time.sleep(1.5)
                 send.sendBodySector(29)
-                time.sleep(1)
-                send.sendBodySector(989)
-                time.sleep(3)
+                time.sleep(2)
                             
         else:
             self.parallel_board_setup()
@@ -909,13 +906,13 @@ class Send_distance():
     def up_theta_func(self):
         self.up_feet_distance=self.up_distance[3]-self.up_distance[0]
         print("!!!!!!!!!!! %d",self.up_feet_distance)
-        if(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x < 160):
+        if(self.point_x > self.f_ll and self.point_y > 120 and self.point_x < 160):
             self.theta = 5
-            self.speed = -400
+            self.speed = -200
             self.yspeed = -700 + self.c_yspeed
-        elif(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x > 160):
+        elif(self.point_y > 120 and self.point_x < self.f_rr and self.point_x > 160):
             self.theta = -5
-            self.speed = -400
+            self.speed = -200
             self.yspeed = 700 + self.c_yspeed
         else:
             if(self.up_feet_distance)<(-1*self.feet_distance_4):#右旋
