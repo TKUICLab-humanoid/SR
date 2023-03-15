@@ -3,105 +3,111 @@
 import rospy
 import numpy as np
 from Python_API import Sendmessage
-from SR_API_wei_re import Send_distance
-from Ladder_API import Send_Climb
+from SR_API_wei_re import Lift_and_Carry,Wall_Climb
+# from Ladder_API import Send_Climb
 import time
 imgdata = [[None for high in range(240)]for width in range (320)]
 if __name__ == '__main__':
     try:
         send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
-        distance = Send_distance()#建立名稱,順便歸零
-        climb = Send_Climb()
-        r = rospy.Rate(5)
+        LC = Lift_and_Carry()#建立名稱,順便歸零
+        CW = Wall_Climb()
+        r = rospy.Rate(30)
         send.sendBodySector(29)
         while not rospy.is_shutdown():
             #判斷Humanoid Interface的按鈕
             # if send.Web == True:
-            # print(send.DIOValue)
             if send.is_start ==True:
-                if send.DIOValue == 1 or  send.DIOValue == 25 or send.DIOValue == 9 or send.DIOValue == 17 or send.DIOValue == 3 or  send.DIOValue == 27 or send.DIOValue == 11 or  send.DIOValue == 19:
-                    distance.printf()
-                    distance.draw_function()
-                    send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                #開啟小指撥1,2(同時或單獨都可)
+                if send.DIOValue == 17 or send.DIOValue == 18 or  send.DIOValue == 19 or  send.DIOValue == 26 or  send.DIOValue == 27 or  send.DIOValue == 28:
+                    LC.printf()
+                    LC.draw_function()
+                    send.sendHeadMotor(1,LC.head_Horizontal,100)#水平
+                    send.sendHeadMotor(2,LC.head_Vertical,100)#垂直
                     start=time.time()
                     #機器人暫停且不是在做上板
-                    if distance.layer == 7:
+                    if LC.layer == 7:
+                        #完成LC策略             
                         pass
-                    elif distance.walkinggait_stop == True and distance.walkinggait_LC == False:
+                    elif LC.walkinggait_stop == True and LC.walkinggait_LC == False:
+                        #起步
                         send.sendBodyAuto(700,0,0,0,1,0)
-                        distance.walkinggait_stop = False
-                    elif distance.walkinggait_stop == True and distance.walkinggait_LC == True:
+                        LC.walkinggait_stop = False
+                    elif LC.walkinggait_stop == True and LC.walkinggait_LC == True:
+                        #剛上板或下板,重新開啟步態
                         send.sendBodyAuto(0,0,0,0,1,0)
-                        distance.walkinggait_stop = 0
-                        distance.walkinggait_LC   = 0
-                    #還沒找到板子（找板 上板）
-                    elif distance.walkinggait_stop == False:
-                        distance.find_board(distance.layer)
-                        distance.walkinggait(distance.layer)
-                    
-                    #distance.print_state()
+                        LC.walkinggait_stop = 0
+                        LC.walkinggait_LC   = 0
+                    elif LC.walkinggait_stop == False:
+                        #還沒找到板子（找板 上板）
+                        LC.find_board(LC.layer)
+                        LC.walkinggait(LC.layer)
                     end=time.time()
-                    print(end-start)
-                # elif send.Web == False:
-                # elif send.DIOValue == 4 or  send.DIOValue == 28 or send.DIOValue == 12 or  send.DIOValue == 20:
-                #     send.drawImageFunction(1,0,0,320,distance.knee,distance.knee,255,0,0)#膝蓋的橫線
-                #     send.drawImageFunction(2,0,distance.f_ll,distance.f_ll,0,240,255,0,0)#ll的線
-                #     send.drawImageFunction(3,0,distance.f_lr,distance.f_lr,0,240,255,0,0)#lr的線
-                #     send.drawImageFunction(4,0,distance.f_rl,distance.f_rl,0,240,255,0,0)#rl的線
-                #     send.drawImageFunction(5,0,distance.f_rr,distance.f_rr,0,240,255,0,0)#rr的線
-                #     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                #     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-
-                #     if climb.stop_flag == 1 and climb.up_ladder_flag == 0:
-                #         send.sendBodyAuto(500,0,0,0,1,0)
-                #         climb.stop_flag = 0
-                #     elif climb.stop_flag == 1 and climb.up_ladder_flag == 1:
-                #         send.sendBodySector(29)
-                #     elif climb.stop_flag == 0 :
-                #         climb.find_ladder()
-                #         climb.up_ladder()
-            elif send.is_start ==False:
-                # print('web',send.Web)
-                if send.DIOValue == 1 or  send.DIOValue == 25 or send.DIOValue == 9 or send.DIOValue == 17 or send.DIOValue == 3 or  send.DIOValue == 27 or send.DIOValue == 11 or  send.DIOValue == 19:
-                    distance.draw_function()
-                    send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-                    if distance.walkinggait_stop == False or distance.walkinggait_LC == True:
-                        print("turn off")
-                        if distance.walkinggait_stop == 0:
-                            send.sendBodyAuto(0,0,0,0,1,0)
-                        send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
-                        distance = Send_distance()#建立名稱,順便歸零
-                        # distance.layer            = 1
-                        distance.walkinggait_stop = True
-                        distance.walkinggait_LC   = False
-                        send.sendSensorReset()
-                        time.sleep(2)
+                    print("策略計算總時間:",end-start)
+                elif send.DIOValue == 20 or send.DIOValue == 28:
+                    CW.printf()
+                    send.sendHeadMotor(1,CW.head_Horizontal,100)#水平
+                    send.sendHeadMotor(2,CW.head_Vertical,100)#垂直
+                    if CW.walkinggait_stop == True and CW.Climb_ladder == False:
+                        send.sendBodyAuto(500,0,0,0,1,0)
+                        CW.walkinggait_stop = False 
+                    elif CW.walkinggait_stop == True and CW.Climb_ladder == True:
+                        print("==========")
+                        print("∥完成爬梯∥")
+                        print("==========")
+                        time.sleep(3)
                         send.sendBodySector(29)
+                    elif CW.walkinggait_stop == False:
+                        CW.find_ladder()
+                        CW.walkinggait()
+            # elif send.Web == False:
+            elif send.is_start ==False:
+                if send.DIOValue == 1 or send.DIOValue == 2 or send.DIOValue == 3 or  send.DIOValue == 9 or send.DIOValue == 10 or send.DIOValue == 11 :
+                    LC.draw_function()
+                    send.sendHeadMotor(1,LC.head_Horizontal,100)#水平
+                    send.sendHeadMotor(2,LC.head_Vertical,100)#垂直
+                    if LC.walkinggait_stop == False or LC.walkinggait_LC == True:
+                        print("🔊parameter reset")
+                        send.sendHeadMotor(1,LC.head_Horizontal,100)  #水平
+                        send.sendHeadMotor(2,LC.head_Vertical,100)    #垂直
+                        if LC.walkinggait_stop == 0:
+                            send.sendBodyAuto(0,0,0,0,1,0)
+                        send = Sendmessage()                #建立名稱,順便歸零,就是底線底線init
+                        LC = Lift_and_Carry()          #建立名稱,順便歸零
+                        LC.walkinggait_stop = True
+                        LC.walkinggait_LC   = False
+                        send.sendSensorReset()              #IMUreset
                         time.sleep(1)
-                        send.sendBodySector(299)
+                        send.sendBodySector(29)             #基礎站姿磁區
+                        time.sleep(1.5)
+                        if LC.stand_correct == True:
+                            send.sendBodySector(30)             #基礎站姿調整磁區
                         time.sleep(1)
-                        send.sendBodySector(22)
+                        print("🆗🆗🆗")
                     print("LC turn off")
-                    send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    # send.sendHeadMotor(2,2698,100)#垂直
                     time.sleep(1)
-                elif send.DIOValue == 4 or  send.DIOValue == 28 or send.DIOValue == 12 or  send.DIOValue == 20:
-                    # if climb.stop_flag == 0:
-                    #     send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
-                    #     send.sendBodyAuto(0,0,0,0,1,0)
-                    #     time.sleep(2)
-                    #     send.sendBodySector(29)
-                    # print("CW turn off")
-                    # climb.theta = 0
-                    # climb.speed = 0
-                    # climb.yspeed=0
-                    # climb = Send_Climb()#建立名稱,順便歸零
-                    # climb.stop_flag = 1
-                    # climb.up_ladder_flag = 0
-                    send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
-                    send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                elif send.DIOValue == 4 or send.DIOValue == 12 :
+                    if CW.walkinggait_stop == False:
+                        print("🔊parameter reset")
+                        send = Sendmessage()    #建立名稱,順便歸零,就是底線底線init
+                        CW = Wall_Climb()    #建立名稱,順便歸零
+                        send.sendBodyAuto(0,0,0,0,1,0)
+                        time.sleep(2)
+                        send.sendSensorReset()              #IMUreset
+                        time.sleep(1)
+                        send.sendBodySector(29)
+                        time.sleep(1.5)
+                        if CW.stand_correct == True:
+                            send.sendBodySector(33)             #基礎站姿調整磁區
+                    print("CW turn off")
+                    CW.theta       = 0
+                    CW.forward     = 0
+                    CW.translation = 0
+                    
+                    CW.walkinggait_stop = True
+                    CW.Climb_ladder     = False
+                    send.sendHeadMotor(1,LC.head_Horizontal,100)#水平
+                    send.sendHeadMotor(2,LC.head_Vertical,100)#垂直
                     time.sleep(1)
                 elif send.DIOValue == 0 or send.DIOValue == 8:
                     print("⣿⣿⣿⣿⣿⣿⡿⠿⠛⠛⠛⢻⡻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿")
