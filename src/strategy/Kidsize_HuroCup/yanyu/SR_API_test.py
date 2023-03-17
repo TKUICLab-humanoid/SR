@@ -32,11 +32,7 @@ class Send_distance():
         self.f_rr=self.f_rl+44
         self.head_Horizontal = 2048
         #self.head_Vertical = 1425
-<<<<<<< HEAD
-        self.head_Vertical = 1352
-=======
         self.head_Vertical = 1291
->>>>>>> yan-jun
         #距離矩陣初始化
         self.up_distance = [999,999,999,999]        #要上的層
         self.down_distance = [999,999,999,999]              #要下的層
@@ -67,28 +63,12 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-<<<<<<< HEAD
-        self.layer_n= 2     #現在站的層,從1開始
-=======
         self.layer_n= 1 #現在站的層,從1開始
->>>>>>> yan-jun
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
         self.direction = 0    #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-<<<<<<< HEAD
-        self.rc_theta= 0
-        self.lc_theta= 0
-        #前進量校正
-        self.c_speed=-300
-        #平移校正
-        self.c_yspeed =300
-        #上板x
-        self.up_x=16000
-        #下板x
-        self.down_x=16000
-=======
         self.rc_theta= 0 
         self.lc_theta=0 
         #前進量校正
@@ -99,7 +79,6 @@ class Send_distance():
         self.up_x=17000
         #下板x
         self.down_x=18000
->>>>>>> yan-jun
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -107,36 +86,22 @@ class Send_distance():
         self.yspeed =0+self.c_yspeed
 
         #角度設定 左旋
-<<<<<<< HEAD
-        self.l_theta_1 = 7 + self.lc_theta
-=======
         self.l_theta_1 = 1+ self.lc_theta
->>>>>>> yan-jun
         self.l_theta_2 = self.l_theta_1+1
         self.l_theta_3 = self.l_theta_1+2
         self.l_theta_4 = self.l_theta_1+3
         self.l_theta_5 = self.l_theta_1+4
         #角度設定 右旋
-<<<<<<< HEAD
-        self.r_theta_1 = -7 + self.rc_theta
-=======
         self.r_theta_1 = -1 + self.rc_theta
->>>>>>> yan-jun
         self.r_theta_2 = -1 + self.r_theta_1
         self.r_theta_3 = -2 + self.r_theta_1
         self.r_theta_4 = -3 + self.r_theta_1
         self.r_theta_5 = -4 + self.r_theta_1
         
         #上板速度
-<<<<<<< HEAD
-        self.speed_1=400+self.c_speed
-        self.speed_2=800+self.c_speed
-        self.speed_3=1300+self.c_speed
-=======
         self.speed_1=0+self.c_speed
         self.speed_2=1000+self.c_speed
         self.speed_3=1500+self.c_speed
->>>>>>> yan-jun
         self.speed_4=2500+self.c_speed
         self.speed_5=2500+self.c_speed
 
@@ -153,11 +118,7 @@ class Send_distance():
         
         # 上板離板太近距離
         self.back_dis=2                   #小白 4  小黑 1
-<<<<<<< HEAD
-        self.back_speed   = -200+self.c_speed
-=======
         self.back_speed   = -500+self.c_speed
->>>>>>> yan-jun
         self.back_speed_2 = -700+self.c_speed
 
         # 空間不夠距離
@@ -387,16 +348,10 @@ class Send_distance():
         if(self.up_distance[0]<=self.back_dis or self.up_distance[1]<=self.back_dis or self.up_distance[2]<=self.back_dis or self.up_distance[3]<=self.back_dis):
             # 上板空間不夠
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
-<<<<<<< HEAD
-                if self.layer_n==1:
-                    self.speed = -300+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed
-=======
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = self.back_speed+self.c_speed
                     self.yspeed = 0+self.c_yspeed
->>>>>>> yan-jun
                     self.up_theta_func()
 
                 # 在第其他層
@@ -412,11 +367,7 @@ class Send_distance():
                 self.speed=-200+self.c_speed
                 self.up_theta_func()
                 if self.theta>self.rc_theta:
-<<<<<<< HEAD
-                    self.yspeed = -800+self.c_yspeed
-=======
                     self.yspeed = -600 + self.c_yspeed
->>>>>>> yan-jun
                 elif self.theta<self.rc_theta:
                     self.yspeed = 800+self.c_yspeed
                 else:
@@ -424,12 +375,8 @@ class Send_distance():
 
             # 進 back back 但可以繼續直走
             else:
-<<<<<<< HEAD
-                self.speed=self.speed_1
-=======
                 print("back back back back")
                 self.speed=self.back_speed
->>>>>>> yan-jun
                 self.yspeed = self.c_yspeed
                 self.up_theta_func()
 
@@ -438,17 +385,10 @@ class Send_distance():
         else :
             # 上板空間不夠
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
-<<<<<<< HEAD
-                # 在第一層
-                if self.layer_n==1:
-                    self.speed = -300+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed
-=======
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = -500+self.c_speed
                     self.yspeed = 0+self.c_yspeed
->>>>>>> yan-jun
                     self.up_theta_func()
 
                 # 在第其他層
@@ -504,24 +444,6 @@ class Send_distance():
                         
                     elif(self.up_distance[1]<self.up_bd_3 or self.up_distance[2]<self.up_bd_3):
                         self.speed=self.speed_2
-<<<<<<< HEAD
-                        self.yspeed = self.c_yspeed
-                        self.theta = self.rc_theta
-                        # self.up_theta_func()
-                        
-                    elif(self.up_distance[1]<self.up_bd_4) or (self.up_distance[2]<self.up_bd_4):
-                        self.speed=self.speed_3
-                        self.yspeed = self.c_yspeed
-                        self.theta = self.rc_theta
-                        # self.up_theta_func()
-                        
-                    else:
-                        self.speed=self.speed_5
-                        self.yspeed = self.c_yspeed
-                        self.theta = self.rc_theta
-                        # self.up_theta_func()
-                        
-=======
                         self.yspeed = self.c_yspeed + 200
                         self.up_theta_func()
                         print("speed_2")
@@ -535,7 +457,6 @@ class Send_distance():
                         self.yspeed = self.c_yspeed + 200
                         self.up_theta_func()
                         print("speed_5")
->>>>>>> yan-jun
             
 
 
@@ -683,8 +604,7 @@ class Send_distance():
                    
 
 
-<<<<<<< HEAD
-=======
+
                     # else:#有進90度
                     #     self.speed = self.speed
                     #     self.yspeed = self.yspeed
@@ -705,8 +625,6 @@ class Send_distance():
                 #     self.speed = self.down_speed_3
                 #     self.yspeed = self.c_yspeed
                 #     self.down_theta_func()
->>>>>>> yan-jun
-
         
 
     def up_board(self): #要上板了
@@ -721,35 +639,16 @@ class Send_distance():
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(3)
                 send.sendSensorReset()
-<<<<<<< HEAD
-                #send.sendBodySector(6)
-                #send.sendBodySector(89)
-                # if self.layer_n == 1:
-                #     send.sendBodySector(1)
-                # elif self.layer_n == 2:
-                #     send.sendBodySector(1)
-                # elif self.layer_n == 3:
-                #     send.sendBodySector(1)
-                time.sleep(2)
-=======
->>>>>>> yan-jun
                 self.stop_flag=1
                 self.up_board_flag=1
                 self.next_board()
                 self.up_distance = [999,999,999,999]
                 self.next_up_distance = [999,999,999,999]
-<<<<<<< HEAD
-                send.sendBodyAuto(self.up_x,0,0,0,2,0)
-                time.sleep(5)
-                send.sendBodySector(29)#這是基本站姿的磁區
-                time.sleep(3)
-=======
                 send.sendBodyAuto(self.up_x,0,0,0,0,0)
                 print("LC finish")
                 time.sleep(1.5)
                 send.sendBodySector(29)
                 time.sleep(2)
->>>>>>> yan-jun
                             
         else:
             self.parallel_board_setup()
@@ -761,11 +660,7 @@ class Send_distance():
         
         if (self.down_distance[1] < self.down_bd_1 or self.down_distance[2] < self.down_bd_1) and (abs(self.down_distance[3]-self.down_distance[0])<self.feet_distance_1) and (max(self.down_distance) - min( self.down_distance)<20) and (self.next_down_distance[0] >= self.space_ndd and self.next_down_distance[3] >= self.space_ndd):
             if self.stop_flag == 0 and self.up_board_flag == 0:
-<<<<<<< HEAD
-                print('ready down board')
-=======
                 print('ready downboard')
->>>>>>> yan-jun
                 self.speed=0
                 self.yspeed=0
                 self.theta=0
@@ -783,17 +678,9 @@ class Send_distance():
                 self.next_board()
                 self.down_distance = [999,999,999,999]
                 self.next_down_distance = [999,999,999,999]
-<<<<<<< HEAD
-                if self.layer_n==1:
-                    send.sendBodyAuto(self.down_x-500,0,0,0,3,0)
-                else:    
-                    send.sendBodyAuto(self.down_x,0,0,0,3,0)
-                time.sleep(5)
-=======
                 send.sendBodyAuto(self.down_x,0,0,0,3,0)
                 print('LLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
                 time.sleep(2)
->>>>>>> yan-jun
                 send.sendBodySector(29)
                 time.sleep(3)
         else:
@@ -945,14 +832,6 @@ class Send_distance():
             else:
                 self.theta = 0+self.lc_theta
 
-<<<<<<< HEAD
-        # if(self.up_feet_distance>self.feet_distance_1):
-        #     print('turn left')
-        # elif (self.up_feet_distance<(-1*self.feet_distance_1)):
-        #     print('turn right')
-        # else:
-        #     print('walk forward')
-=======
         if(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x < 160):
             print("br")
         elif(self.point_x > self.f_ll and self.point_x < self.f_rr and self.point_x > 160):
@@ -964,7 +843,6 @@ class Send_distance():
                 print('turn right')
             else:
                 print('walk forward')
->>>>>>> yan-jun
 
     def down_theta_func(self):
         self.down_feet_distance=self.down_distance[2]-self.down_distance[1]
@@ -1024,11 +902,6 @@ class Send_distance():
 
     def print_state(self): 
             print("/////////////////////////////////////////////////////////")
-<<<<<<< HEAD
-            print("speed                        : ",self.speed - self.c_speed )
-            print("yspeed                       : ",self.yspeed - self.c_yspeed)
-            print("theta                        : ",self.theta -self.rc_theta)
-=======
             print("counter         :  ",self.counter)
             print("not enough flag :  ",self.not_enough_flag)
             print(self.color_size)
@@ -1042,7 +915,6 @@ class Send_distance():
             print("theta                        : ",self.theta)
             print("point   y                    : ",self.point_y)
             print("point   x                    : ",self.point_x)
->>>>>>> yan-jun
             print("stop_flag                    : ",self.stop_flag)
             print("up board flag                : ",self.up_board_flag)   
             print("layer_now                    : ",self.layer_n)
