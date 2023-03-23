@@ -28,23 +28,23 @@ GREEN  = 3
 #前進量校正
 FORWARD_CORRECTION        = -500
 #平移校正
-TRANSLATION_CORRECTION    = 0
+TRANSLATION_CORRECTION    = -500
 #旋轉校正
-THETA_CORRECTION          = -1
+THETA_CORRECTION          = 0
 #---微調站姿開關---#
-STAND_CORRECT_LC          = False #True
-STAND_CORRECT_CW          = False #True
-UPBOARD_CORRECT           = True #False
-DOWNBOARD_CORRECT         = True #False
+STAND_CORRECT_LC          = True #sector(30)
+STAND_CORRECT_CW          = False #sector(33)
+UPBOARD_CORRECT           = True  #sector(31)
+DOWNBOARD_CORRECT         = True  #sector(32)
 START_LAYER               = 1
 #-----------------#
 #----------#
 FOOTBOARD_LINE            = 220                   #上板基準線
 #----------#                [ 左, 中, 右]
-LEFT_FOOT                 = [120,130,140]
-RIGHT_FOOT                = [180,190,200]
+LEFT_FOOT                 = [120,137,155]
+RIGHT_FOOT                = [180,197,215]
 HEAD_HORIZONTAL           = 2055                  #頭水平
-HEAD_VERTICAL             = 2705                  #頭垂直 1472#
+HEAD_VERTICAL             = 2705                  #頭垂直 #down 2750
 #----------#
 WARNING_DISTANCE          = 4                     #危險距離
 GO_UP_DISTANCE            = 8                     #上板距離
@@ -58,8 +58,8 @@ BACK_MIN                  = -500                  #小退後
 BACK_NORMAL               = -1000                 #退後
 FORWARD_MIN               = 200                   #小前進
 FORWARD_NORMAL            = 800                   #前進
-FORWARD_BIG               = 1300                  #大前進
-FORWARD_SUPER             = 2500                  #超大前進
+FORWARD_BIG               = 2000                  #大前進
+FORWARD_SUPER             = 3500                  #超大前進
 #----------#
 TRANSLATION_MIN           = 500                   #小平移
 TRANSLATION_NORMAL        = 1000                  #平移
@@ -76,6 +76,9 @@ LCDOWN                    = 20000                 #下板
 
 class Lift_and_Carry():
     def __init__(self):#初始化
+        #IMUcorrect
+        self.IMUcorrect            = False
+        self.IMU                   = 0
         #LC finish
         self.LC_finish             = False
         #轉頭找板旗標
@@ -87,12 +90,12 @@ class Lift_and_Carry():
         #站姿微調旗標
         self.stand_correct         = STAND_CORRECT_LC
         #上板延遲
-        self.upboard_start         = 0
-        self.upboard_end           = 0
+        self.upboard_start         = 0          #初始化開始時間
+        self.upboard_end           = -999999    #初始化結束時間
         #層數       
         self.layer                 = START_LAYER
-        self.layer_model           = [   GREEN,   BLUE,   RED,   YELLOW,   RED,   BLUE,   GREEN]
-        self.layer_parameter       = [2**GREEN,2**BLUE,2**RED,2**YELLOW,2**RED,2**BLUE,2**GREEN]
+        self.layer_model           = [   GREEN,   RED,   BLUE,   YELLOW,   BLUE,   RED,   GREEN]
+        self.layer_parameter       = [2**GREEN,2**RED,2**BLUE,2**YELLOW,2**BLUE,2**RED,2**GREEN]
         #設定頭部馬達
         self.head_Horizontal       = HEAD_HORIZONTAL
         self.head_Vertical         = HEAD_VERTICAL
@@ -125,7 +128,7 @@ class Lift_and_Carry():
         #左右決定
         self.decide_theta          = 0
         #危險斜率
-        self.slope_min             = 5      #有點斜
+        self.slope_min             = 5       #有點斜
         self.slope_normal          = 10      #斜
         self.slope_big             = 15      #過斜
 
@@ -258,12 +261,11 @@ class Lift_and_Carry():
 
     def walkinggait(self,layer_now):
     #步態函數,用於切換countiue 或 LC 步態
-        if (self.distance[0] < GO_UP_DISTANCE)   and (self.distance[1] < GO_UP_DISTANCE+3) and\
-           (self.distance[2] < GO_UP_DISTANCE+5) and (self.distance[3] < GO_UP_DISTANCE+5) and\
-           (self.distance[4] < GO_UP_DISTANCE+3) and (self.distance[5] < GO_UP_DISTANCE):
+        if self.ready_to_LC():
             print("對正板子")
             self.upboard_start=time.time()
-            while(self.upboard_end-self.upboard_start > 2):
+            self.upboard_end = -999999
+            while(self.upboard_end-self.upboard_start) < 1:
                 self.upboard_end=time.time()
                 send.sendContinuousValue(-500,self.translation,0,self.theta,0)
                 print("=======")
@@ -274,6 +276,9 @@ class Lift_and_Carry():
             self.theta          = 0
             send.sendBodyAuto(0,0,0,0,1,0)                  #停止步態
             time.sleep(3)
+            if self.layer ==3:
+                # self.IMUcorrect = True
+                self.IMU = send.imu_value_Yaw
             send.sendSensorReset()                          #IMU reset 避免機器人步態修正錯誤
             self.layer                 += 1                 #層數加一
             
@@ -282,6 +287,8 @@ class Lift_and_Carry():
             self.walkinggait_stop      = True
             self.walkinggait_LC        = True
             self.LC_finish             = True
+            send.sendBodySector(29)         #這是基本站姿的磁區
+            time.sleep(1)
             if layer_now < 4:
                 if UPBOARD_CORRECT   == True:
                     print("準備上板")
@@ -306,13 +313,48 @@ class Lift_and_Carry():
                 self.checkout_board(layer_now)
             time.sleep(1)
         else:
-            self.edge_judge(layer_now)
-            self.last_forward     = self.forward
-            self.last_translation = self.translation
-            self.last_theta       = self.theta
-            self.speed_limit()
+            if self.IMUcorrect == False:
+                self.edge_judge(layer_now)
+                self.last_forward     = self.forward
+                self.last_translation = self.translation
+                self.last_theta       = self.theta
+                self.speed_limit()
+            else:
+                self.IMU_correct()
+                print("!!!!")
             send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
 
+    def ready_to_LC(self):
+        if (self.distance[0] < GO_UP_DISTANCE)   and (self.distance[1] < GO_UP_DISTANCE+3) and\
+           (self.distance[2] < GO_UP_DISTANCE+5) and (self.distance[3] < GO_UP_DISTANCE+5) and\
+           (self.distance[4] < GO_UP_DISTANCE+3) and (self.distance[5] < GO_UP_DISTANCE):
+            return True
+        elif (self.distance[0] < GO_UP_DISTANCE+5) and (self.distance[1] < GO_UP_DISTANCE+3) and\
+             (self.distance[2] < GO_UP_DISTANCE)   and (self.distance[3] < GO_UP_DISTANCE)   and\
+             (self.distance[4] < GO_UP_DISTANCE+3) and (self.distance[5] < GO_UP_DISTANCE+5):
+            send.sendContinuousValue((BACK_MIN+FORWARD_CORRECTION),TRANSLATION_CORRECTION,0,THETA_CORRECTION,0)
+            start_delay = time.time()
+            end_delay   = -99999  
+            while (end_delay-start_delay) < 2:
+                end_delay = time.time()
+                print("bottom point at middle,back!!")
+            return False
+        else:
+            return False
+
+    def IMU_correct(self):
+        while (abs(send.imu_value_Yaw + self.IMU) > 5):
+            if (send.imu_value_Yaw + self.IMU)<0:
+                self.forward        = 0
+                self.translation    = 0
+                self.theta          = -2
+                print("IMUcorrect,turn right")
+            elif (send.imu_value_Yaw + self.IMU)>0:
+                self.forward        = 0
+                self.translation    = 0
+                self.theta          = 2
+                print("IMUcorrect,turn left")
+        self.IMUcorrect = False
     def edge_judge(self,state):
         #太靠板子
         if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[1] <= WARNING_DISTANCE) or (self.distance[2] <= WARNING_DISTANCE) or (self.distance[3] <= WARNING_DISTANCE) or (self.distance[4] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE): 
@@ -427,8 +469,8 @@ class Lift_and_Carry():
                     self.theta_change(state)
                     print('大前進')
                 else:
-                    self.theta = THETA_CORRECTION
-                    if state > 1:
+                    self.theta = 0+THETA_CORRECTION
+                    if state == 1:
                         self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
                         print('超大前進') 
                     else:
@@ -449,32 +491,37 @@ class Lift_and_Carry():
             print('直走')
 
         if  (abs(slope_long))>self.slope_big:                    #斜率過大,角度給最大
+            print(THETA_BIG,self.decide_theta,THETA_CORRECTION)
             self.theta =  THETA_BIG*self.decide_theta + THETA_CORRECTION
             self.translation = TRANSLATION_NORMAL*self.decide_theta*-1
             print("大旋")
         elif(abs(slope_long))>self.slope_normal:                 #斜率較大,修正值較大
+            print(THETA_NORMAL,self.decide_theta,THETA_CORRECTION)
             self.theta = THETA_NORMAL*self.decide_theta + THETA_CORRECTION
             print("旋")
         elif(abs(slope_long))>self.slope_min:                    #斜率較小,修正值較小
+            print(THETA_MIN,self.decide_theta,THETA_CORRECTION)
             self.theta = THETA_MIN*self.decide_theta + THETA_CORRECTION
             print("小旋")
         else:
+            # pass
             self.theta = 0+THETA_CORRECTION
 
     def speed_limit(self): 
     ##前進量,平移量,旋轉量限制
         #避免修正過大
-        if (self.last_forward * self.theta) < 0  :
-            self.theta = 0
+        if (self.last_forward * self.forward ) < 0  :
+            self.forward  = 0
         if (self.last_translation * self.translation)  < 0 :
             self.translation = 0
         if (self.last_theta * self.theta) < 0:
             self.theta = 0
+            print("aaaaaa")
         #速度限制
-        if self.forward > 2000:
-            self.forward = 2000
-        elif self.forward < -2000:
-            self.forward = -2000
+        if self.forward > 3000:
+            self.forward = 3000
+        elif self.forward < -3000:
+            self.forward = -3000
         #平移限制
         if self.translation > 1000:
             self.translation = 1000
@@ -485,6 +532,8 @@ class Lift_and_Carry():
             self.theta = 5
         elif self.theta < -5:
             self.theta = -5
+        else:
+            self.theta = self.theta
 
     def checkout_board(self,state): 
     #上板或下板時如判斷範圍內沒有下一層板,則開始轉頭找板並給予相對應的旋轉量
@@ -551,7 +600,7 @@ class Lift_and_Carry():
             if self.layer <4:
                 send.sendHeadMotor(2,self.head_Vertical,100)#垂直
             else:
-                send.sendHeadMotor(2,self.head_Vertical-30,100)#垂直
+                send.sendHeadMotor(2,self.head_Vertical+45,100)#垂直
     def no_up_board(self,state):
     #上板或下板後影像上無下一層板
         last_board = send.color_mask_subject_cnts[self.layer_model[state-1]]
@@ -565,7 +614,10 @@ class Lift_and_Carry():
     def draw_function(self):
     #將需要的判斷線畫在影像上
     #比賽時建議關閉
-        send.drawImageFunction(1,0,0,320,FOOTBOARD_LINE,FOOTBOARD_LINE,0,128,255)#膝蓋的橫線
+        if self.layer == 3:
+            send.drawImageFunction(1,0,0,320,FOOTBOARD_LINE-30,FOOTBOARD_LINE,0,128,255)#膝蓋的橫線
+        else:
+            send.drawImageFunction(1,0,0,320,FOOTBOARD_LINE,FOOTBOARD_LINE,0,128,255)#膝蓋的橫線
         send.drawImageFunction(2,0,LEFT_FOOT[0],LEFT_FOOT[0],0,240,255,128,128)#lr的線
         send.drawImageFunction(3,0,LEFT_FOOT[1],LEFT_FOOT[1],0,240,255,128,128)#lm的線
         send.drawImageFunction(4,0,LEFT_FOOT[2],LEFT_FOOT[2],0,240,255,128,128)#ll的線
@@ -597,6 +649,9 @@ class Lift_and_Carry():
         print('x:'    ,self.forward)
         print('y:'    ,self.translation)
         print('theta:',self.theta)
+        print("IMU:",send.imu_value_Yaw)
+        print("goal IMU:",self.IMU)
+        print("IMUflag:",self.IMUcorrect )
         print('💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢💢')
         print("層數"    ,self.layer)
         print("距離板:" ,self.distance)

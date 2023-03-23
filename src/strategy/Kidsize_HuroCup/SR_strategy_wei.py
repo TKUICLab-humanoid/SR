@@ -19,7 +19,7 @@ if __name__ == '__main__':
             # if send.Web == True:
             if send.is_start ==True:
                 #開啟小指撥1,2(同時或單獨都可)
-                if send.DIOValue == 17 or send.DIOValue == 18 or  send.DIOValue == 19 or  send.DIOValue == 26 or  send.DIOValue == 27 or  send.DIOValue == 28:
+                if send.DIOValue == 17 or send.DIOValue == 18 or  send.DIOValue == 19 or  send.DIOValue == 25 or  send.DIOValue == 26 or  send.DIOValue == 27:
                     LC.printf()
                     LC.draw_function()
                     send.sendHeadMotor(1,LC.head_Horizontal,100)#水平
@@ -77,7 +77,7 @@ if __name__ == '__main__':
                         LC.walkinggait_stop = True
                         LC.walkinggait_LC   = False
                         send.sendSensorReset()              #IMUreset
-                        time.sleep(1)
+                        time.sleep(2)
                         send.sendBodySector(29)             #基礎站姿磁區
                         time.sleep(1.5)
                         if LC.stand_correct == True:
