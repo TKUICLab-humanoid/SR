@@ -74,7 +74,7 @@ class Send_distance():
 
         self.testtheta=0
         #前進量校正
-        self.c_speed=0
+        self.c_speed=100
         #平移校正
         self.c_yspeed =200
         #上板x
@@ -353,13 +353,13 @@ class Send_distance():
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = self.back_speed+self.c_speed
-                    self.yspeed = 0+self.c_yspeed
+                    self.yspeed = -400+self.c_yspeed
                     self.up_theta_func()
 
                 # 在第其他層
                 else:
                     self.speed = -300+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed
+                    self.yspeed = -1200+self.c_yspeed                #gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
                     self.up_theta_func()
 
             # 不平行
@@ -389,14 +389,14 @@ class Send_distance():
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = -500+self.c_speed
-                    self.yspeed = 0+self.c_yspeed
+                    self.speed = -300+self.c_speed
+                    self.yspeed = -400+self.c_yspeed
                     self.up_theta_func()
 
                 # 在第其他層
                 else:
                     self.speed = -300+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed
+                    self.yspeed = -1200+self.c_yspeed                       #ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
                     self.up_theta_func()
 
             
@@ -640,6 +640,8 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(3)
+                send.sendBodySector(902)
+                time.sleep(3)
                 send.sendSensorReset()
                 self.stop_flag=1
                 self.up_board_flag=1
@@ -650,7 +652,7 @@ class Send_distance():
                 print("LC finish")
                 time.sleep(1.5)
                 send.sendBodySector(29)
-                time.sleep(2)
+                time.sleep(3)
                             
         else:
             self.parallel_board_setup()
