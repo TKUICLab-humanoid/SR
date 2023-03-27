@@ -56,18 +56,18 @@ class Send_distance():
         self.up_board_flag =0
         self.board_90_flag=[0,0]
         #第幾層
-        self.layer_n= 3     #現在站的層,從1開始
+        self.layer_n= 1     #現在站的層,從1開始
         # self.layer = [8,32,2,4]     #用在labelMode
         self.layer = [8,4,32,2]         #藍紅黃
-        self.direction = 1      #0 上板 1 下板
+        self.direction = 0      #0 上板 1 下板
 #//////////////////////////////////////////////////////////////////////
         #校正變數
-        self.rc_theta= 1 #分左分右然後給一樣  ？？？？？
-        self.lc_theta=1 # 哭啊
+        self.rc_theta= -2 #分左分右然後給一樣  ？？？？？
+        self.lc_theta=-2 # 哭啊
         #前進量校正
         self.c_speed=-400
         #平移校正
-        self.c_yspeed =0
+        self.c_yspeed =400
         #上板x
         self.up_x=7000
         #下板x
@@ -477,7 +477,7 @@ class Send_distance():
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
                     self.speed = -500+self.c_speed
-                    self.yspeed = -1200+self.c_yspeed
+                    self.yspeed = 1200+self.c_yspeed
                     self.up_theta_func()
                     print('1111111111111111111111111')
 

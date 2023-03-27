@@ -35,7 +35,12 @@ if __name__ == '__main__':
                         send.sendBodyAuto(700,0,0,0,1,0)
                         distance.stop_flag = 0
                     elif distance.stop_flag == 1 and distance.up_board_flag == 1:
-                        send.sendBodyAuto(0,0,0,0,1,0)
+                        if distance.layer_n == 1 and distance.direction==1:
+                            send.sendBodyAuto(0,0,0,-5,1,0)
+                        elif distance.layer_n == 3 and distance.direction==1:
+                            send.sendBodyAuto(0,0,0,-2,1,0)
+                        else:
+                            send.sendBodyAuto(0,0,0,0,1,0)
                         distance.stop_flag = 0
                         distance.up_board_flag = 0
                     
@@ -49,23 +54,12 @@ if __name__ == '__main__':
                             distance.down_board()
                     #distance.print_state()
                     end=time.time()
+                    distance.print_state()
                     print(end-start)
                 # elif send.Web == False:
                 elif send.DIOValue == 28:
-                    #還沒找梯距
-                    # if ladder.find_ladder_flag == 0:
-                    #     send.drawImageFunction(1,0,0,320,ladder.eyeline_y,ladder.eyeline_y,255,0,0)#y基準線
-                    #     send.drawImageFunction(2,0,ladder.eyeline_x,ladder.eyeline_x,0,240,255,0,0)#x基準線
-                    #     if ladder.read_ladder_p < ladder.ladder_n:
-                    #         ladder.find_ladder_theta()
-                    #         ladder.down_head()
-                    #         ladder.print_state()
-                    #     elif ladder.read_ladder_p == ladder.ladder_n:
-                    #         ladder.calculate_hight()
-                    #         ladder.find_ladder_flag = 1
-                    #         send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-                    #     else:
-                    #         send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
+                    print("``````````````````````")
+        
                     send.drawImageFunction(1,0,0,320,distance.knee,distance.knee,255,0,0)#膝蓋的橫線
                     send.drawImageFunction(2,0,distance.f_ll,distance.f_ll,0,240,255,0,0)#ll的線
                     send.drawImageFunction(3,0,distance.f_lr,distance.f_lr,0,240,255,0,0)#lr的線
@@ -81,10 +75,12 @@ if __name__ == '__main__':
                         #send.sendBodyAuto(0,0,0,0,1,0)
                         #climb.stop_flag = 0
                         #climb.up_ladder_flag = 0
-                        send.sendBodySector(29)
+                        pass
+                        #send.sendBodySector(29)
                     elif climb.stop_flag == 0 :
                         climb.find_ladder()
                         climb.up_ladder()
+            
             elif send.is_start ==False:
                 # print('web',send.Web)
                 send.sendSensorReset()
