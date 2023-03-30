@@ -41,13 +41,13 @@ START_LAYER               = 1
 #----------#
 FOOTBOARD_LINE            = 220                   #上板基準線
 #----------#                [ 左, 中, 右]
-LEFT_FOOT                 = [120,137,155]
-RIGHT_FOOT                = [180,197,215]
+LEFT_FOOT                 = [115,134,153]
+RIGHT_FOOT                = [176,194,213]
 HEAD_HORIZONTAL           = 2055                  #頭水平
 HEAD_VERTICAL             = 2705                  #頭垂直 #down 2750
 #----------#
 WARNING_DISTANCE          = 4                     #危險距離
-GO_UP_DISTANCE            = 8                     #上板距離
+GO_UP_DISTANCE            = 10                     #上板距離
 FIRST_FORWORD_CHANGE_LINE = GO_UP_DISTANCE + 15   #
 SECOND_FORWORD_CHANGE_LINE = GO_UP_DISTANCE + 45  #
 THIRD_FORWORD_CHANGE_LINE = GO_UP_DISTANCE + 60   #
@@ -77,6 +77,7 @@ LCDOWN                    = 20000                 #下板
 class Lift_and_Carry():
     def __init__(self):#初始化
         #IMUcorrect
+        self.count                 = 0
         self.IMUcorrect            = False
         self.IMU                   = 0
         #LC finish
@@ -92,6 +93,7 @@ class Lift_and_Carry():
         #上板延遲
         self.upboard_start         = 0          #初始化開始時間
         self.upboard_end           = -999999    #初始化結束時間
+        self.updelay               = 1
         #層數       
         self.layer                 = START_LAYER
         self.layer_model           = [   GREEN,   RED,   BLUE,   YELLOW,   BLUE,   RED,   GREEN]
@@ -102,12 +104,15 @@ class Lift_and_Carry():
         #距離矩陣                     [左左,左中,左右 ,右左,右中,右右 ]
         self.distance              = [9999,9999,9999,9999,9999,9999]
         self.next_distance         = [9999,9999,9999,9999,9999,9999]
-        #板子資訊矩陣                  [X   ,   Y] 
+        #危險板資訊                   [左       右]
+        self.danger_board          = [False,False]
+        #板子資訊矩陣                 [X   ,   Y] 
         self.board_left_point      = [9999,9999]
         self.board_right_point     = [9999,9999]
         self.board_top_point       = [9999,9999]
         self.board_bottom_point    = [9999,9999]
         self.board_size            = 0
+        self.footboard_line        = FOOTBOARD_LINE
         #步態參數
         self.forward               = 0 + FORWARD_CORRECTION
         self.translation           = 0 + TRANSLATION_CORRECTION
@@ -139,6 +144,8 @@ class Lift_and_Carry():
         Object              = send.color_mask_subject_cnts[self.layer_model[state]]
         self.distance       = [9999,9999,9999,9999,9999,9999]
         self.next_distance  = [9999,9999,9999,9999,9999,9999]
+        self.danger_board[0] = False
+        self.danger_board[1] = False
         if Object != 0:
             Object_size = 0
             print("find board")
@@ -166,7 +173,7 @@ class Lift_and_Carry():
         else:
             pass
         #-------------#
-        #-------------#
+        #-------獲取板子資訊------#
         if success_find_board == True:
             #left_point
             for i in range (0,240):
@@ -190,31 +197,47 @@ class Lift_and_Carry():
                     break
         else:
             pass
+
+        for i in range (220,150,-1):
+            if send.Label_Model[320*i+LEFT_FOOT[0]-10]  == self.layer_parameter [state-1]:
+                self.count = self.count +1
+            if self.count > 45:
+                self.danger_board[0] = True
+                self.count = 0
+                break
+
+        for i in range (220,150,-1):
+            if send.Label_Model[320*i+RIGHT_FOOT[2]+10]  == self.layer_parameter [state-1]:
+                self.count = self.count +1
+            if self.count > 45:
+                self.danger_board[1] = True
+                self.count = 0
+                break
         #----Leftfoot----# 
         for LL in range(FOOTBOARD_LINE,10,-1):
                 if self.return_real_board(LL,LEFT_FOOT[0],state):
-                    self.distance[0] = FOOTBOARD_LINE - LL
+                    self.distance[0] = self.footboard_line - LL
                     break
         for LM in range(FOOTBOARD_LINE,10,-1):
                 if self.return_real_board(LM,LEFT_FOOT[1],state):
-                    self.distance[1] = FOOTBOARD_LINE - LM
+                    self.distance[1] = self.footboard_line - LM
                     break
         for LR in range(FOOTBOARD_LINE,10,-1):
                 if self.return_real_board(LR,LEFT_FOOT[2],state):
-                    self.distance[2] = FOOTBOARD_LINE - LR
+                    self.distance[2] = self.footboard_line - LR
                     break
         #----Rightfoot----#
         for RL in range(FOOTBOARD_LINE,10,-1):
                 if self.return_real_board(RL,RIGHT_FOOT[0],state):
-                    self.distance[3] = FOOTBOARD_LINE - RL
+                    self.distance[3] = self.footboard_line - RL
                     break
         for RM in range(FOOTBOARD_LINE,10,-1):
                 if self.return_real_board(RM,RIGHT_FOOT[1],state):
-                    self.distance[4] = FOOTBOARD_LINE - RM
+                    self.distance[4] = self.footboard_line - RM
                     break
         for RR in range(FOOTBOARD_LINE,10,-1):
                 if self.return_real_board(RR,RIGHT_FOOT[2],state):
-                    self.distance[5] = FOOTBOARD_LINE - RR
+                    self.distance[5] = self.footboard_line - RR
                     break
         #-----------------#
         if self.layer == 6:
@@ -265,7 +288,7 @@ class Lift_and_Carry():
             print("對正板子")
             self.upboard_start=time.time()
             self.upboard_end = -999999
-            while(self.upboard_end-self.upboard_start) < 1:
+            while(self.upboard_end-self.upboard_start) < self.updelay:
                 self.upboard_end=time.time()
                 send.sendContinuousValue(-500,self.translation,0,self.theta,0)
                 print("=======")
@@ -277,8 +300,10 @@ class Lift_and_Carry():
             send.sendBodyAuto(0,0,0,0,1,0)                  #停止步態
             time.sleep(3)
             if self.layer ==3:
-                # self.IMUcorrect = True
-                self.IMU = send.imu_value_Yaw
+                self.footboard_line = FOOTBOARD_LINE
+                self.updelay = 0.5
+            else:
+                self.updelay = 1
             send.sendSensorReset()                          #IMU reset 避免機器人步態修正錯誤
             self.layer                 += 1                 #層數加一
             
@@ -313,48 +338,42 @@ class Lift_and_Carry():
                 self.checkout_board(layer_now)
             time.sleep(1)
         else:
-            if self.IMUcorrect == False:
-                self.edge_judge(layer_now)
-                self.last_forward     = self.forward
-                self.last_translation = self.translation
-                self.last_theta       = self.theta
-                self.speed_limit()
-            else:
-                self.IMU_correct()
-                print("!!!!")
+            self.edge_judge(layer_now)
+            self.last_forward     = self.forward
+            self.last_translation = self.translation
+            self.last_theta       = self.theta
+            self.speed_limit()
             send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
 
     def ready_to_LC(self):
-        if (self.distance[0] < GO_UP_DISTANCE)   and (self.distance[1] < GO_UP_DISTANCE+3) and\
-           (self.distance[2] < GO_UP_DISTANCE+5) and (self.distance[3] < GO_UP_DISTANCE+5) and\
-           (self.distance[4] < GO_UP_DISTANCE+3) and (self.distance[5] < GO_UP_DISTANCE):
-            return True
-        elif (self.distance[0] < GO_UP_DISTANCE+5) and (self.distance[1] < GO_UP_DISTANCE+3) and\
-             (self.distance[2] < GO_UP_DISTANCE)   and (self.distance[3] < GO_UP_DISTANCE)   and\
-             (self.distance[4] < GO_UP_DISTANCE+3) and (self.distance[5] < GO_UP_DISTANCE+5):
-            send.sendContinuousValue((BACK_MIN+FORWARD_CORRECTION),TRANSLATION_CORRECTION,0,THETA_CORRECTION,0)
-            start_delay = time.time()
-            end_delay   = -99999  
-            while (end_delay-start_delay) < 2:
-                end_delay = time.time()
-                print("bottom point at middle,back!!")
-            return False
+        if ((self.distance[0] < GO_UP_DISTANCE)   and (self.distance[1] < GO_UP_DISTANCE+3) and\
+           (self.distance[2] < GO_UP_DISTANCE+5)):
+            if (max(self.distance[0], self.distance[1], self.distance[2]) - min(self.distance[0], self.distance[1], self.distance[2]) < 5):
+                if((self.distance[3] < GO_UP_DISTANCE+8) and (self.distance[4] < GO_UP_DISTANCE+6) and\
+                    (self.distance[5] < GO_UP_DISTANCE+3)):
+                    if (max(self.distance[3], self.distance[4], self.distance[5]) - min(self.distance[3], self.distance[4], self.distance[5]) < 5):
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+            else:
+                return False
+        elif ((self.distance[0] < GO_UP_DISTANCE+5) and (self.distance[1] < GO_UP_DISTANCE+3) and\
+             (self.distance[2] < GO_UP_DISTANCE)):
+            if((self.distance[3] < GO_UP_DISTANCE+3)   and (self.distance[4] < GO_UP_DISTANCE+6) and\
+              (self.distance[5] < GO_UP_DISTANCE+8)):
+                send.sendContinuousValue((BACK_MIN+FORWARD_CORRECTION),TRANSLATION_CORRECTION,0,THETA_CORRECTION,0)
+                start_delay = time.time()
+                end_delay   = -99999  
+                while (end_delay-start_delay) < 2:
+                    end_delay = time.time()
+                    print("bottom point at middle,back!!")
+                return False
         else:
             return False
 
-    def IMU_correct(self):
-        while (abs(send.imu_value_Yaw + self.IMU) > 5):
-            if (send.imu_value_Yaw + self.IMU)<0:
-                self.forward        = 0
-                self.translation    = 0
-                self.theta          = -2
-                print("IMUcorrect,turn right")
-            elif (send.imu_value_Yaw + self.IMU)>0:
-                self.forward        = 0
-                self.translation    = 0
-                self.theta          = 2
-                print("IMUcorrect,turn left")
-        self.IMUcorrect = False
+
     def edge_judge(self,state):
         #太靠板子
         if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[1] <= WARNING_DISTANCE) or (self.distance[2] <= WARNING_DISTANCE) or (self.distance[3] <= WARNING_DISTANCE) or (self.distance[4] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE): 
@@ -363,32 +382,32 @@ class Lift_and_Carry():
                 ((self.distance[0] > WARNING_DISTANCE) and (self.distance[1] > WARNING_DISTANCE) and (self.distance[4] <= WARNING_DISTANCE) and (self.distance[5] <= WARNING_DISTANCE)):
                 self.forward = BACK_NORMAL + FORWARD_CORRECTION
                 self.theta_change(state)
-                if self.theta>THETA_CORRECTION:
-                    self.translation = self.right_theta * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
-                elif self.theta<THETA_CORRECTION:
-                    self.translation = self.left_theta * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
-                else:
-                    self.translation = TRANSLATION_CORRECTION
+                # if self.theta>THETA_CORRECTION:
+                #     self.translation = self.right_theta * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
+                # elif self.theta<THETA_CORRECTION:
+                #     self.translation = self.left_theta * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
+                # else:
+                #     self.translation = TRANSLATION_CORRECTION
                 print("!!!快踩板,後退!!!")
             #
             elif (self.distance[0] < WARNING_DISTANCE) or (self.distance[5] < WARNING_DISTANCE): 
                 self.forward = BACK_MIN + FORWARD_CORRECTION
                 self.theta_change(state)
-                if self.theta>THETA_CORRECTION:
-                    self.translation = self.right_theta * TRANSLATION_MIN + TRANSLATION_CORRECTION
-                elif self.theta<THETA_CORRECTION:
-                    self.translation = self.left_theta * TRANSLATION_MIN + TRANSLATION_CORRECTION
-                else:
-                    self.translation = TRANSLATION_CORRECTION
+                # if self.theta>THETA_CORRECTION:
+                #     self.translation = self.right_theta * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                # elif self.theta<THETA_CORRECTION:
+                #     self.translation = self.left_theta * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                # else:
+                #     self.translation = TRANSLATION_CORRECTION
                 print("!!!小心踩板,後退!!!")
             #90度板位在中間
             elif (self.board_bottom_point[0] > LEFT_FOOT[0]) and (self.board_bottom_point[0] < RIGHT_FOOT[2]):
-                if  self.board_bottom_point[0] < ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
+                if  self.board_bottom_point[0] > ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
                     self.forward     = BACK_NORMAL + FORWARD_CORRECTION
                     self.theta       =  THETA_BIG*self.right_theta
                     self.translation = self.left_theta * TRANSLATION_MIN + TRANSLATION_CORRECTION
                     print("90板怎麼在中間,快左修")
-                elif self.board_bottom_point[0] > ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
+                elif self.board_bottom_point[0] < ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
                     self.forward     = BACK_NORMAL + FORWARD_CORRECTION
                     self.theta       =  THETA_BIG*self.left_theta
                     self.translation = self.right_theta*  TRANSLATION_MIN + TRANSLATION_CORRECTION
@@ -455,57 +474,132 @@ class Lift_and_Carry():
                 print("前方沒有要上的板子")
                 self.no_up_board(state)
             else:
-                self.translation = TRANSLATION_CORRECTION 
-                if self.distance[0] < FIRST_FORWORD_CHANGE_LINE and self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
-                    self.forward     = FORWARD_MIN + FORWARD_CORRECTION
-                    self.theta_change(state)
-                    print('小前進')
-                elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE and self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
-                    self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                    self.theta_change(state)
-                    print('前進')
-                elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE and self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
-                    self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                    self.theta_change(state)
-                    print('大前進')
-                else:
-                    self.theta = 0+THETA_CORRECTION
-                    if state == 1:
-                        self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
-                        print('超大前進') 
-                    else:
+                if self.layer == 1:
+                    self.translation = TRANSLATION_CORRECTION 
+                    if self.distance[0] < FIRST_FORWORD_CHANGE_LINE and self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_MIN + FORWARD_CORRECTION
+                        self.theta_change(state)
+                        print('小前進')
+                    elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE and self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
+                        self.theta_change(state)
+                        print('前進')
+                    elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE and self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
                         self.forward     = FORWARD_BIG + FORWARD_CORRECTION
+                        self.theta_change(state)
                         print('大前進')
+                    else:
+                        self.theta = 0+THETA_CORRECTION
+                        if state == 1:
+                            self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
+                            print('超大前進') 
+                        else:
+                            self.forward     = FORWARD_BIG + FORWARD_CORRECTION
+                            print('大前進')
+                else:
+                    self.translation = TRANSLATION_CORRECTION 
+                    if self.distance[0] < FIRST_FORWORD_CHANGE_LINE and self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_MIN + FORWARD_CORRECTION - 500
+                        self.theta_change(state)
+                        print('小前進')
+                    elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE and self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION - 500
+                        self.theta_change(state)
+                        print('前進')
+                    elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE and self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_BIG + FORWARD_CORRECTION - 500
+                        self.theta_change(state)
+                        print('大前進')
+                    else:
+                        self.theta = 0+THETA_CORRECTION
+                        if state == 1:
+                            self.forward     = FORWARD_SUPER + FORWARD_CORRECTION - 500
+                            print('超大前進') 
+                        else:
+                            self.forward     = FORWARD_BIG + FORWARD_CORRECTION - 500
+                            print('大前進')
 
     def theta_change(self,state):
     #旋轉修正
         slope_long  = self.distance[0]-self.distance[5]
-        slope_short = self.distance[3]-self.distance[4]
-        if   (slope_long<0):
-            self.decide_theta = self.left_theta
-            print('左旋')
-        elif (slope_long>0):
-            self.decide_theta = self.right_theta
-            print('右旋')
+        # slope_short = self.distance[3]-self.distance[4]
+        slope_right = self.distance[2] - self.distance[0]
+        slope_left  = self.distance[5] - self.distance[3]
+        slope       = 0
+        
+        if self.layer == 4:
+            if (slope_right*slope_left)<0:
+                if   (abs(slope_right)<abs(slope_left)):
+                    slope = slope_right
+                elif (abs(slope_right)>abs(slope_left)):
+                    slope = slope_left
+            #---決定左或右轉---#
+            if   (slope>0):
+                self.decide_theta = self.left_theta
+                print('左旋')
+            elif (slope<0):
+                self.decide_theta = self.right_theta
+                print('右旋')
+            else:
+                print('直走')
+            #-----------------#
+            if  (abs(slope))>self.slope_big:                    #斜率過大,角度給最大
+                self.theta =  THETA_BIG*self.decide_theta + THETA_CORRECTION
+                if self.danger_board[0] == True:
+                    self.translation = TRANSLATION_MIN*self.right_theta
+                elif self.danger_board[1] == True:
+                    self.translation = TRANSLATION_MIN*self.left_theta
+                # else:
+                #     self.translation = TRANSLATION_NORMAL*self.decide_theta*-1
+                print("大旋")
+            elif(abs(slope))>self.slope_normal:                 #斜率較大,修正值較大
+                self.theta = THETA_NORMAL*self.decide_theta + THETA_CORRECTION
+                if self.danger_board[0] == True:
+                    self.translation = TRANSLATION_MIN*self.right_theta
+                elif self.danger_board[1] == True:
+                    self.translation = TRANSLATION_MIN*self.left_theta
+                # else:
+                #     self.translation = TRANSLATION_MIN*self.decide_theta*-1
+                print("旋")
+            elif(abs(slope))>self.slope_min:                    #斜率較小,修正值較小
+                self.theta = THETA_MIN*self.decide_theta + THETA_CORRECTION
+                if self.danger_board[0] == True:
+                    self.translation = TRANSLATION_MIN*self.right_theta
+                elif self.danger_board[1] == True:
+                    self.translation = TRANSLATION_MIN*self.left_theta
+                # else:
+                #     self.translation = TRANSLATION_MIN*self.decide_theta*-1
+                print("小旋")
+            else:
+                self.translation = 0+TRANSLATION_CORRECTION
+                self.theta       = 0+THETA_CORRECTION
+                
         else:
-            print('直走')
-
-        if  (abs(slope_long))>self.slope_big:                    #斜率過大,角度給最大
-            print(THETA_BIG,self.decide_theta,THETA_CORRECTION)
-            self.theta =  THETA_BIG*self.decide_theta + THETA_CORRECTION
-            self.translation = TRANSLATION_NORMAL*self.decide_theta*-1
-            print("大旋")
-        elif(abs(slope_long))>self.slope_normal:                 #斜率較大,修正值較大
-            print(THETA_NORMAL,self.decide_theta,THETA_CORRECTION)
-            self.theta = THETA_NORMAL*self.decide_theta + THETA_CORRECTION
-            print("旋")
-        elif(abs(slope_long))>self.slope_min:                    #斜率較小,修正值較小
-            print(THETA_MIN,self.decide_theta,THETA_CORRECTION)
-            self.theta = THETA_MIN*self.decide_theta + THETA_CORRECTION
-            print("小旋")
-        else:
-            # pass
-            self.theta = 0+THETA_CORRECTION
+            #---決定左或右轉---#
+            if   (slope_long<0):
+                self.decide_theta = self.left_theta
+                print('左旋')
+            elif (slope_long>0):
+                self.decide_theta = self.right_theta
+                print('右旋')
+            else:
+                print('直走')
+            #-----------------#
+            if  (abs(slope_long))>self.slope_big:                    #斜率過大,角度給最大
+                self.theta =  THETA_BIG*self.decide_theta + THETA_CORRECTION
+                self.translation = TRANSLATION_NORMAL*self.decide_theta*-1
+                print("大旋")
+            elif(abs(slope_long))>self.slope_normal:                 #斜率較大,修正值較大
+                self.theta = THETA_NORMAL*self.decide_theta + THETA_CORRECTION
+                self.translation = TRANSLATION_MIN*self.decide_theta*-1
+                print("旋")
+            elif(abs(slope_long))>self.slope_min:                    #斜率較小,修正值較小
+                self.theta = THETA_MIN*self.decide_theta + THETA_CORRECTION
+                self.translation = TRANSLATION_MIN*self.decide_theta*-1
+                print("小旋")
+            else:
+                self.translation = 0+TRANSLATION_CORRECTION
+                self.theta       = 0+THETA_CORRECTION
 
     def speed_limit(self): 
     ##前進量,平移量,旋轉量限制
@@ -516,7 +610,6 @@ class Lift_and_Carry():
             self.translation = 0
         if (self.last_theta * self.theta) < 0:
             self.theta = 0
-            print("aaaaaa")
         #速度限制
         if self.forward > 3000:
             self.forward = 3000
@@ -553,7 +646,7 @@ class Lift_and_Carry():
                         board_size = send.color_mask_subject_size[self.layer_model[state]][i]
                         if board_size > 2500 and send.color_mask_subject_XMax[self.layer_model[state]][i]>160:
                             self.find_board_in_right = True
-                            print("board in right",self.find_board_in_left)
+                            print("板子在右邊",self.find_board_in_left)
                             time.sleep(0.5)
                             break
                         else:
@@ -580,7 +673,7 @@ class Lift_and_Carry():
                             board_size = send.color_mask_subject_size[self.layer_model[state]][i]
                             if board_size > 2500 and send.color_mask_subject_XMin[self.layer_model[state]][i]<160:
                                 self.find_board_in_left = True
-                                print("board in left",self.find_board_in_left)
+                                print("板子在左邊",self.find_board_in_left)
                                 time.sleep(0.5)
                                 break
                             else:
@@ -601,6 +694,8 @@ class Lift_and_Carry():
                 send.sendHeadMotor(2,self.head_Vertical,100)#垂直
             else:
                 send.sendHeadMotor(2,self.head_Vertical+45,100)#垂直
+                pass
+
     def no_up_board(self,state):
     #上板或下板後影像上無下一層板
         last_board = send.color_mask_subject_cnts[self.layer_model[state-1]]
@@ -614,10 +709,7 @@ class Lift_and_Carry():
     def draw_function(self):
     #將需要的判斷線畫在影像上
     #比賽時建議關閉
-        if self.layer == 3:
-            send.drawImageFunction(1,0,0,320,FOOTBOARD_LINE-30,FOOTBOARD_LINE,0,128,255)#膝蓋的橫線
-        else:
-            send.drawImageFunction(1,0,0,320,FOOTBOARD_LINE,FOOTBOARD_LINE,0,128,255)#膝蓋的橫線
+        send.drawImageFunction(1,0,0,320,self.footboard_line,FOOTBOARD_LINE,0,128,255)#膝蓋的橫線
         send.drawImageFunction(2,0,LEFT_FOOT[0],LEFT_FOOT[0],0,240,255,128,128)#lr的線
         send.drawImageFunction(3,0,LEFT_FOOT[1],LEFT_FOOT[1],0,240,255,128,128)#lm的線
         send.drawImageFunction(4,0,LEFT_FOOT[2],LEFT_FOOT[2],0,240,255,128,128)#ll的線
