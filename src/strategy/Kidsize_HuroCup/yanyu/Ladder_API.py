@@ -22,7 +22,7 @@ class Send_Climb():
         # self.b = 0
 
         #腳掌標準線x值
-        self.knee=215
+        self.knee=210
         self.f_ll=98
         self.f_lr=150
         self.f_rl=170
@@ -42,7 +42,7 @@ class Send_Climb():
         
         self.c_speed=-100
         # 下板校正的平移
-        self.c_yspeed =100
+        self.c_yspeed =-100
 #///////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0 + self.c_theta
