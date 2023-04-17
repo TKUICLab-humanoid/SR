@@ -368,7 +368,7 @@ class Send_distance():
             elif self.up_distance[3]-self.up_distance[0] > 7 or self.up_distance[0]-self.up_distance[3] >7:
                 
                 #self.speed=self.back_speed
-                self.speed=-200+self.c_speed
+                self.speed=-400+self.c_speed
                 self.up_theta_func()
                 if self.theta>self.rc_theta:
                     self.yspeed = -600 + self.c_yspeed
