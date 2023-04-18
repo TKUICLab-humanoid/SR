@@ -9,6 +9,7 @@ import time
 imgdata = [[None for high in range(240)]for width in range (320)]
 if __name__ == '__main__':
     try:
+        //aa
         send = Sendmessage() #建立名稱,順便歸零,就是底線底線init
         LC = Lift_and_Carry()#建立名稱,順便歸零
         CW = Wall_Climb()
