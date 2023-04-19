@@ -180,9 +180,6 @@ class LiftandCarry:
 
     def find_board(self):
     #獲取板子資訊、距離資訊
-        # self.next_board = ObjectInfo(BOARD_COLOR[self.layer+1],'Board')
-        # self.now_board  = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
-        # self.last_board = ObjectInfo(BOARD_COLOR[self.layer-1],'Board') #設定前一個板子
         self.next_board.update()
         self.now_board.update()
         self.last_board.update()
@@ -363,6 +360,9 @@ class LiftandCarry:
             if self.layer == 7:
                 pass
             else:
+                self.next_board = ObjectInfo(BOARD_COLOR[self.layer+1],'Board') #設定下一個尋找的板子
+                self.now_board  = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
+                self.last_board = ObjectInfo(BOARD_COLOR[self.layer-1],'Board') #設定前一個板子
                 self.checkout_board()
             time.sleep(1)
         else:
