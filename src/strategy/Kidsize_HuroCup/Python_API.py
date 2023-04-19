@@ -28,16 +28,7 @@ class Sendmessage:
 
         # self.Label_Model = np.zeros([320*240])
         self.bridge = CvBridge()
-        self.color_mask_subject_cnts = [0 for i in range(8)]
-        self.color_mask_subject_X = [[0]*320 for i in range(8)]
-        self.color_mask_subject_Y = [[0]*320 for i in range(8)]
-        self.color_mask_subject_XMin = [[0]*320 for i in range(8)]
-        self.color_mask_subject_XMax = [[0]*320 for i in range(8)]
-        self.color_mask_subject_YMax = [[0]*320 for i in range(8)]
-        self.color_mask_subject_YMin = [[0]*320 for i in range(8)]
-        self.color_mask_subject_Width = [[0]*320 for i in range(8)]
-        self.color_mask_subject_Height = [[0]*320 for i in range(8)]
-        self.color_mask_subject_size = [[0]*320 for i in range(8)]
+        
         self.imu_value_Roll = 0
         self.imu_value_Yaw = 0
         self.imu_value_Pitch = 0
@@ -147,6 +138,16 @@ class Sendmessage:
         self.Label_Model = msg.LabelModel    
     def getObject(self,msg):
         time_start = time.time()
+        self.color_mask_subject_cnts = [0 for i in range(8)]
+        self.color_mask_subject_X = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Y = [[0]*320 for i in range(8)]
+        self.color_mask_subject_XMin = [[0]*320 for i in range(8)]
+        self.color_mask_subject_XMax = [[0]*320 for i in range(8)]
+        self.color_mask_subject_YMax = [[0]*320 for i in range(8)]
+        self.color_mask_subject_YMin = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Width = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Height = [[0]*320 for i in range(8)]
+        self.color_mask_subject_size = [[0]*320 for i in range(8)]
         for i in range (8):
             self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt#拉下來顏色
             for j in range (self.color_mask_subject_cnts[i]):
