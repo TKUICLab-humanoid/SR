@@ -8,7 +8,6 @@ import time
 from Python_API import Sendmessage
 
 send = Sendmessage()
-#test
 #--校正量--#
 #校正變數
 #前進量校正
