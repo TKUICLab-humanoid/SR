@@ -28,11 +28,11 @@ DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站�
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Red"    ,
-                              "Blue"   , 
-                              "Yellow" , 
-                              "Blue"   , 
+                              "Blue"   ,           #Blue Red Yellow Green
                               "Red"    , 
+                              "Yellow" , 
+                              "Red"    , 
+                              "Blue"   , 
                               "Green"]
 LADDER_COLOAR              = "Red"                     
 #----------#
@@ -49,7 +49,6 @@ DISTANCE_DISPARITY         = 5                     #距離點差距
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
-ANGLE_REVISION_DISTANCE    = 100                   #角度修正距離
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 #----------#
 BACK_MIN                   = -500                  #小退後
@@ -174,9 +173,6 @@ class LiftandCarry:
         self.next_board            = ObjectInfo(BOARD_COLOR[self.layer+1],'Board')
         self.now_board             = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
         self.last_board            = ObjectInfo(BOARD_COLOR[self.layer-1],'Board') #設定前一個板子
-        # self.next_board.update()
-        # self.now_board.update()
-        # self.last_board.update()
 
     def find_board(self):
     #獲取板子資訊、距離資訊
@@ -427,6 +423,18 @@ class LiftandCarry:
                 self.forward = BACK_MIN + FORWARD_CORRECTION
                 self.theta_change()
                 self.state = "!!!小心踩板,後退!!!"
+            elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
+                 (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
+            #左平移
+                self.forward     = BACK_MIN+ FORWARD_CORRECTION
+                self.theta       =  0
+                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+            elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
+                 (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
+            #右平移
+                self.forward     = BACK_MIN+ FORWARD_CORRECTION
+                self.theta       =  0
+                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
             else:
                 if  self.layer != 3 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
                     #左邊空間較大
@@ -445,42 +453,25 @@ class LiftandCarry:
                     self.state = "前方沒有要上的板子"
                     self.no_up_board()
                 else:
-                    if self.layer == 1:
-                        self.translation = TRANSLATION_CORRECTION 
-                        if self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
-                            self.forward     = FORWARD_MIN + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '小前進'
-                        elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
-                            self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '前進'
-                        elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE or self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
-                            self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '大前進'
-                        else:
-                            self.theta = 0+THETA_CORRECTION
-                            if self.layer == 1:
-                                self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
-                                self.state = '超大前進' 
-                            else:
-                                self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                                self.state = '大前進'
+                    self.translation = TRANSLATION_CORRECTION 
+                    if self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_MIN + FORWARD_CORRECTION
+                        self.theta_change()
+                        self.state = '小前進'
+                    elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
+                        self.theta_change()
+                        self.state = '前進'
+                    elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE or self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
+                        self.forward     = FORWARD_BIG + FORWARD_CORRECTION
+                        self.theta_change()
+                        self.state = '大前進'
                     else:
-                        self.translation = 0+TRANSLATION_CORRECTION 
-                        if self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
-                            self.forward     = FORWARD_MIN + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '小前進'
-                        elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
-                            self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '前進'
-                        elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE or self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
-                            self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '大前進'
+                        self.theta = 0+THETA_CORRECTION
+                        if self.layer == 1:
+                            self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
+                            self.theta       = 0 + THETA_CORRECTION
+                            self.state = '超大前進' 
                         else:
                             self.forward     = FORWARD_BIG + FORWARD_CORRECTION
                             self.theta       = 0 + THETA_CORRECTION
@@ -651,14 +642,13 @@ class LiftandCarry:
         rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
         rospy.loginfo(f"機器人狀態: {self.state}")
         rospy.loginfo(f"IMU: {send.imu_value_Yaw}")
-        rospy.loginfo(f"層數: {self.layer}")
+        rospy.loginfo(f"層數: {self.layer},{BOARD_COLOR[self.layer]}")
         rospy.loginfo(f"距離板: {self.distance}")
         rospy.loginfo(f"上板空間: {self.next_distance}")
         rospy.loginfo(f"板最左點: {self.board_left_point},板最右點: {self.board_right_point}")
         rospy.loginfo(f"板最上點: {self.board_top_point},板最下點: {self.board_bottom_point}")
         rospy.loginfo(f"板大小: {self.now_board.target_size}")
         rospy.loginfo('_______________________________________')
-        
 
 class WallClimb:
 #爬梯
