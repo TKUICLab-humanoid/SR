@@ -400,33 +400,33 @@ class LiftandCarry:
             if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[1] <= WARNING_DISTANCE) or (self.distance[2] <= WARNING_DISTANCE) or (self.distance[3] <= WARNING_DISTANCE) or (self.distance[4] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE): 
             #即將踩板
                 #90度板位在中間
-                if (self.board_bottom_point[0] > LEFT_FOOT[2]) and (self.board_bottom_point[0] < RIGHT_FOOT[0]) and abs(self.distance[0] - self.distance[2]) < 15 and abs(self.distance[3] - self.distance[5]) < 15:
-                    if  self.board_bottom_point[0] > ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
-                        self.forward     = BACK_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_BIG*RIGHT_THETA
-                        self.translation = LEFT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
-                        self.state = "90板怎麼在中間,快左修"
-                    elif self.board_bottom_point[0] < ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
-                        self.forward     = BACK_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_BIG*LEFT_THETA
-                        self.translation = RIGHT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
-                        self.state = "90板怎麼在中間,快右修"
-                #90度板位在雙腳前
-                elif (self.board_bottom_point[0] < LEFT_FOOT[2]) or (self.board_bottom_point[0] > RIGHT_FOOT[0]):
-                    if  (self.board_bottom_point[0] > RIGHT_FOOT[0]):
-                        self.forward     = BACK_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_BIG*RIGHT_THETA
-                        self.translation = LEFT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
-                        self.state = "90度板在右,快左修"
-                    elif (self.board_bottom_point[0] < LEFT_FOOT[2]):
-                        self.forward     = BACK_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_BIG*LEFT_THETA
-                        self.translation = RIGHT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
-                        self.state = "90度板在左,快右修"
-                else:
-                    self.forward = BACK_MIN + FORWARD_CORRECTION
-                    self.theta_change()
-                    self.state = "!!!小心踩板,後退!!!"
+                # if (self.board_bottom_point[0] > LEFT_FOOT[2]) and (self.board_bottom_point[0] < RIGHT_FOOT[0]) and abs(self.distance[0] - self.distance[2]) < 15 and abs(self.distance[3] - self.distance[5]) < 15:
+                #     if  self.board_bottom_point[0] > ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
+                #         self.forward     = BACK_NORMAL + FORWARD_CORRECTION
+                #         self.theta       = THETA_BIG*RIGHT_THETA
+                #         self.translation = LEFT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                #         self.state = "90板怎麼在中間,快左修"
+                #     elif self.board_bottom_point[0] < ((LEFT_FOOT[2]+RIGHT_FOOT[0])/2):
+                #         self.forward     = BACK_NORMAL + FORWARD_CORRECTION
+                #         self.theta       = THETA_BIG*LEFT_THETA
+                #         self.translation = RIGHT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                #         self.state = "90板怎麼在中間,快右修"
+                # #90度板位在雙腳前
+                # elif (self.board_bottom_point[0] < LEFT_FOOT[2]) or (self.board_bottom_point[0] > RIGHT_FOOT[0]):
+                #     if  (self.board_bottom_point[0] > RIGHT_FOOT[0]):
+                #         self.forward     = BACK_NORMAL + FORWARD_CORRECTION
+                #         self.theta       = THETA_BIG*RIGHT_THETA
+                #         self.translation = LEFT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                #         self.state = "90度板在右,快左修"
+                #     elif (self.board_bottom_point[0] < LEFT_FOOT[2]):
+                #         self.forward     = BACK_NORMAL + FORWARD_CORRECTION
+                #         self.theta       = THETA_BIG*LEFT_THETA
+                #         self.translation = RIGHT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                #         self.state = "90度板在左,快右修"
+                # else:
+                self.forward = BACK_MIN + FORWARD_CORRECTION
+                self.theta_change()
+                self.state = "!!!小心踩板,後退!!!"
             else:
                 if  self.layer != 3 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
                     #左邊空間較大
