@@ -22,13 +22,13 @@ class Send_Climb():
         # self.b = 0
 
         #腳掌標準線x值
-        self.knee=140
+        self.knee=170
         self.f_ll=98
         self.f_lr=150
         self.f_rl=170
         self.f_rr=222
-
-        #距離矩陣初始化
+        self.LC_flag = False       
+          #距離矩陣初始化
         self.climb_distance = [999,999,999,999]
 
         self.layer = [32]
@@ -143,12 +143,15 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(800)
-                time.sleep(8)
-                send.sendBodySector(801)
-                time.sleep(3)
-                send.sendBodySector(802)
-                time.sleep(3)
+                send.sendBodySector(500)
+                time.sleep(30)
+                self.LC_flag = True
+                # send.sendBodySector(800)
+                # time.sleep(8)
+                # send.sendBodySector(801)
+                # time.sleep(3)
+                # send.sendBodySector(802)
+                # time.sleep(3)
                 # for i in range (len(self.sector_array)):
 
                 #     if (send.DIOValue >> 3)%2==1:

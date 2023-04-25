@@ -67,16 +67,18 @@ if __name__ == '__main__':
                     send.drawImageFunction(5,0,distance.f_rr,distance.f_rr,0,240,255,0,0)#rr的線
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-
-                    if climb.stop_flag == 1 and climb.up_ladder_flag == 0:
+                    if climb.LC_flag :
+                        pass
+                    elif climb.stop_flag == 1 and climb.up_ladder_flag == 0:
                         send.sendBodyAuto(500,0,0,0,1,0)
                         climb.stop_flag = 0
                     elif climb.stop_flag == 1 and climb.up_ladder_flag == 1:
-                        #send.sendBodyAuto(0,0,0,0,1,0)
-                        #climb.stop_flag = 0
-                        #climb.up_ladder_flag = 0
-                        pass
-                        #send.sendBodySector(29)
+                        send.sendBodyAuto(0,0,0,0,1,0)
+                        time.sleep(2)
+                        climb.stop_flag = 0
+                        climb.up_ladder_flag = 0
+                        send.sendBodySector(29)
+                        time.sleep(4)
                     elif climb.stop_flag == 0 :
                         climb.find_ladder()
                         climb.up_ladder()
@@ -127,7 +129,7 @@ if __name__ == '__main__':
                     send.sendBodySector(29)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
-                    time.sleep(0.5)
+                    time.sleep(2)
 
             r.sleep()    
 
