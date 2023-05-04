@@ -33,7 +33,7 @@ if __name__ == '__main__':
             rospy.loginfo(strategy)
             if strategy == "Lift_and_Carry_off" or strategy =="Lift_and_Carry_on":
                 lc.main(strategy)
-            elif strategy == "Wall_Climb_off" or strategy =="Wall_Climb_om":
+            elif strategy == "Wall_Climb_off" or strategy =="Wall_Climb_on":
                 cw.main(strategy)
             # end      = rospy.get_time()
             # rospy.logdebug(f'策略計算總時間: {end-start}')

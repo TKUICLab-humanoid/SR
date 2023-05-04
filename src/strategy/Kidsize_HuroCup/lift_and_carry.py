@@ -19,10 +19,10 @@ BASE_CHANGE                = 100
 LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [0, 0, 1500, 0, 0]
-ROUTE_PLAN_TRANSLATION     = [1500, 200, 0, -2000, 0]
-ROUTE_PLAN_THETA           = [-4, -7, 0, 7, 0]
-ROUTE_PLAN_TIME            = [3, 8, 4, 8, 1]
+ROUTE_PLAN_FORWARD         = [0, 0, 2000, 0, 0]
+ROUTE_PLAN_TRANSLATION     = [-500, -500, 0, 500, 500]
+ROUTE_PLAN_THETA           = [5, 4, 0, -4, -5]
+ROUTE_PLAN_TIME            = [0, 0, 0, 0, 0]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
@@ -94,7 +94,8 @@ class LiftandCarry:
         rospy.loginfo(f'x: {self.now_forward} ,y: {self.now_translation} ,theta: {self.now_theta}')
         rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
         rospy.loginfo(f"機器人狀態: {self.state}")
-        rospy.loginfo(f"層數: {self.layer},{BOARD_COLOR[self.layer]}")
+        if self.layer < 7:
+            rospy.loginfo(f"層數: {self.layer},{BOARD_COLOR[self.layer]}")
         rospy.loginfo(f"距離板: {self.distance}")
         rospy.loginfo(f"上板空間: {self.next_distance}")
         rospy.loginfo(f"板大小: {self.now_board.target_size}")
@@ -233,10 +234,11 @@ class LiftandCarry:
             self.translation    = 0
             self.theta          = 0
             self.layer += 1                          #層數加一
-            self.now_board  = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
-            self.last_board = None 
+            
             self.walkinggait_stop   = True
             if self.layer < 7:
+                self.now_board  = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
+                self.last_board = None 
                 if self.layer != 4:
                     if self.layer != 6:
                         self.next_board = ObjectInfo(BOARD_COLOR[self.layer+1],'Board') #設定下一個尋找的板子
@@ -272,12 +274,12 @@ class LiftandCarry:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if ((self.distance[0] < GO_UP_DISTANCE+7) and (self.distance[1] < GO_UP_DISTANCE+7) and\
+        if ((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
            (self.distance[2] < GO_UP_DISTANCE+5) and (self.distance[3] < GO_UP_DISTANCE+3) and\
-           (self.distance[4] < GO_UP_DISTANCE)) or\
-           ((self.distance[1] < GO_UP_DISTANCE+5) and (self.distance[2] < GO_UP_DISTANCE+5) and\
-           (self.distance[3] < GO_UP_DISTANCE+3) and (self.distance[4] < GO_UP_DISTANCE) and\
-           (self.distance[5] < GO_UP_DISTANCE)):
+           (self.distance[4] < GO_UP_DISTANCE+5)) or\
+           ((self.distance[1] < GO_UP_DISTANCE+3) and (self.distance[2] < GO_UP_DISTANCE+3) and\
+           (self.distance[3] < GO_UP_DISTANCE+5) and (self.distance[4] < GO_UP_DISTANCE+5) and\
+           (self.distance[5] < GO_UP_DISTANCE+5)):
            #上板
            self.state = "上板"
            return 'ready_to_lc'
@@ -305,7 +307,7 @@ class LiftandCarry:
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state ="右平移"
             else:
-                if  self.layer != 3 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
+                if  self.layer != 3 and self.layer != 4 and self.layer != 6 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
                     #左邊空間較大
                     if (self.next_distance[0] + self.next_distance[1]) > (self.next_distance[4] + self.next_distance[5]):
                         self.forward     = BACK_NORMAL + FORWARD_CORRECTION
@@ -322,7 +324,10 @@ class LiftandCarry:
                     self.state = "前方沒有要上的板子"
                     self.no_up_board()
                 else:
-                    if self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
+                    if self.layer == 4:
+                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
+                        self.theta       = THETA_CORRECTION
+                    elif self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
                         self.forward     = FORWARD_MIN + FORWARD_CORRECTION
                         self.theta_change()
                         self.state = '小前進'
@@ -474,7 +479,7 @@ class LiftandCarry:
     #頂板判斷
         if   self.distance[0] > 0:
             left_slope = self.distance[0] - self.distance[2]
-        elif self.distance[1] > 1:
+        elif self.distance[1] > 0:
             left_slope = self.distance[1] - self.distance[2]
         else:
             left_slope = 0

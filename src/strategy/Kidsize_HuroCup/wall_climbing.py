@@ -14,20 +14,20 @@ TRANSLATION_CORRECTION     = 0
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
-BASE_CHANGE                = 100                   
+BASE_CHANGE                = 200                   
 #---微調站姿開關---#
 STAND_CORRECT_CW           = False                 #sector(33) CW_stand微調站姿
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 LADDER_COLOAR              = "Red"                     
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
-FOOT                       = [115 , 134, 153, 176, 194, 213]
-HEAD_HORIZONTAL            = 2055                  #頭水平
-HEAD_VERTICAL              = 2705                  #頭垂直 #down 2750
+#FOOT                       = [115 , 134, 153, 176, 194, 213]
+HEAD_HORIZONTAL            = 2068                  #頭水平
+HEAD_VERTICAL              = 2740                  #頭垂直 #down 2750
 ##判斷值
 FOOTLADDER_LINE            = 220                   #上梯基準線
 WARNING_DISTANCE           = 4                     #危險距離
-GO_UP_DISTANCE             = 10                    #上板距離
+#GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
@@ -40,9 +40,9 @@ FORWARD_NORMAL             = 2000                  #前進
 FORWARD_BIG                = 3000                  #大前進
 FORWARD_SUPER              = 5000                  #超大前進
 ##平移值
-TRANSLATION_MIN            = 500                   #小平移
-TRANSLATION_NORMAL         = 1000                  #平移
-TRANSLATION_BIG            = 1500                  #大平移
+TRANSLATION_MIN            = 200                   #小平移
+TRANSLATION_NORMAL         = 700                  #平移
+TRANSLATION_BIG            = 1200                  #大平移
 ##旋轉值
 THETA_MIN                  = 1                     #小旋轉
 THETA_NORMAL               = 3                     #旋轉
@@ -69,8 +69,8 @@ class WallClimbing:
     def main(self,strategy):
         send.sendHeadMotor(1,self.head_Horizontal,100)#水平
         send.sendHeadMotor(2,self.head_Vertical,100)#垂直
-        if DRAW_FUNCTION_FLAG:
-            self.draw_function()
+        # if DRAW_FUNCTION_FLAG:
+        #     self.draw_function()
 
         sys.stdout.write("\033[H")
         sys.stdout.write("\033[J")
@@ -78,10 +78,10 @@ class WallClimbing:
         rospy.loginfo(f'x: {self.now_forward} ,y: {self.now_translation} ,theta: {self.now_theta}')
         rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
         rospy.loginfo(f"機器人狀態: {self.state}")
-        rospy.loginfo(f"距離梯: {self.distance}")
+        #rospy.loginfo(f"距離梯: {self.distance}")
         rospy.loginfo('￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣')
         
-        if strategy == "Wall_Climbing_off":
+        if strategy == "Wall_Climb_off":
         #關閉策略,初始化設定
             if not self.walkinggait_stop:
                 rospy.loginfo("🔊CW parameter reset")
@@ -97,10 +97,14 @@ class WallClimbing:
                     send.sendBodySector(33)             #CW基礎站姿調整磁區
                 rospy.loginfo("reset🆗🆗🆗")
             rospy.loginfo("turn off")
-        elif strategy == "Wall_Climbing_on":
+        elif strategy == "Wall_Climb_on":
         #開啟CW策略
             if self.state != 'cw_finish':
-                rospy.loginfo(f"距離梯: {self.distance}")
+                if self.imu_reset:
+                    send.sendSensorReset()
+                    send.sendBodyAuto(0,0,0,0,1,0)
+                    self.imu_reset = False
+                rospy.loginfo(f"blue ymax: {self.lower_blue_ymax}")
                 self.find_ladder()
                 self.walkinggait(motion=self.edge_judge(strategy))
                     
@@ -113,6 +117,8 @@ class WallClimbing:
         #設定頭部馬達
         self.head_Horizontal       = HEAD_HORIZONTAL
         self.head_Vertical         = HEAD_VERTICAL
+        #imu_reast
+        self.imu_reset             = True
         #距離矩陣                     [左左,左中,左右 ,右左,右中,右右 ]
         # self.distance              = [9999,9999,9999,9999,9999,9999]
         # self.next_distance         = [9999,9999,9999,9999,9999,9999]
@@ -123,14 +129,11 @@ class WallClimbing:
         self.now_forward           = 0 
         self.now_translation       = 0
         self.now_theta             = 0  
+        self.lower_blue_ymax       = 0
 
     def find_ladder(self):
     #獲取梯子資訊、距離資訊
         self.ladder.update()
-        #腳與邊緣點距離
-        self.distance         = [9999,9999,9999,9999,9999,9999]
-        #邊緣點
-        now_edge_point        = [9999,9999,9999,9999,9999,9999]
 
         self.lower_blue_ymax = 0
         self.new_target_xmax = 0
@@ -138,17 +141,11 @@ class WallClimbing:
         self.new_target_ymax = 0
         self.blue_x_middle = 160
         #-------距離判斷-------#
-        # for i in range(6):
-        #     self.distance[i], now_edge_point[i] = self.return_real_board(outset=self.footboard_line,x=FOOT[i],y=now_edge_point[i],board=self.now_board.color_parameter)
-        for blue_cnt in range (send.color_mask_subject_cnts[2]):  #  send.color_mask_subject_cnts[5] is value about red range
+        for blue_cnt in range (send.color_mask_subject_cnts[2]):
             if send.color_mask_subject_size[2][blue_cnt] > 50:
                 self.new_target_xmax = send.color_mask_subject_XMax[2][blue_cnt]
                 self.new_target_xmin = send.color_mask_subject_XMin[2][blue_cnt]
                 self.new_target_ymax = send.color_mask_subject_YMin[2][blue_cnt]
-                # if self.old_target_xmax < self.new_target_xmax:
-                #     self.old_target_xmax = self.new_target_xmax
-                # if self.old_target_xmin > self.old_target_xmin:
-                #     self.old_target_xmin = self.old_target_xmin
                 
                 if self.lower_blue_ymax < self.new_target_ymax:
                     self.lower_blue_ymax = self.new_target_ymax
@@ -190,9 +187,9 @@ class WallClimbing:
                 self.now_translation = self.translation
             #旋轉變化量
             if send.imu_value_Yaw > 1:
-                self.now_theta = -1
+                self.now_theta = -THETA_MIN
             elif send.imu_value_Yaw < -1:
-                self.now_theta = 1
+                self.now_theta = THETA_MIN
             else:
                 self.now_theta = 0
             #速度調整
@@ -200,20 +197,20 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTBOARD_LINE - 20) and (self.blue_x_middle >= 158) and (self.blue_x_middle <= 162):
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - 20) and (self.blue_x_middle >= 158) and (self.blue_x_middle <= 162):
             self.state = "爬梯"
             return "ready_to_cw"
         else:
-            if (self.lower_blue_ymax > FOOTBOARD_LINE):
+            if (self.lower_blue_ymax > FOOTLADDER_LINE):
                 self.theta = send.imu_value_Yaw
                 self.forward = BACK_MIN + FORWARD_CORRECTION
                 self.state = "!!!小心採到梯子,後退!!!"
-            elif (self.lower_blue_ymax >= FOOTBOARD_LINE - 20) and (self.blue_x_middle < 160):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - 20) and (self.blue_x_middle < 160):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state = "左平移"
-            elif (self.lower_blue_ymax >= FOOTBOARD_LINE - 20) and (self.blue_x_middle >160):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - 20) and (self.blue_x_middle >160):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
@@ -228,13 +225,13 @@ class WallClimbing:
                 else:
                     self.translation = TRANSLATION_CORRECTION
                 
-                if (FOOTBOARD_LINE - self.lower_blue_ymax) < FIRST_FORWORD_CHANGE_LINE:
+                if (FOOTLADDER_LINE - self.lower_blue_ymax) < FIRST_FORWORD_CHANGE_LINE:
                     self.forward     = FORWARD_MIN + FORWARD_CORRECTION
                     self.state += '小前進'
-                elif (FOOTBOARD_LINE - self.lower_blue_ymax) < SECOND_FORWORD_CHANGE_LINE:
+                elif (FOOTLADDER_LINE - self.lower_blue_ymax) < SECOND_FORWORD_CHANGE_LINE:
                     self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
                     self.state += '前進'
-                elif (FOOTBOARD_LINE - self.lower_blue_ymax) < THIRD_FORWORD_CHANGE_LINE:
+                elif (FOOTLADDER_LINE - self.lower_blue_ymax) < THIRD_FORWORD_CHANGE_LINE:
                     self.forward     = FORWARD_BIG + FORWARD_CORRECTION
                     self.state += '大前進'
                 else:
@@ -243,43 +240,43 @@ class WallClimbing:
                     self.state     += '大前進'
             return 'walking'
 
-    def theta_change(self):
-    #旋轉修正
-        decide_theta = 0
-        if self.distance[2] < 240 and self.distance[3] < 240:
-            slope = self.distance[2] - self.distance[3]             #計算斜率(使用LR-RL)
-        else:
-            slope = 0
+    # def theta_change(self):
+    # #旋轉修正
+    #     decide_theta = 0
+    #     if self.distance[2] < 240 and self.distance[3] < 240:
+    #         slope = self.distance[2] - self.distance[3]             #計算斜率(使用LR-RL)
+    #     else:
+    #         slope = 0
 
-        if self.now_board.edge_min.x > self.distance[1] and slope > 5:
-            self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
-            rospy.loginfo('板子太右,右旋')
-        elif self.now_board.edge_max.x < self.distance[4] and slope < -5:
-            self.theta = THETA_NORMAL*LEFT_THETA + THETA_CORRECTION
-            rospy.loginfo('板子太左,左旋')
-        else:
-            #---決定左或右轉---#
-            if   (slope < -1*(SLOPE_MIN)):
-                decide_theta = LEFT_THETA
-                rospy.loginfo('左旋')
-            elif (slope > SLOPE_MIN):
-                decide_theta = RIGHT_THETA
-                rospy.loginfo('右旋')
-            else:
-                rospy.loginfo('直走')
-            #-----------------#
-            if  (abs(slope)) > SLOPE_BIG:                    #斜率過大,角度給最大
-                self.theta       =  THETA_BIG*decide_theta + THETA_CORRECTION
-                self.translation = TRANSLATION_NORMAL*decide_theta*-1
-            elif(abs(slope)) > SLOPE_NORMAL:                 #斜率較大,修正值較大
-                self.theta       = THETA_NORMAL*decide_theta + THETA_CORRECTION
-                self.translation = TRANSLATION_MIN*decide_theta*-1
-            elif(abs(slope)) > SLOPE_MIN:                    #斜率較小,修正值較小
-                self.theta       = THETA_MIN*decide_theta + THETA_CORRECTION
-                self.translation = 0+THETA_CORRECTION
-            else:
-                self.translation = 0+TRANSLATION_CORRECTION
-                self.theta       = 0+THETA_CORRECTION
+    #     if self.now_board.edge_min.x > self.distance[1] and slope > 5:
+    #         self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
+    #         rospy.loginfo('板子太右,右旋')
+    #     elif self.now_board.edge_max.x < self.distance[4] and slope < -5:
+    #         self.theta = THETA_NORMAL*LEFT_THETA + THETA_CORRECTION
+    #         rospy.loginfo('板子太左,左旋')
+    #     else:
+    #         #---決定左或右轉---#
+    #         if   (slope < -1*(SLOPE_MIN)):
+    #             decide_theta = LEFT_THETA
+    #             rospy.loginfo('左旋')
+    #         elif (slope > SLOPE_MIN):
+    #             decide_theta = RIGHT_THETA
+    #             rospy.loginfo('右旋')
+    #         else:
+    #             rospy.loginfo('直走')
+    #         #-----------------#
+    #         if  (abs(slope)) > SLOPE_BIG:                    #斜率過大,角度給最大
+    #             self.theta       =  THETA_BIG*decide_theta + THETA_CORRECTION
+    #             self.translation = TRANSLATION_NORMAL*decide_theta*-1
+    #         elif(abs(slope)) > SLOPE_NORMAL:                 #斜率較大,修正值較大
+    #             self.theta       = THETA_NORMAL*decide_theta + THETA_CORRECTION
+    #             self.translation = TRANSLATION_MIN*decide_theta*-1
+    #         elif(abs(slope)) > SLOPE_MIN:                    #斜率較小,修正值較小
+    #             self.theta       = THETA_MIN*decide_theta + THETA_CORRECTION
+    #             self.translation = 0+THETA_CORRECTION
+    #         else:
+    #             self.translation = 0+TRANSLATION_CORRECTION
+    #             self.theta       = 0+THETA_CORRECTION
 
     # def draw_function(self):
     # #畫面顯示繪畫資訊    
@@ -520,4 +517,4 @@ class ObjectInfo:
 #        :-:                       -*=%=..+-%=*  +#++++++*####*+++*%%#%**#***********#:=*#%**++*%-==                                  
 #                                  #-##:  *-#-+ .%########+*####***%%%%####**********#=-=+:-*++#%=+=                                  
 #                                 +##*    *:+++ +#+++++++%#+++++***%%%##**###++%#*%%+#*:-+::#+=%#=+-                                  
-#                                 .#=.    =-+++.#+++++=+*+*#+++++++###**#*=.. ..+:**++-+::*.#=+++-*.                                  
+#                                 .#=.    =-+++.#+++++=+*+*#+++++++###**#*=.. ..+:**++-+::*.#=+++-*.
