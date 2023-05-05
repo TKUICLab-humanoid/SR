@@ -15,20 +15,20 @@ from Python_API import Sendmessage
 send = Sendmessage()#要放在class外面,不然不能宣告
 
 class Send_Climb():
-    def __init__(self):#初始話
+    def __init__(self):#初始化
         # self.up_flag = 0
         # self.speed_flag = 0
         # self.a = 0
         # self.b = 0
 
         #腳掌標準線x值
-        self.knee=215
+        self.knee=180
         self.f_ll=98
         self.f_lr=150
         self.f_rl=170
         self.f_rr=222
-
-        #距離矩陣初始化
+        self.LC_flag = False       
+          #距離矩陣初始化
         self.climb_distance = [999,999,999,999]
 
         self.layer = [32]
@@ -40,7 +40,7 @@ class Send_Climb():
         #校正變數
         self.c_theta=1
         
-        self.c_speed=-300
+        self.c_speed=0
         # 下板校正的平移
         self.c_yspeed =200
 #///////////////////////////////////////////////////////////////
@@ -143,18 +143,25 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
+                send.sendBodySector(500)
+                time.sleep(30)
+                self.LC_flag = True
+                # send.sendBodySector(800)
+                # time.sleep(8)
+                # send.sendBodySector(801)
+                # time.sleep(3)
+                # send.sendBodySector(802)
+                # time.sleep(3)
+                # for i in range (len(self.sector_array)):
 
-
-                for i in range (len(self.sector_array)):
-
-                    if (send.DIOValue >> 3)%2==1:
-                        send.sendBodySector(self.sector_array[i])
-                        time.sleep(self.delay_array[i])
-                        print('sector {}'.format(self.sector_array[i]))
-                    else:
-                        send.sendBodySector(1000)
-                        print('stand 29')
-                        break
+                #     if (send.DIOValue >> 3)%2==1:
+                #         send.sendBodySector(self.sector_array[i])
+                #         time.sleep(self.delay_array[i])
+                #         print('sector {}'.format(self.sector_array[i]))
+                #     else:
+                #         send.sendBodySector(1000)
+                #         print('stand 29')
+                #         break
                 
                 self.climb_distance = [999,999,999,999]                 
         else:
@@ -189,7 +196,4 @@ class Send_Climb():
         elif(self.climb_feet_distance)>self.feet_distance_1:
             self.theta = self.l_theta_1
         else:
-            self.theta = 0+self.c_theta
-
-    
-
+            self.theta = 0+self.c_speed
