@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from rospy import Publisher
 from tku_msgs.msg import Interface,HeadPackage,SandHandSpeed,DrawImage,SingleMotorData,\
-SensorSet,ObjectList,LabelModelObjectList,RobotPos,SetGoalPoint,SoccerDataList,SensorPackage
+SensorSet,ObjectList,LabelModelObjectList,RobotPos,SetGoalPoint,SoccerDataList,SensorPackage,PIDpackage
 from std_msgs.msg import Int16,Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -20,14 +20,17 @@ class Sendmessage:
         self.draw_image_pub = rospy.Publisher("/strategy/drawimage",DrawImage, queue_size=100)
         self.continuous_value_pub = rospy.Publisher("/ChangeContinuousValue_Topic",Interface, queue_size=100)
         self.single_motor_data_pub = rospy.Publisher("/package/SingleMotorData",SingleMotorData, queue_size=100)
-        self.sensor_pub = rospy.Publisher("sensorset",SensorSet, queue_size=100)
-        
+        self.sensor_pub = rospy.Publisher("sensorset",SensorSet, queue_size=100)  
         self.Web = False
-
         self.Label_Model = [0 for i in range(320*240)]
-
-        # self.Label_Model = np.zeros([320*240])
-        self.bridge = CvBridge()
+        self.bridge = CvBridge()  
+        self.imu_value_Roll = 0
+        self.imu_value_Yaw = 0
+        self.imu_value_Pitch = 0
+        self.DIOValue = 0x00
+        self.is_start = False
+        self.time = 0
+        self.execute = False
         self.color_mask_subject_cnts = [0 for i in range(8)]
         self.color_mask_subject_X = [[0]*320 for i in range(8)]
         self.color_mask_subject_Y = [[0]*320 for i in range(8)]
@@ -38,13 +41,6 @@ class Sendmessage:
         self.color_mask_subject_Width = [[0]*320 for i in range(8)]
         self.color_mask_subject_Height = [[0]*320 for i in range(8)]
         self.color_mask_subject_size = [[0]*320 for i in range(8)]
-        self.imu_value_Roll = 0
-        self.imu_value_Yaw = 0
-        self.imu_value_Pitch = 0
-        self.DIOValue = 0x00
-        self.is_start = False
-        self.time = 0
-        aaaa = rospy.init_node('talker', anonymous=True)
         object_list_sub = rospy.Subscriber("/Object/List",ObjectList, self.getObject)
         label_model_sub = rospy.Subscriber("/LabelModel/List",LabelModelObjectList, self.getLabelModel)
         #compress_image_sub = rospy.Subscriber("compress_image",Image, self.catchImage)
@@ -53,6 +49,8 @@ class Sendmessage:
         start_sub = rospy.Subscriber("/web/start",Bool, self.startFunction)
         DIO_ack_sub = rospy.Subscriber("/package/FPGAack",Int16, self.DIOackFunction)
         sensor_sub = rospy.Subscriber("/package/sensorpackage",SensorPackage, self.sensorPackageFunction)
+        execute_sub = rospy.Subscriber("/package/executecallback",Bool, self.executecallback)
+        pid_sub = rospy.Subscriber("/package/PIDpackage",PIDpackage, self.sendPIDSet)
 
         
     def sendBodyAuto(self,x,y,z,theta,mode,sensor):	#步態啟動
@@ -112,29 +110,29 @@ class Sendmessage:
         MotorData.Speed = Speed
         self.single_motor_data_pub.publish(MotorData)
 
-    def sendSensorSet(self,R,P,Y,DesireSet,IMUReset,ForceState,GainSet):
+    def sendPIDSet(self,P,I,D,MotorID):
         msg = SensorSet()
-        msg.sensor_P = P * 1000
-        msg.sensor_I = I * 1000
-        msg.sensor_D = D * 1000
-        msg.sensor_modeset = modeset
-        self.sensor_pub.publish(msg)
+        msg.motor_P = P
+        msg.motor_I = I
+        msg.motor_D = D
+        msg.motorID = MotorID
+        for i in range(3):
+            if  i == 0:
+                msg.Pflag
+            elif i == 1:
+                msg.Iflag
+            else:
+                msg.Dflag
+            self.pid_sub.publish(msg)
 
     def sendSensorReset(self):
         msg = SensorSet()
         msg.sensor_modeset = 0x02
         self.sensor_pub.publish(msg)
+    
+    def executecallback(self,msg):
+        self.execute = msg.data
 
-    def strategy(self):
-        send = Sendmessage()
-        while not rospy.is_shutdown():
-            if send.Web == True:
-                send.sendSensorReset()
-                cv2.imshow("aaaaaa",send.rawimg)
-                cv2.waitKey(3)
-                print(send.Label_Model[33333])
-            
-            
     #def catchImage(self,msg):
     #    self.cvimg = self.bridge.imgmsg_to_cv2(msg,"bgr8")
     #def RawImage(self,msg):
@@ -143,10 +141,22 @@ class Sendmessage:
     #    self.originimg = self.bridge.imgmsg_to_cv2(msg,"bgr8")
     def startFunction(self,msg):
         self.Web = msg.data
+
     def getLabelModel(self,msg):
-        self.Label_Model = msg.LabelModel    
+        self.Label_Model = msg.LabelModel
+
     def getObject(self,msg):
         time_start = time.time()
+        self.color_mask_subject_cnts = [0 for i in range(8)]
+        self.color_mask_subject_X = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Y = [[0]*320 for i in range(8)]
+        self.color_mask_subject_XMin = [[0]*320 for i in range(8)]
+        self.color_mask_subject_XMax = [[0]*320 for i in range(8)]
+        self.color_mask_subject_YMax = [[0]*320 for i in range(8)]
+        self.color_mask_subject_YMin = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Width = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Height = [[0]*320 for i in range(8)]
+        self.color_mask_subject_size = [[0]*320 for i in range(8)]
         for i in range (8):
             self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt#拉下來顏色
             for j in range (self.color_mask_subject_cnts[i]):
@@ -163,20 +173,22 @@ class Sendmessage:
         time_end = time.time()
         self.time = 1/(time_end - time_start)
         # print("FPS:",self.time)
+        
     def sensorPackageFunction(self,msg):        
         self.imu_value_Roll  = msg.IMUData[0]
         self.imu_value_Pitch = msg.IMUData[1]
         self.imu_value_Yaw   = msg.IMUData[2]
+
     def DIOackFunction(self,msg):
         if msg.data & 0x10:
             self.is_start = True
         else:
             self.is_start = False
         self.DIOValue = msg.data
-    
+
+
 if __name__ == '__main__':
     try:
-        aa = Sendmessage()
-        aa.strategy()
+        pass
     except rospy.ROSInterruptException:
         pass
