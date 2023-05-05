@@ -82,6 +82,9 @@ if __name__ == '__main__':
                         #climb.stop_flag = 0
                         #climb.up_ladder_flag = 033 
                         send.sendBodySector(29)
+                        time.sleep(2)
+                        send.sendBodySector(5)
+                        time.sleep(2)
                     elif climb.stop_flag == 0 :
                         climb.find_ladder()
                         climb.up_ladder()
@@ -103,6 +106,9 @@ if __name__ == '__main__':
                         distance.stop_flag = 1
                         time.sleep(2)
                         send.sendBodySector(29)
+                        time.sleep(2)
+                        send.sendBodySector(5)
+                        time.sleep(2)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(1)
@@ -129,6 +135,9 @@ if __name__ == '__main__':
                     climb.up_ladder_flag = 0
                     time.sleep(2)
                     send.sendBodySector(29)
+                    time.sleep(2)
+                    send.sendBodySector(5)
+                    time.sleep(2)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(0.5)

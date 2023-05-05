@@ -74,7 +74,7 @@ class Send_distance():
 
         self.testtheta=0
         #前進量校正
-        self.c_speed = -100
+        self.c_speed = -300
         #平移校正
         self.c_yspeed =0
         #上板x
@@ -127,8 +127,8 @@ class Send_distance():
         self.space_nud=80
         self.space_ud=65
         #下板
-        self.space_ndd=40
-        self.space_dd=120
+        self.space_ndd=30
+        self.space_dd=110
 
         #下板腳離板子差
         self.down_bd_1=4
@@ -359,7 +359,7 @@ class Send_distance():
                 # 在第其他層
                 else:
                     self.speed = -500 + self.c_speed
-                    self.yspeed = 1200+self.c_yspeed
+                    self.yspeed = -1200+self.c_yspeed
                     self.up_theta_func()
                     print("ll")
 
@@ -390,14 +390,14 @@ class Send_distance():
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = 300+self.c_speed
+                    self.speed = -600+self.c_speed
                     self.yspeed = 0+self.c_yspeed
                     self.up_theta_func()
 
                 # 在第其他層
                 else:
-                    self.speed = 300+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed
+                    self.speed = -600+self.c_speed
+                    self.yspeed = -1200+self.c_yspeed
                     self.up_theta_func()
 
             
@@ -407,11 +407,11 @@ class Send_distance():
                 print("point   y                    : ",self.point_y)
                 #腳要掉下去
                 if self.up_distance[0]==999 or self.up_distance[0]==0:
-                    self.speed=self.speed_1
+                    self.speed=-400+self.speed_1
                     self.yspeed = -1000+self.c_yspeed
                     self.up_theta_func()
                 elif self.up_distance[3]==999 or self.up_distance[3]==0:
-                    self.speed=self.speed_1
+                    self.speed=-400+self.speed_1
                     self.yspeed = 1000+self.c_yspeed
                     self.up_theta_func()
                 else:
@@ -744,12 +744,12 @@ class Send_distance():
         
 
         if(self.up_distance[0]>self.up_distance[3]) and (self.up_distance[0]>70 and self.up_distance[3]>70):
-            self.speed=self.c_speed
+            self.speed=-400+self.c_speed
             self.yspeed=-1200+self.c_yspeed
             self.theta= self.lc_theta   
 
         elif (self.up_distance[3]>self.up_distance[0]) and (self.up_distance[0]>70 and self.up_distance[3]>70):
-            self.speed=self.c_speed
+            self.speed=-400+self.c_speed
             self.yspeed=1200+self.c_yspeed
             self.theta= self.lc_theta   
 
