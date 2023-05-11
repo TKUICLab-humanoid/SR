@@ -19,12 +19,12 @@ BASE_CHANGE                = 100
 LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [0, 0, 2000, 0, 0]
-ROUTE_PLAN_TRANSLATION     = [-500, -500, 0, 500, 500]
-ROUTE_PLAN_THETA           = [5, 4, 0, -4, -5]
-ROUTE_PLAN_TIME            = [0, 0, 0, 0, 0]
+ROUTE_PLAN_FORWARD         = [0, -500, 500, 0, 0]
+ROUTE_PLAN_TRANSLATION     = [500, 700, -500, 500, 500]
+ROUTE_PLAN_THETA           = [2, -6, -1, 6, -5]
+ROUTE_PLAN_TIME            = [4, 5, 2, 5, 2]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
+STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
 DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
@@ -39,8 +39,8 @@ BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
 FOOT                       = [115 , 134, 153, 176, 194, 213]
-HEAD_HORIZONTAL            = 2055                  #頭水平
-HEAD_VERTICAL              = 2705                  #頭垂直 #down 2750
+HEAD_HORIZONTAL            = 2067                  #頭水平
+HEAD_VERTICAL              = 2745                  #頭垂直 #down 2750
 ##判斷值
 FOOTBOARD_LINE             = 220                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
@@ -48,11 +48,11 @@ GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
-UP_BOARD_DISTANCE          = 40                    #最低上板需求距離
+UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 ##前後值
 BACK_MIN                   = -500                  #小退後
 BACK_NORMAL                = -1000                 #退後
-FORWARD_MIN                = 1000                  #小前進
+FORWARD_MIN                = 1500                  #小前進
 FORWARD_NORMAL             = 2000                  #前進
 FORWARD_BIG                = 3000                  #大前進
 FORWARD_SUPER              = 5000                  #超大前進
@@ -61,9 +61,9 @@ TRANSLATION_MIN            = 500                   #小平移
 TRANSLATION_NORMAL         = 1000                  #平移
 TRANSLATION_BIG            = 1500                  #大平移
 ##旋轉值
-THETA_MIN                  = 1                     #小旋轉
-THETA_NORMAL               = 3                     #旋轉
-THETA_BIG                  = 5                     #大旋轉
+THETA_MIN                  = 2                     #小旋轉
+THETA_NORMAL               = 4                     #旋轉
+THETA_BIG                  = 6                     #大旋轉
 SLOPE_MIN                  = 5                     #有點斜
 SLOPE_NORMAL               = 8                     #斜
 SLOPE_BIG                  = 15                    #過斜
@@ -194,6 +194,7 @@ class LiftandCarry:
     #步態函數,用於切換countiue 或 LC 步態
         if motion == 'ready_to_lc':
             rospy.loginfo("對正板子")
+            rospy.sleep(0.5) 
             send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
             send.sendSensorReset()                   #IMU reset 避免機器人步態修正錯誤
             rospy.sleep(3)                           #穩定停止後的搖晃
@@ -269,6 +270,9 @@ class LiftandCarry:
                 self.now_theta += 1
             else:
                 self.now_theta = self.theta
+            
+            if self.now_translation >1000 and self.now_forward >2000:
+                self.now_forward = 2000
             #速度調整
             send.sendContinuousValue(self.now_forward,self.now_translation,0,self.now_theta,0)
 
@@ -289,38 +293,31 @@ class LiftandCarry:
                 if self.layer == 4:
                     self.special_case()
                 else:
-                    self.forward = BACK_MIN + FORWARD_CORRECTION
+                    self.forward = BACK_NORMAL + FORWARD_CORRECTION
                     self.theta_change()
                     self.state = "!!!小心踩板,後退!!!"
             elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
                  (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
             #左平移
-                self.forward     = BACK_MIN+ FORWARD_CORRECTION
-                self.theta       =  0
+                if self.layer != 1:
+                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
+                else:
+                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
+                self.theta       =  1
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state ="左平移"
             elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
                  (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
             #右平移
-                self.forward     = BACK_MIN+ FORWARD_CORRECTION
-                self.theta       =  0
+                if self.layer != 1:
+                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
+                else:
+                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
+                self.theta       =  -1
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state ="右平移"
             else:
-                if  self.layer != 3 and self.layer != 4 and self.layer != 6 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
-                    #左邊空間較大
-                    if (self.next_distance[0] + self.next_distance[1]) > (self.next_distance[4] + self.next_distance[5]):
-                        self.forward     = BACK_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_CORRECTION 
-                        self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                        self.state = "空間不足,往左移"
-                    #右邊空間較大
-                    elif (self.next_distance[0] + self.next_distance[1]) < (self.next_distance[4] + self.next_distance[5]):
-                        self.forward     = BACK_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_CORRECTION 
-                        self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                        self.state = "空間不足,往右移"
-                elif self.layer > 1 and self.distance[0] > 240  and self.distance[1] > 240 and self.distance[4] > 240 and self.distance[5] > 240:
+                if self.layer > 1 and self.distance[0] > 240  and self.distance[1] > 240 and self.distance[4] > 240 and self.distance[5] > 240:
                     self.state = "前方沒有要上的板子"
                     self.no_up_board()
                 else:
@@ -328,9 +325,23 @@ class LiftandCarry:
                         self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
                         self.theta       = THETA_CORRECTION
                     elif self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
-                        self.forward     = FORWARD_MIN + FORWARD_CORRECTION
-                        self.theta_change()
-                        self.state = '小前進'
+                        if  self.layer != 3 and self.layer != 4 and self.layer != 6 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
+                            #左邊空間較大
+                            if (self.next_distance[0] + self.next_distance[1]) > (self.next_distance[4] + self.next_distance[5]):
+                                self.forward     = BACK_MIN + FORWARD_CORRECTION
+                                self.theta       = THETA_CORRECTION 
+                                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                                self.state = "空間不足,往左移"
+                            #右邊空間較大
+                            elif (self.next_distance[0] + self.next_distance[1]) < (self.next_distance[4] + self.next_distance[5]):
+                                self.forward     = BACK_MIN + FORWARD_CORRECTION
+                                self.theta       = THETA_CORRECTION 
+                                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                                self.state = "空間不足,往右移"
+                        else:
+                            self.forward     = FORWARD_MIN + FORWARD_CORRECTION
+                            self.theta_change()
+                            self.state = '小前進'
                     elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
                         self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
                         self.theta_change()
@@ -531,7 +542,14 @@ class LiftandCarry:
             self.translation = ROUTE_PLAN_TRANSLATION[now_layer-2]
             self.theta       = ROUTE_PLAN_THETA[now_layer-2]
             send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
-                           
+                 
+    def aa(self):
+        cnt=0
+        for i in range(FOOT[0],FOOT[5],1):
+            for j in range(FOOTBOARD_LINE,FOOTBOARD_LINE-10,-1):
+                if (send.Label_Model[320*j+i] == self.now_board.color_parameter):
+                    cnt = cnt +1 
+        return cnt
 class Coordinate:
 #儲存座標
     def __init__(self, x, y):
