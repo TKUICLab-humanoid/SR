@@ -164,7 +164,8 @@ class WallClimbing:
                 rospy.logdebug("站立姿勢")
             send.execute = False
             #-爬梯磁區-#
-            send.sendBodySector(40)                  
+            send.sendBodySector(40)    #1
+                                       #2              
             while not send.execute:
                 rospy.logdebug("40號磁區")
             send.execute = False
