@@ -25,7 +25,7 @@ send = Sendmessage()#要放在class外面,不然不能宣告
 class Send_distance():
     def __init__(self):#初始化
         #腳掌標準線x值
-        self.knee=205
+        self.knee=180
         self.f_lr=138
         self.f_ll=self.f_lr-44        
         self.f_rl=170
@@ -78,9 +78,9 @@ class Send_distance():
         #平移校正
         self.c_yspeed =200
         #上板x
-        self.up_x=13000
+        self.up_x=16000
         #下板x
-        self.down_x=16000
+        self.down_x=18000
 #////////////////////////////////////////////////////////////////////////
         #角度速度初始化
         self.theta = 0+self.rc_theta
@@ -388,13 +388,13 @@ class Send_distance():
             if self.layer_n != 3 and (self.next_up_distance[0] < self.space_nud or self.next_up_distance[3] < self.space_nud) and (self.up_distance[0] < self.space_ud or self.up_distance[3] < self.space_ud):
                 #print('space not enoughhhhhhhhhhh')
                 if self.yspeed==self.c_yspeed:#沒進90
-                    self.speed = -300+self.c_speed
+                    self.speed = -400+self.c_speed
                     self.yspeed = -400+self.c_yspeed
                     self.up_theta_func()
 
                 # 在第其他層
                 else:
-                    self.speed = -300+self.c_speed
+                    self.speed = -400+self.c_speed
                     self.yspeed = 1200+self.c_yspeed                       #ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
                     self.up_theta_func()
 
@@ -519,14 +519,15 @@ class Send_distance():
                 if max(self.down_distance)-min(self.down_distance)>40:
                     if self.down_distance.index(max(self.down_distance)) == 3 :
                         
-                        self.speed = 0 + self.c_speed
-                        self.yspeed = -1200+self.c_yspeed
+                        self.speed = -100 + self.c_speed
+                        self.yspeed = -1000+self.c_yspeed
+
                         if self.layer_n==1:
-                            self.theta=0+self.rc_theta
+                            self.theta=0+self.lc_theta
                         else:
                             self.down_theta_func()
                     elif self.down_distance.index(max(self.down_distance)) == 0 :
-                        self.speed = 0 + self.c_speed
+                        self.speed = -100 + self.c_speed
                         self.yspeed = 1500+self.c_yspeed
                         self.down_theta_func()
                     else:
@@ -562,11 +563,11 @@ class Send_distance():
                             self.down_theta_func
                             
                         else:
-                            self.yspeed = 0+self.c_yspeed
+                            self.yspeed = -100+self.c_yspeed
                             self.theta = -12 +self.rc_theta
                                                    
                     elif self.counter < self.counter_max:
-                        self.speed=100+self.c_speed
+                        self.speed=-100+self.c_speed
                         self.yspeed = 0+self.c_yspeed
                         self.theta = 0+self.rc_theta
                         
@@ -639,9 +640,10 @@ class Send_distance():
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(3)
-                send.sendBodySector(700)
+                send.sendBodySector(33)
                 time.sleep(3)
                 send.sendSensorReset()
+                time.sleep(1)
                 self.stop_flag=1
                 self.up_board_flag=1
                 self.next_board()
@@ -668,8 +670,11 @@ class Send_distance():
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(4)
+                time.sleep(2)
                 send.sendSensorReset()
+                time.sleep(1)
+                send.sendBodySector(32)
+                time.sleep(3)
                 #send.sendBodySector(6)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
