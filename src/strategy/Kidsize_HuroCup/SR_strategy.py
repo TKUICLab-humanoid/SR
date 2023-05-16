@@ -85,7 +85,7 @@ if __name__ == '__main__':
             
             elif send.is_start ==False:
                 # print('web',send.Web)
-                send.sendSensorReset()
+                send.sendSensorReset(1,1,1)
                 if send.DIOValue == 9 or send.DIOValue == 10 or send.DIOValue == 11 :
                     print("turn off")
                     if distance.stop_flag == 0 or distance.up_board_flag == 1:

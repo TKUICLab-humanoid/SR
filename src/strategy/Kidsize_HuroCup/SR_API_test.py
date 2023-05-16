@@ -523,7 +523,7 @@ class Send_distance():
                         self.yspeed = -1000+self.c_yspeed
 
                         if self.layer_n==1:
-                            self.theta=0+self.lc_theta
+                            self.theta=3+self.lc_theta
                         else:
                             self.down_theta_func()
                     elif self.down_distance.index(max(self.down_distance)) == 0 :
@@ -564,7 +564,7 @@ class Send_distance():
                             
                         else:
                             self.yspeed = -100+self.c_yspeed
-                            self.theta = -12 +self.rc_theta
+                            self.theta = 4+self.rc_theta                #
                                                    
                     elif self.counter < self.counter_max:
                         self.speed=-100+self.c_speed
@@ -639,10 +639,10 @@ class Send_distance():
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(3)
+                time.sleep(1)
                 send.sendBodySector(33)
-                time.sleep(3)
-                send.sendSensorReset()
+                time.sleep(1)
+                send.sendSensorReset(1,1,1)
                 time.sleep(1)
                 self.stop_flag=1
                 self.up_board_flag=1
@@ -651,9 +651,9 @@ class Send_distance():
                 self.next_up_distance = [999,999,999,999]
                 send.sendBodyAuto(self.up_x,0,0,0,2,0)
                 print("LC finish")
-                time.sleep(3)
+                time.sleep(2)
                 send.sendBodySector(29)
-                time.sleep(3)
+                time.sleep(2)
                             
         else:
             self.parallel_board_setup()
@@ -670,11 +670,11 @@ class Send_distance():
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(2)
-                send.sendSensorReset()
+                time.sleep(1)
+                send.sendSensorReset(1,1,1)
                 time.sleep(1)
                 send.sendBodySector(32)
-                time.sleep(3)
+                time.sleep(1)
                 #send.sendBodySector(6)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
@@ -690,7 +690,7 @@ class Send_distance():
                 print('LLLLLLLLLLLLLLLLLLLLLLLLLLLLL')
                 time.sleep(2)
                 send.sendBodySector(29)
-                time.sleep(3)
+                time.sleep(2)
         else:
             self.down_parallel_board_setup()
             send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
@@ -735,7 +735,7 @@ class Send_distance():
             elif self.up_horizontal_2>self.f_mid and self.up_horizontal_2<999:
                 self.speed = 0 + self.c_speed
                 self.yspeed = self.c_yspeed
-                self.theta = -12 + self.rc_theta            
+                self.theta = 4 + self.rc_theta                          #
                 #print("cant find board : turn right")
                 #send.sendContinuousValue(self.speed,self.yspeed,0,self.theta,0)
 
@@ -819,13 +819,13 @@ class Send_distance():
     def up_theta_func(self):
         self.up_feet_distance=self.up_distance[3]-self.up_distance[0]
         print("!!!!!!!!!!! %d",self.up_feet_distance)
-        if(self.point_x > (self.f_ll - 1) and self.point_y > 120 and self.point_x < 160):
+        if(self.point_x > (self.f_ll - 1) and self.point_y > 180 and self.point_x < 160):
             print("11111111111111111111111")
             self.testtheta = 3
             self.speed = -400
             self.yspeed = -700 + self.c_yspeed
             self.midtheta_func()
-        elif(self.point_y > 120 and self.point_x < (self.f_rr + 1) and self.point_x > 160):
+        elif(self.point_y > 180 and self.point_x < (self.f_rr + 1) and self.point_x > 160):
             print("00000000000000000000000")
             self.testtheta = -3
             self.speed = -400
@@ -855,9 +855,9 @@ class Send_distance():
         self.midtheta_func()
 
         
-        if(self.point_x > self.f_ll and self.point_y > 120 and self.point_x < 160):
+        if(self.point_x > self.f_ll and self.point_y > 180 and self.point_x < 160):
             print("br")
-        elif(self.point_y > 120 and self.point_x < self.f_rr and self.point_x > 160):
+        elif(self.point_y > 180 and self.point_x < self.f_rr and self.point_x > 160):
             print("bl")
 
         else:
