@@ -81,7 +81,7 @@ class WallClimbing:
                 send.sendHeadMotor(1,self.head_Horizontal,100)  #水平
                 send.sendHeadMotor(2,self.head_Vertical,100)    #垂直
                 send.sendBodyAuto(0,0,0,0,1,0)
-                send.sendSensorReset()              #IMUreset
+                send.sendSensorReset(1,1,1)              #IMUreset
                 rospy.sleep(2)
                 self.init()
                 send.sendBodySector(29)             #基礎站姿磁區
@@ -97,7 +97,7 @@ class WallClimbing:
         #開啟CW策略
             if self.state != 'cw_finish':
                 if self.imu_reset:
-                    send.sendSensorReset()
+                    send.sendSensorReset(1,1,1)
                     send.sendBodyAuto(0,0,0,0,1,0)
                     self.imu_reset = False
 
@@ -157,7 +157,7 @@ class WallClimbing:
         if motion == 'ready_to_cw':
             rospy.loginfo("對正梯子")
             send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
-            send.sendSensorReset()                   #IMU reset 避免機器人步態修正錯誤
+            send.sendSensorReset(1,1,1)                   #IMU reset 避免機器人步態修正錯誤
             rospy.sleep(3)                           #穩定停止後的搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:

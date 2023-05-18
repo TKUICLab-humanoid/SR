@@ -5,7 +5,7 @@ import rospy
 import numpy as np
 import math
 from Python_API import Sendmessage
-
+from calculate_edge import deep_calculate
 #--校正量--#
 #前進量校正
 FORWARD_CORRECTION         = 0
@@ -19,13 +19,13 @@ BASE_CHANGE                = 100
 LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [0, -500, 500, 0, 0]
-ROUTE_PLAN_TRANSLATION     = [500, 700, -500, 500, 500]
-ROUTE_PLAN_THETA           = [2, -6, -1, 6, -5]
-ROUTE_PLAN_TIME            = [4, 5, 2, 5, 2]
+ROUTE_PLAN_FORWARD         = [0, -300, 0, -1000, 0]
+ROUTE_PLAN_TRANSLATION     = [-400, -800, 200, 900, 700]
+ROUTE_PLAN_THETA           = [-3, 6, 0, -5, -3]
+ROUTE_PLAN_TIME            = [5, 8, 4, 7, 5]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
-UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
+STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
+UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
 DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
@@ -64,9 +64,9 @@ TRANSLATION_BIG            = 1500                  #大平移
 THETA_MIN                  = 2                     #小旋轉
 THETA_NORMAL               = 4                     #旋轉
 THETA_BIG                  = 6                     #大旋轉
-SLOPE_MIN                  = 5                     #有點斜
-SLOPE_NORMAL               = 8                     #斜
-SLOPE_BIG                  = 15                    #過斜
+SLOPE_MIN                  = 1                     #有點斜
+SLOPE_NORMAL               = 3                     #斜
+SLOPE_BIG                  = 7                     #過斜
 #左基礎參數
 LEFT_THETA                 = 1
 #右基礎參數
@@ -77,6 +77,7 @@ FORWARD_PARAM              = 1
 BACK_PARAM                 = -1
 
 send       = Sendmessage()
+edge       = deep_calculate(5)
 class LiftandCarry:
 #LC主策略
     def __init__(self):
@@ -94,13 +95,14 @@ class LiftandCarry:
         rospy.loginfo(f'x: {self.now_forward} ,y: {self.now_translation} ,theta: {self.now_theta}')
         rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
         rospy.loginfo(f"機器人狀態: {self.state}")
+        rospy.loginfo(f"機器人角度: {self.angle}")
+        rospy.loginfo(f"SLOPE: {edge.slope}")
         if self.layer < 7:
             rospy.loginfo(f"層數: {self.layer},{BOARD_COLOR[self.layer]}")
         rospy.loginfo(f"距離板: {self.distance}")
         rospy.loginfo(f"上板空間: {self.next_distance}")
         rospy.loginfo(f"板大小: {self.now_board.target_size}")
         rospy.loginfo('￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣')
-        
         if strategy == "Lift_and_Carry_off":
         #關閉策略,初始化設定
             if not self.walkinggait_stop:
@@ -108,8 +110,22 @@ class LiftandCarry:
                 send.sendHeadMotor(1,self.head_Horizontal,100)  #水平
                 send.sendHeadMotor(2,self.head_Vertical,100)    #垂直
                 send.sendBodyAuto(0,0,0,0,1,0)
-                send.sendSensorReset()              #IMUreset
-                rospy.sleep(2)
+                send.sendBodySector(29)             #基礎站姿磁區
+                # while not send.execute:
+                #     rospy.logdebug("站立姿勢")
+                # send.execute = False
+                # if STAND_CORRECT_LC:
+                #     send.sendBodySector(30)             #LC基礎站姿調整磁區
+                #     while not send.execute:
+                #         rospy.logdebug("站立姿勢調整")
+                #     send.execute = False
+                rospy.loginfo("reset🆗🆗🆗")
+            self.init()
+            send.sendSensorReset(1,1,1)
+            rospy.loginfo("turn off")
+        elif strategy == "Lift_and_Carry_on":
+        #開啟LC策略
+            if self.first:
                 send.sendBodySector(29)             #基礎站姿磁區
                 while not send.execute:
                     rospy.logdebug("站立姿勢")
@@ -119,11 +135,9 @@ class LiftandCarry:
                     while not send.execute:
                         rospy.logdebug("站立姿勢調整")
                     send.execute = False
-                rospy.loginfo("reset🆗🆗🆗")
-            self.init()
-            rospy.loginfo("turn off")
-        elif strategy == "Lift_and_Carry_on":
-        #開啟LC策略
+                    self.first = False
+                    rospy.sleep(1) 
+
             if self.layer < 7:
                 
                 if self.walkinggait_stop and self.first_in:
@@ -138,11 +152,13 @@ class LiftandCarry:
                     self.route_plan(self.layer)
                 elif not self.walkinggait_stop:
                     self.find_board()
-                    self.walkinggait(motion=self.edge_judge(strategy))
+                    self.walkinggait(motion=self.edge_judge())
                     
     def init(self):
         #狀態
+        self.first                 = True
         self.state                 = '停止'
+        self.angle                 = '直走'
         #步態啟動旗標
         self.walkinggait_stop      = True
         self.first_in              = True  
@@ -165,7 +181,8 @@ class LiftandCarry:
         self.next_board            = ObjectInfo(BOARD_COLOR[self.layer+1],'Board') #設定下一個尋找的板子
         self.now_board             = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
         self.last_board            = None                                          #設定前一階板子
-
+        edge.color                 = ObjectInfo.color_dict[BOARD_COLOR[self.layer]]
+        
     def find_board(self):
     #獲取板子資訊、距離資訊
         self.next_board.update()
@@ -194,10 +211,10 @@ class LiftandCarry:
     #步態函數,用於切換countiue 或 LC 步態
         if motion == 'ready_to_lc':
             rospy.loginfo("對正板子")
-            rospy.sleep(0.5) 
+            rospy.sleep(0.25) 
             send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
-            send.sendSensorReset()                   #IMU reset 避免機器人步態修正錯誤
-            rospy.sleep(3)                           #穩定停止後的搖晃
+            rospy.sleep(5)                           #穩定停止後的搖晃
+            send.sendSensorReset(1,1,1)              #IMU reset 避免機器人步態修正錯誤
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
                 rospy.logdebug("站立姿勢")
@@ -225,17 +242,19 @@ class LiftandCarry:
             while not send.execute:
                 rospy.logdebug("站立姿勢")
             send.execute = False
+            rospy.sleep(1.5)
             if STAND_CORRECT_LC:
                 send.sendBodySector(30)              #基礎站姿調整
                 while not send.execute:
                     rospy.logdebug("站立姿勢調整")
                 send.execute = False
+            rospy.sleep(1)
             #-初始化-#
             self.forward        = 0
             self.translation    = 0
             self.theta          = 0
             self.layer += 1                          #層數加一
-            
+            edge.color = ObjectInfo.color_dict[BOARD_COLOR[self.layer]]
             self.walkinggait_stop   = True
             if self.layer < 7:
                 self.now_board  = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
@@ -276,7 +295,7 @@ class LiftandCarry:
             #速度調整
             send.sendContinuousValue(self.now_forward,self.now_translation,0,self.now_theta,0)
 
-    def edge_judge(self,strategy):
+    def edge_judge(self):
     #邊緣判斷,回傳機器人走路速度與走路模式
         if ((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
            (self.distance[2] < GO_UP_DISTANCE+5) and (self.distance[3] < GO_UP_DISTANCE+3) and\
@@ -293,29 +312,29 @@ class LiftandCarry:
                 if self.layer == 4:
                     self.special_case()
                 else:
-                    self.forward = BACK_NORMAL + FORWARD_CORRECTION
+                    self.forward = BACK_NORMAL + FORWARD_CORRECTION - 500
                     self.theta_change()
                     self.state = "!!!小心踩板,後退!!!"
-            elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
-                 (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
-            #左平移
-                if self.layer != 1:
-                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
-                else:
-                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
-                self.theta       =  1
-                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                self.state ="左平移"
-            elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
-                 (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
-            #右平移
-                if self.layer != 1:
-                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
-                else:
-                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
-                self.theta       =  -1
-                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                self.state ="右平移"
+            # elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
+            #      (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
+            # #左平移
+            #     if self.layer != 1:
+            #         self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
+            #     else:
+            #         self.forward     = BACK_MIN+ FORWARD_CORRECTION
+            #     self.theta       =  1
+            #     self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+            #     self.state ="左平移"
+            # elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
+            #      (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
+            # #右平移
+            #     if self.layer != 1:
+            #         self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
+            #     else:
+            #         self.forward     = BACK_MIN+ FORWARD_CORRECTION
+            #     self.theta       =  -1
+            #     self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+            #     self.state ="右平移"
             else:
                 if self.layer > 1 and self.distance[0] > 240  and self.distance[1] > 240 and self.distance[4] > 240 and self.distance[5] > 240:
                     self.state = "前方沒有要上的板子"
@@ -364,40 +383,42 @@ class LiftandCarry:
     def theta_change(self):
     #旋轉修正
         decide_theta = 0
-        if self.distance[2] < 240 and self.distance[3] < 240:
-            slope = self.distance[2] - self.distance[3]             #計算斜率(使用LR-RL)
-        else:
-            slope = 0
+        # if self.distance[2] < 240 and self.distance[3] < 240:
+        #     slope = self.distance[2] - self.distance[3]             #計算斜率(使用LR-RL)
+        # else:
+        #     slope = 0
 
-        if self.now_board.edge_min.x > self.distance[1] and slope > 5:
-            self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
-            rospy.loginfo('板子太右,右旋')
-        elif self.now_board.edge_max.x < self.distance[4] and slope < -5:
-            self.theta = THETA_NORMAL*LEFT_THETA + THETA_CORRECTION
-            rospy.loginfo('板子太左,左旋')
-        else:
+        slope = edge.slope
+        
+        # if self.now_board.edge_min.x > self.distance[1] and slope > 5:
+        #     self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
+        #     rospy.loginfo('板子太右,右旋')
+        # elif self.now_board.edge_max.x < self.distance[4] and slope < -5:
+        #     self.theta = THETA_NORMAL*LEFT_THETA + THETA_CORRECTION
+        #     rospy.loginfo('板子太左,左旋')
+        # else:
             #---決定左或右轉---#
-            if   (slope < -1*(SLOPE_MIN)):
-                decide_theta = LEFT_THETA
-                rospy.loginfo('左旋')
-            elif (slope > SLOPE_MIN):
-                decide_theta = RIGHT_THETA
-                rospy.loginfo('右旋')
-            else:
-                rospy.loginfo('直走')
-            #-----------------#
-            if  (abs(slope)) > SLOPE_BIG:                    #斜率過大,角度給最大
-                self.theta       =  THETA_BIG*decide_theta + THETA_CORRECTION
-                self.translation = TRANSLATION_NORMAL*decide_theta*-1
-            elif(abs(slope)) > SLOPE_NORMAL:                 #斜率較大,修正值較大
-                self.theta       = THETA_NORMAL*decide_theta + THETA_CORRECTION
-                self.translation = TRANSLATION_MIN*decide_theta*-1
-            elif(abs(slope)) > SLOPE_MIN:                    #斜率較小,修正值較小
-                self.theta       = THETA_MIN*decide_theta + THETA_CORRECTION
-                self.translation = 0+THETA_CORRECTION
-            else:
-                self.translation = 0+TRANSLATION_CORRECTION
-                self.theta       = 0+THETA_CORRECTION
+        if   (slope > 0):
+            decide_theta = LEFT_THETA
+            self.angle = '左旋'
+        elif (slope < 0):
+            decide_theta = RIGHT_THETA
+            self.angle = '右旋'
+            
+        #-----------------#
+        if  (abs(slope)) > SLOPE_BIG:                    #斜率過大,角度給最大
+            self.theta       =  THETA_BIG*decide_theta + THETA_CORRECTION
+            self.translation = TRANSLATION_NORMAL*decide_theta*-1
+        elif(abs(slope)) > SLOPE_NORMAL:                 #斜率較大,修正值較大
+            self.theta       = THETA_NORMAL*decide_theta + THETA_CORRECTION
+            self.translation = TRANSLATION_MIN*decide_theta*-1
+        elif(abs(slope)) > SLOPE_MIN:                    #斜率較小,修正值較小
+            self.theta       = THETA_MIN*decide_theta + THETA_CORRECTION
+            self.translation = 0+THETA_CORRECTION
+        else:
+            self.translation = 0+TRANSLATION_CORRECTION
+            self.theta       = 0+THETA_CORRECTION
+            self.angle = '直走'
 
     def no_up_board(self):
     #上板或下板後影像上無下一層板
@@ -550,6 +571,7 @@ class LiftandCarry:
                 if (send.Label_Model[320*j+i] == self.now_board.color_parameter):
                     cnt = cnt +1 
         return cnt
+    
 class Coordinate:
 #儲存座標
     def __init__(self, x, y):
