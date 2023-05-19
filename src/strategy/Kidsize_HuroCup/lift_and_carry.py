@@ -125,24 +125,20 @@ class LiftandCarry:
             rospy.loginfo("turn off")
         elif strategy == "Lift_and_Carry_on":
         #開啟LC策略
-            if self.first:
-                send.sendBodySector(29)             #基礎站姿磁區
-                while not send.execute:
-                    rospy.logdebug("站立姿勢")
-                send.execute = False
-                if STAND_CORRECT_LC:
-                    send.sendBodySector(30)             #LC基礎站姿調整磁區
-                    while not send.execute:
-                        rospy.logdebug("站立姿勢調整")
-                    send.execute = False
-                    self.first = False
-                    rospy.sleep(1) 
-
             if self.layer < 7:
-                
                 if self.walkinggait_stop and self.first_in:
                     sys.stdout.write("\033[H")
                     sys.stdout.write("\033[J")
+                    send.sendBodySector(29)             #基礎站姿磁區
+                    while not send.execute:
+                        rospy.logdebug("站立姿勢")
+                    send.execute = False
+                    if STAND_CORRECT_LC:
+                        send.sendBodySector(30)             #LC基礎站姿調整磁區
+                        while not send.execute:
+                            rospy.logdebug("站立姿勢調整")
+                        send.execute = False
+                        rospy.sleep(1) 
                     send.sendBodyAuto(self.forward,0,0,0,1,0)
                     self.walkinggait_stop = False
                     self.first_in         = False
@@ -156,7 +152,6 @@ class LiftandCarry:
                     
     def init(self):
         #狀態
-        self.first                 = True
         self.state                 = '停止'
         self.angle                 = '直走'
         #步態啟動旗標
@@ -312,29 +307,56 @@ class LiftandCarry:
                 if self.layer == 4:
                     self.special_case()
                 else:
-                    self.forward = BACK_NORMAL + FORWARD_CORRECTION - 500
-                    self.theta_change()
-                    self.state = "!!!小心踩板,後退!!!"
-            # elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
-            #      (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
-            # #左平移
-            #     if self.layer != 1:
-            #         self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
-            #     else:
-            #         self.forward     = BACK_MIN+ FORWARD_CORRECTION
-            #     self.theta       =  1
-            #     self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-            #     self.state ="左平移"
-            # elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
-            #      (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
-            # #右平移
-            #     if self.layer != 1:
-            #         self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
-            #     else:
-            #         self.forward     = BACK_MIN+ FORWARD_CORRECTION
-            #     self.theta       =  -1
-            #     self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-            #     self.state ="右平移"
+                    if self.layer < 4:
+                        if max(self.distance[0],self.distance[1],self.distance[2])>240:
+                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
+                            self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                            self.theta   =  0
+                            self.state   = "!!!右平移!!!"
+                        elif max(self.distance[3],self.distance[4],self.distance[5])>240:
+                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
+                            self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                            self.theta   =  0
+                            self.state   = "!!!左平移!!!"
+                        else:
+                            self.forward = BACK_NORMAL + FORWARD_CORRECTION
+                            self.theta_change()
+                            self.state = "!!!小心踩板,後退!!!"
+                    else:
+                        if self.distance[0] < GO_UP_DISTANCE and min(self.distance[3],self.distance[4],self.distance[5]) > GO_UP_DISTANCE:
+                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
+                            self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                            self.theta   =  THETA_MIN*LEFT_THETA
+                            self.state   = "!!!右平移,左旋!!!"
+                        elif self.distance[5] < GO_UP_DISTANCE and min(self.distance[0],self.distance[1],self.distance[2]) > GO_UP_DISTANCE:
+                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
+                            self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                            self.theta   =  THETA_MIN*RIGHT_THETA
+                            self.state   = "!!!左平移,右旋!!!"
+                        else:
+                            self.forward = BACK_NORMAL + FORWARD_CORRECTION
+                            self.theta_change()
+                            self.state = "!!!小心踩板,後退!!!"
+            elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
+                 (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
+            #左平移
+                if self.layer != 1:
+                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
+                else:
+                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
+                self.theta       =  1
+                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                self.state ="左平移"
+            elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
+                 (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
+            #右平移
+                if self.layer != 1:
+                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
+                else:
+                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
+                self.theta       =  -1
+                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
+                self.state ="右平移"
             else:
                 if self.layer > 1 and self.distance[0] > 240  and self.distance[1] > 240 and self.distance[4] > 240 and self.distance[5] > 240:
                     self.state = "前方沒有要上的板子"
@@ -556,6 +578,7 @@ class LiftandCarry:
     #路徑規劃
         start = rospy.get_time()
         end   = 99999
+        rospy.sleep(1)       #啟動步態後穩定時間
         while (end-start) < ROUTE_PLAN_TIME[now_layer-2]:
             end = rospy.get_time()
             print(end-start)
