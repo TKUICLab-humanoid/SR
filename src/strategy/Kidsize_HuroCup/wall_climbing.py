@@ -26,7 +26,7 @@ HEAD_HORIZONTAL            = 2068                  #頭水平
 HEAD_VERTICAL              = 2740                  #頭垂直 #down 2750
 
 #判斷值
-FOOTLADDER_LINE            = 220                   #上梯基準線
+FOOTLADDER_LINE            = 200                   #上梯基準線
 
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
@@ -169,6 +169,7 @@ class WallClimbing:
             while not send.execute:
                 rospy.logdebug("40號磁區")
             send.execute = False
+            rospy.sleep(5)
             #---------#
             self.status = 'cw_finish'
 
@@ -191,9 +192,9 @@ class WallClimbing:
 
             #旋轉變化量
             if send.imu_value_Yaw > 1:
-                self.now_theta = -THETA_MIN
+                self.now_theta = -THETA_NORMAL
             elif send.imu_value_Yaw < -1:
-                self.now_theta = THETA_MIN
+                self.now_theta = THETA_NORMAL
             else:
                 self.now_theta = 0
 

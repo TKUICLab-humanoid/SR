@@ -19,10 +19,10 @@ BASE_CHANGE                = 100
 LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [0, -300, 0, -1000, 0]
-ROUTE_PLAN_TRANSLATION     = [-400, -800, 200, 900, 700]
-ROUTE_PLAN_THETA           = [-3, 6, 0, -5, -3]
-ROUTE_PLAN_TIME            = [5, 8, 4, 7, 5]
+ROUTE_PLAN_FORWARD         = [-1500, -2000, 0, -2000, -1000]
+ROUTE_PLAN_TRANSLATION     = [-1500, -1000, 1000, 2000, -1000]
+ROUTE_PLAN_THETA           = [-2, 6, 0, -7, 5]
+ROUTE_PLAN_TIME            = [5, 7, 3.5, 7, 4]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
@@ -39,8 +39,8 @@ BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
 FOOT                       = [115 , 134, 153, 176, 194, 213]
-HEAD_HORIZONTAL            = 2067                  #頭水平
-HEAD_VERTICAL              = 2745                  #頭垂直 #down 2750
+HEAD_HORIZONTAL            = 2052                  #頭水平
+HEAD_VERTICAL              = 2737                  #頭垂直 #down 2750
 ##判斷值
 FOOTBOARD_LINE             = 220                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
@@ -231,7 +231,10 @@ class LiftandCarry:
                         rospy.logdebug("下板前姿勢")
                     rospy.sleep(1.5)
                     send.execute = False               #微調站姿延遲
-                send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
+                if self.layer == 4:
+                    send.sendBodyAuto(18000, 0, 0, 0, 3, 0)
+                else:
+                    send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             rospy.sleep(5)                           #剛下板,等待搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
@@ -326,12 +329,12 @@ class LiftandCarry:
                         if self.distance[0] < GO_UP_DISTANCE and min(self.distance[3],self.distance[4],self.distance[5]) > GO_UP_DISTANCE:
                             self.forward = BACK_NORMAL + FORWARD_CORRECTION 
                             self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            self.theta   =  THETA_MIN*LEFT_THETA
+                            self.theta   =  THETA_NORMAL*LEFT_THETA
                             self.state   = "!!!右平移,左旋!!!"
                         elif self.distance[5] < GO_UP_DISTANCE and min(self.distance[0],self.distance[1],self.distance[2]) > GO_UP_DISTANCE:
                             self.forward = BACK_NORMAL + FORWARD_CORRECTION 
                             self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            self.theta   =  THETA_MIN*RIGHT_THETA
+                            self.theta   =  THETA_NORMAL*RIGHT_THETA
                             self.state   = "!!!左平移,右旋!!!"
                         else:
                             self.forward = BACK_NORMAL + FORWARD_CORRECTION
