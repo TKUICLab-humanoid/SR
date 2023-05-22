@@ -60,7 +60,7 @@ if __name__ == '__main__':
                 elif send.DIOValue == 28:
                     print("``````````````````````")
         
-                    send.drawImageFunction(1,0,0,320,distance.knee,distance.knee,255,0,0)#膝蓋的橫線
+                    send.drawImageFunction(1,0,0,320,climb.knee,climb.knee,255,0,0)#膝蓋的橫線
                     send.drawImageFunction(2,0,distance.f_ll,distance.f_ll,0,240,255,0,0)#ll的線
                     send.drawImageFunction(3,0,distance.f_lr,distance.f_lr,0,240,255,0,0)#lr的線
                     send.drawImageFunction(4,0,distance.f_rl,distance.f_rl,0,240,255,0,0)#rl的線

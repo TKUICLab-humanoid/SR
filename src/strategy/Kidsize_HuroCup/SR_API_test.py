@@ -358,7 +358,7 @@ class Send_distance():
                 # 在第其他層
                 else:
                     self.speed = -400+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed                #gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+                    self.yspeed = -1200+self.c_yspeed                #gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
                     self.up_theta_func()
 
             # 不平行
@@ -395,7 +395,7 @@ class Send_distance():
                 # 在第其他層
                 else:
                     self.speed = -400+self.c_speed
-                    self.yspeed = 1200+self.c_yspeed                       #ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
+                    self.yspeed = -1200+self.c_yspeed                       #ggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
                     self.up_theta_func()
 
             
@@ -639,7 +639,7 @@ class Send_distance():
                 self.yspeed=0
                 self.theta=0
                 send.sendBodyAuto(0,0,0,0,1,0)
-                time.sleep(1)
+                time.sleep(2)
                 send.sendBodySector(33)
                 time.sleep(1)
                 send.sendSensorReset(1,1,1)
@@ -673,8 +673,8 @@ class Send_distance():
                 time.sleep(1)
                 send.sendSensorReset(1,1,1)
                 time.sleep(1)
-                send.sendBodySector(32)
-                time.sleep(1)
+                send.sendBodySector(34)
+                time.sleep(2)
                 #send.sendBodySector(6)
                 # if self.layer_n == 1:
                 #     send.sendBodySector(2)
