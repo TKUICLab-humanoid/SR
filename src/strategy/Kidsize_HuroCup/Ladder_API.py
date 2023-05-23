@@ -22,7 +22,7 @@ class Send_Climb():
         # self.b = 0
 
         #腳掌標準線x值
-        self.knee=170
+        self.knee=175
         self.f_ll=98
         self.f_lr=150
         self.f_rl=170
@@ -143,7 +143,7 @@ class Send_Climb():
                 self.up_ladder_flag=1
                 send.sendBodyAuto(0,0,0,0,1,0)
                 time.sleep(4)
-                send.sendBodySector(500)
+                send.sendBodySector(40)
                 time.sleep(30)
                 self.LC_flag = True
                 # send.sendBodySector(800)
