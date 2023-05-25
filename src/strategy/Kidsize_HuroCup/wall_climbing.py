@@ -83,14 +83,13 @@ class WallClimbing:
                 send.sendBodyAuto(0,0,0,0,1,0)
                 send.sendSensorReset(1,1,1)              #IMUreset
                 rospy.sleep(2)
-                self.init()
                 send.sendBodySector(29)             #基礎站姿磁區
                 rospy.sleep(1.5)
                 if STAND_CORRECT_CW:
                     send.sendBodySector(33)             #CW基礎站姿調整磁區
                     STAND_CORRECT_CW = False 
                 rospy.loginfo("reset🆗🆗🆗")
-
+            self.init()
             rospy.loginfo("turn off")
 
         elif strategy == "Wall_Climb_on":
