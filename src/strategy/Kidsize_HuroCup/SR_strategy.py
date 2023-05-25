@@ -131,8 +131,6 @@ if __name__ == '__main__':
                     time.sleep(2)
                     send.sendBodySector(29)
                     time.sleep(2)
-                    send.sendBodySector(5)
-                    time.sleep(2)
                     send.sendHeadMotor(1,distance.head_Horizontal,100)#水平
                     send.sendHeadMotor(2,distance.head_Vertical,100)#垂直
                     time.sleep(2)
