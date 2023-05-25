@@ -124,9 +124,11 @@ class Sendmessage:
             else:
                 msg.Dflag
             self.pid_sub.publish(msg)
-
-    def sendSensorReset(self):
+    def sendSensorReset(self,reset_roll, reset_pitch, reset_yaw):
         msg = SensorSet()
+        msg.sensor_P = reset_roll
+        msg.sensor_I = reset_pitch
+        msg.sensor_D = reset_yaw
         msg.sensor_modeset = 0x02
         self.sensor_pub.publish(msg)
     
