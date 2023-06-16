@@ -39,8 +39,8 @@ BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
 FOOT                       = [115 , 134, 153, 176, 194, 213]
-HEAD_HORIZONTAL            = 2052                  #頭水平
-HEAD_VERTICAL              = 2737                  #頭垂直 #down 2750
+HEAD_HORIZONTAL            = 2048                  #頭水平
+HEAD_VERTICAL              = 1320                  #頭垂直 #down 
 ##判斷值
 FOOTBOARD_LINE             = 220                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
