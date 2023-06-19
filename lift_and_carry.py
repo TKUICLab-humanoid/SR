@@ -24,10 +24,10 @@ ROUTE_PLAN_TRANSLATION     = [-1500, -1000, 1000, 2000, -1000]
 ROUTE_PLAN_THETA           = [-2, 6, 0, -7, 5]
 ROUTE_PLAN_TIME            = [5, 7, 3.5, 7, 4]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
+STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
-DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
-DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
+DOWNBOARD_CORRECT          = False                  #sector(32) 下板微調站姿
+DRAW_FUNCTION_FLAG         = False                  #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
                               "Blue"   ,           #Blue Red Yellow Green
