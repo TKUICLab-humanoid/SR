@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from rospy import Publisher
 from tku_msgs.msg import Interface,HeadPackage,SandHandSpeed,DrawImage,SingleMotorData,\
-SensorSet,ObjectList,LabelModelObjectList,RobotPos,SetGoalPoint,SoccerDataList,SensorPackage,PIDpackage
+SensorSet,ObjectList,LabelModelObjectList,RobotPos,SetGoalPoint,SoccerDataList,SensorPackage,PIDpackage,SensorPackage,parameter,Parameter_message
 from std_msgs.msg import Int16,Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -21,6 +21,9 @@ class Sendmessage:
         self.continuous_value_pub = rospy.Publisher("/ChangeContinuousValue_Topic",Interface, queue_size=100)
         self.single_motor_data_pub = rospy.Publisher("/package/SingleMotorData",SingleMotorData, queue_size=100)
         self.sensor_pub = rospy.Publisher("sensorset",SensorSet, queue_size=100)  
+        self.paradata_pub = rospy.Publisher("/package/parameterdata",Parameter_message, queue_size=100)
+        self.continuous_back = rospy.Publisher("/walkinggait/Continuousback",Bool, queue_size=100)
+
         self.Web = False
         self.Label_Model = [0 for i in range(320*240)]
         self.bridge = CvBridge()  
@@ -109,6 +112,42 @@ class Sendmessage:
         MotorData.Position = Position
         MotorData.Speed = Speed
         self.single_motor_data_pub.publish(MotorData)
+
+    def sendWalkParameter(self, mode, walk_mode, com_y_shift, y_swing, com_height, period_t, t_dsp, base_default_z, right_z_shift, stand_height, base_lift_z, back_flag):
+        walkparameter = parameter()
+        walkparameter.mode = walk_mode
+        walkparameter.X_Swing_Range = com_y_shift
+        walkparameter.Y_Swing_Range = y_swing if y_swing >= 4.5 else 4.5
+        walkparameter.Z_Swing_Range = com_height
+        walkparameter.Period_T = period_t if period_t % 30 == 0 else 420
+        walkparameter.Period_T2 = 720
+        walkparameter.Sample_Time = 20
+        walkparameter.OSC_LockRange = t_dsp if t_dsp >= 0 else 0
+        walkparameter.BASE_Default_Z = base_default_z if base_default_z >= 0 else 0
+        walkparameter.X_Swing_COM = right_z_shift
+        walkparameter.Y_Swing_Shift = stand_height
+        walkparameter.BASE_LIFT_Z = base_lift_z
+        walkparameter.Stand_Balance = 0
+
+        parasend2FPGA = Parameter_message()
+        parasend2FPGA.Walking_Mode = walk_mode
+        parasend2FPGA.X_Swing_Range = com_y_shift
+        parasend2FPGA.Y_Swing_Range = y_swing if y_swing >= 4.5 else 4.5
+        parasend2FPGA.Z_Swing_Range = com_height
+        parasend2FPGA.Period_T = period_t if period_t % 30 == 0 else 420
+        parasend2FPGA.Period_T2 = 720
+        parasend2FPGA.Sample_Time = 20
+        parasend2FPGA.OSC_LockRange = t_dsp if t_dsp >= 0 else 0
+        parasend2FPGA.BASE_Default_Z = base_default_z if base_default_z >= 0 else 0
+        parasend2FPGA.X_Swing_COM = right_z_shift
+        parasend2FPGA.Y_Swing_Shift = stand_height
+        parasend2FPGA.BASE_LIFT_Z = base_lift_z
+        parasend2FPGA.Stand_Balance = False
+        if mode == 0:   #save
+            self.continuous_back.publish(back_flag)
+            self.parameter_pub.publish(walkparameter)
+        else:   #send
+            self.paradata_pub.publish(parasend2FPGA)
 
     def sendPIDSet(self,P,I,D,MotorID):
         msg = SensorSet()

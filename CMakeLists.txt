@@ -28,12 +28,12 @@ set(ROSCOMMUNICATION_LIBRARIES ${CATKIN_DEVEL_PREFIX}/lib/libroscommunication.so
 #add_message_files(DIRECTORY msg
 #	FILES
 #)
-add_message_files(DIRECTORY msg
-  	FILES  
-	FootData.msg 
-	HoleData.msg 
-	mainData.msg
-)
+#add_message_files(DIRECTORY msg
+#  	FILES  
+#	FootData.msg 
+#	HoleData.msg 
+#	mainData.msg
+#)
 ## Generate services in the 'srv' folder
 #add_service_files(DIRECTORY srv 
 #	FILES
