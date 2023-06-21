@@ -16,18 +16,18 @@ THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+LCUP                       = 18000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCDOWN                     = 24000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [-1500, -2000, 0, -2000, -1000]
-ROUTE_PLAN_TRANSLATION     = [-1500, -1000, 1000, 2000, -1000]
-ROUTE_PLAN_THETA           = [-2, 6, 0, -7, 5]
-ROUTE_PLAN_TIME            = [5, 7, 3.5, 7, 4]
+ROUTE_PLAN_FORWARD         = [0, -700, 1500, -700, 600]
+ROUTE_PLAN_TRANSLATION     = [800, -1000, 0, 1500, -500]
+ROUTE_PLAN_THETA           = [-5, 7, 0, -7, -2]
+ROUTE_PLAN_TIME            = [6, 7, 5, 7, 3]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
-UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
-DOWNBOARD_CORRECT          = False                  #sector(32) 下板微調站姿
-DRAW_FUNCTION_FLAG         = False                  #影像繪圖開關
+UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
+DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
+DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
                               "Blue"   ,           #Blue Red Yellow Green
@@ -42,7 +42,7 @@ FOOT                       = [115 , 134, 153, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1320                  #頭垂直 #down 
 ##判斷值
-FOOTBOARD_LINE             = 220                   #上板基準線
+FOOTBOARD_LINE             = 210                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -341,7 +341,7 @@ class LiftandCarry:
                             self.theta_change()
                             self.state = "!!!小心踩板,後退!!!"
             elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
-                 (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
+                 (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4])>240):
             #左平移
                 if self.layer != 1:
                     self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
@@ -351,7 +351,7 @@ class LiftandCarry:
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state ="左平移"
             elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
-                 (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
+                 (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[1],self.distance[2])>240):
             #右平移
                 if self.layer != 1:
                     self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
