@@ -220,7 +220,17 @@ class LiftandCarry:
             if self.layer < 4:
                 if UPBOARD_CORRECT:
                     rospy.loginfo("準備上板")
-                    send.sendWalkParameter(1,2,-3,5.5,27.5,600,0.3,5,2.3,23.5,2.8,0)
+                    send.sendWalkParameter('send',\
+                                            walk_mode = 2,\
+                                            com_y_shift = -3,\
+                                            period_t = 600,\
+                                            t_dsp = 0.3,\
+                                            base_default_z = 5,\
+                                            right_z_shift = 2.3,\
+                                            base_lift_z = 2.8,\
+                                            com_height = 27.5,\
+                                            stand_height = 23.5,\
+                                            back_flag = 0)
                     time.sleep(1.5)
                     send.sendBodySector(31)          #上板前站姿調整
                     while not send.execute:
@@ -231,7 +241,17 @@ class LiftandCarry:
             else:
                 if DOWNBOARD_CORRECT:
                     rospy.loginfo("準備下板")
-                    send.sendWalkParameter(1,3,-3,5.5,59.5,570,0.3,3,1,21.5,-1,0)
+                    send.sendWalkParameter('send',\
+                                            walk_mode = 3,\
+                                            com_y_shift = -3,\
+                                            period_t = 570,\
+                                            t_dsp = 0.3,\
+                                            base_default_z = 3,\
+                                            right_z_shift = 1,\
+                                            base_lift_z = -1,\
+                                            com_height = 59.5,\
+                                            stand_height = 21.5,\
+                                            back_flag = 0)
                     time.sleep(1.5)
                     send.sendBodySector(32)          #下板前站姿調整
                     while not send.execute:
@@ -243,8 +263,9 @@ class LiftandCarry:
                 else:
                     send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             time.sleep(5)  
-            send.sendBodySector(3334)
-            send.sendWalkParameter(1,1,0,5.5,29.5,330,0,3,0,23.5,0,0)               
+            send.sendBodySector(39)               
+            send.sendWalkParameter('send',\
+                                    stand_height = 23.5)
             time.sleep(2)                           #剛下板,等待搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
