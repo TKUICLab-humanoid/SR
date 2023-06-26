@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from rospy import Publisher
 from tku_msgs.msg import Interface,HeadPackage,SandHandSpeed,DrawImage,SingleMotorData,\
-SensorSet,ObjectList,LabelModelObjectList,RobotPos,SetGoalPoint,SoccerDataList,SensorPackage,PIDpackage
+SensorSet,ObjectList,LabelModelObjectList,RobotPos,SetGoalPoint,SoccerDataList,SensorPackage,PIDpackage,SensorPackage,parameter,Parameter_message
 from std_msgs.msg import Int16,Bool
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
@@ -21,6 +21,9 @@ class Sendmessage:
         self.continuous_value_pub = rospy.Publisher("/ChangeContinuousValue_Topic",Interface, queue_size=100)
         self.single_motor_data_pub = rospy.Publisher("/package/SingleMotorData",SingleMotorData, queue_size=100)
         self.sensor_pub = rospy.Publisher("sensorset",SensorSet, queue_size=100)  
+        self.paradata_pub = rospy.Publisher("/package/parameterdata",Parameter_message, queue_size=100)
+        self.continuous_back = rospy.Publisher("/walkinggait/Continuousback",Bool, queue_size=100)
+
         self.Web = False
         self.Label_Model = [0 for i in range(320*240)]
         self.bridge = CvBridge()  
@@ -110,6 +113,65 @@ class Sendmessage:
         MotorData.Speed = Speed
         self.single_motor_data_pub.publish(MotorData)
 
+    def sendWalkParameter(self, function,\
+                                walk_mode = 1,\
+                                back_flag = 0,\
+                                com_y_shift = 0,\
+                                y_swing = 7,\
+                                com_height = 62,\
+                                period_t = 540,\
+                                t_dsp = 0,\
+                                base_default_z = 3,\
+                                right_z_shift = 0,\
+                                stand_height = 47.3,\
+                                base_lift_z = 3.2):
+    #function       指定功能 save為儲存參數 send為送參數給FPGA ※send可以直接做動作,但如果不save次做動作會回歸原本參數
+    #walk_mode      指定步態 0為走路 1為上板 2為下板
+    #back_flag      後退旗標
+    #com_y_shift    控制走路起步的質心位置,上下板為控制第2步的質心位置
+    #y_swing        質心晃動程度
+    #com_height     質心高度
+    #period_t       步態週期
+    #t_dsp          雙支撐時間(比例)
+    #base_default_z 抬腳高
+    #right_z_shift  控制上下板第2步的抬腳高補償
+    #stand_height   機器人初始站姿高度(由踝關節(15、21)到髖關節(11、17)馬達的距離)
+    #base_lift_z    板子高度
+        walkparameter = parameter()
+        walkparameter.mode = walk_mode
+        walkparameter.X_Swing_Range = com_y_shift
+        walkparameter.Y_Swing_Range = y_swing if y_swing >= 4.5 else 4.5
+        walkparameter.Z_Swing_Range = com_height
+        walkparameter.Period_T = period_t if period_t % 30 == 0 else 420
+        walkparameter.Period_T2 = 720
+        walkparameter.Sample_Time = 20
+        walkparameter.OSC_LockRange = t_dsp if t_dsp >= 0 else 0
+        walkparameter.BASE_Default_Z = base_default_z if base_default_z >= 0 else 0
+        walkparameter.X_Swing_COM = right_z_shift
+        walkparameter.Y_Swing_Shift = stand_height
+        walkparameter.BASE_LIFT_Z = base_lift_z
+        walkparameter.Stand_Balance = 0
+
+        parasend2FPGA = Parameter_message()
+        parasend2FPGA.Walking_Mode = walk_mode
+        parasend2FPGA.X_Swing_Range = com_y_shift
+        parasend2FPGA.Y_Swing_Range = y_swing if y_swing >= 6 else 6
+        parasend2FPGA.Z_Swing_Range = com_height
+        parasend2FPGA.Period_T = period_t if period_t % 30 == 0 else 420
+        parasend2FPGA.Period_T2 = 720
+        parasend2FPGA.Sample_Time = 20
+        parasend2FPGA.OSC_LockRange = t_dsp if t_dsp >= 0 else 0
+        parasend2FPGA.BASE_Default_Z = base_default_z if base_default_z >= 0 else 0
+        parasend2FPGA.X_Swing_COM = right_z_shift
+        parasend2FPGA.Y_Swing_Shift = stand_height
+        parasend2FPGA.BASE_LIFT_Z = base_lift_z
+        parasend2FPGA.Stand_Balance = False
+        if function == 'save':   #save
+            self.continuous_back.publish(back_flag)
+            self.parameter_pub.publish(walkparameter)
+        elif function == 'send':   #send
+            self.paradata_pub.publish(parasend2FPGA)
+
     def sendPIDSet(self,P,I,D,MotorID):
         msg = SensorSet()
         msg.motor_P = P
@@ -124,6 +186,7 @@ class Sendmessage:
             else:
                 msg.Dflag
             self.pid_sub.publish(msg)
+
     def sendSensorReset(self,reset_roll, reset_pitch, reset_yaw):
         msg = SensorSet()
         msg.sensor_P = reset_roll
@@ -133,6 +196,7 @@ class Sendmessage:
         self.sensor_pub.publish(msg)
     
     def executecallback(self,msg):
+    #motion動作做完時回傳True,否則Fasle
         self.execute = msg.data
 
     #def catchImage(self,msg):
@@ -141,6 +205,7 @@ class Sendmessage:
     #    self.rawimg = self.bridge.imgmsg_to_cv2(msg,"bgr8")
     #def OriginImage(self,msg):
     #    self.originimg = self.bridge.imgmsg_to_cv2(msg,"bgr8")
+
     def startFunction(self,msg):
         self.Web = msg.data
 
@@ -162,7 +227,6 @@ class Sendmessage:
         for i in range (8):
             self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt#拉下來顏色
             for j in range (self.color_mask_subject_cnts[i]):
-
                 self.color_mask_subject_X[i][j] = msg.Objectlist[i].Colorarray[j].X
                 self.color_mask_subject_Y[i][j] = msg.Objectlist[i].Colorarray[j].Y
                 self.color_mask_subject_XMin[i][j] = msg.Objectlist[i].Colorarray[j].XMin
@@ -172,8 +236,8 @@ class Sendmessage:
                 self.color_mask_subject_Width[i][j] = msg.Objectlist[i].Colorarray[j].Width
                 self.color_mask_subject_Height[i][j] = msg.Objectlist[i].Colorarray[j].Height
                 self.color_mask_subject_size[i][j] = msg.Objectlist[i].Colorarray[j].size
-        time_end = time.time()
-        self.time = 1/(time_end - time_start)
+        # time_end = time.time()
+        # self.time = 1/(time_end - time_start)
         # print("FPS:",self.time)
         
     def sensorPackageFunction(self,msg):        

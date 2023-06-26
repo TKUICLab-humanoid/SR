@@ -16,7 +16,7 @@ THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP                       = 18000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 24000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
 ROUTE_PLAN_FORWARD         = [0, -700, 1500, -700, 600]
@@ -42,7 +42,7 @@ FOOT                       = [115 , 134, 153, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1320                  #頭垂直 #down 
 ##判斷值
-FOOTBOARD_LINE             = 210                   #上板基準線
+FOOTBOARD_LINE             = 185                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -61,9 +61,9 @@ TRANSLATION_MIN            = 500                   #小平移
 TRANSLATION_NORMAL         = 1000                  #平移
 TRANSLATION_BIG            = 1500                  #大平移
 ##旋轉值
-THETA_MIN                  = 2                     #小旋轉
-THETA_NORMAL               = 4                     #旋轉
-THETA_BIG                  = 6                     #大旋轉
+THETA_MIN                  = 4                     #小旋轉
+THETA_NORMAL               = 6                     #旋轉
+THETA_BIG                  = 8                     #大旋轉
 SLOPE_MIN                  = 1                     #有點斜
 SLOPE_NORMAL               = 3                     #斜
 SLOPE_BIG                  = 7                     #過斜
