@@ -12,7 +12,7 @@ import sys
 import time
 import math
 MULT = 4
-LENTH = 320/MULT
+LENTH = 216/MULT
 WIDTH = 240/MULT
 send = Sendmessage()
 #             Orange   Yellow      Blue        Green     Black   Red         White
@@ -62,7 +62,7 @@ class deep_calculate:
                 size = send.color_mask_subject_size[color][i]
                 break
 
-        for i in range(0, int(LENTH), 1):
+        for i in range(28, int(LENTH), 1):
             for j in range(0, int(WIDTH), 1):
                 if img.item(j, i, 0) != COLOR_MASK[color][0] or img.item(j, i, 1) != COLOR_MASK[color][1] or img.item(j, i, 2) != COLOR_MASK[color][2]:
                     img[j, i] = (0, 0, 0)

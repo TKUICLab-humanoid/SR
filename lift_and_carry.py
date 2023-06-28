@@ -17,33 +17,33 @@ THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP                       = 18000#16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCDOWN                     = 17000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
-#上下板後路徑規劃S
-ROUTE_PLAN_FORWARD         = [-1500, -2000, 0, -2000, -1000]
-ROUTE_PLAN_TRANSLATION     = [-500, 300, 300, 300, 0]
-ROUTE_PLAN_THETA           = [2, 0, -2, 0, 0]
-ROUTE_PLAN_TIME            = [0, 0, 0, 0, 0]
+LCUP                       = 18000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCDOWN                     = 18000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+#上下板後路徑規劃
+ROUTE_PLAN_FORWARD         = [1000, 500,  0, 1500, 0,    600]
+ROUTE_PLAN_TRANSLATION     = [2000, 2500, 1500, 0,   1000, 1000]
+ROUTE_PLAN_THETA           = [0,    -5,   2,    0,   0,     -2]
+ROUTE_PLAN_TIME            = [5,    3,    6,    3,   2,      4]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = False                 #sector(30) LC_stand微調站姿
-UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
+UPBOARD_GROUND_CORRECT     = False                 #第一層上板站姿 (地板 -> 板子)  磁區暫定33記得改!!
+UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
 DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
+DOWNBOARD_GROUND_CORRECT   = False                 #第6層下板站姿 (板子 -> 地板)  磁區暫定34記得改!!
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
-BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                                         #Blue Red Yellow Green
-                              "Red"    , 
-                              "Yellow" , 
-                              "Blue"   ,
+BOARD_COLOR                = ["Green"   ,           #板子顏色(根據比賽現場調整)
+                              "Red"     ,           #Blue Red Yellow Green
                               "Yellow"    , 
-                              "Red"   , 
-                              "Green"]    
-        
+                              "Blue"  , 
+                              "Yellow"    , 
+                              "Red"     , 
+                              "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
 FOOT                       = [115 , 134, 153, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
-HEAD_VERTICAL              = 1400                  #頭垂直 #down 
+HEAD_VERTICAL              = 1380                  #頭垂直 #down 
 ##判斷值
 FOOTBOARD_LINE             = 230                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
@@ -146,6 +146,7 @@ class LiftandCarry:
                     send.sendBodyAuto(self.forward,0,0,0,1,0)
                     self.walkinggait_stop = False
                     self.first_in         = False
+                    self.route_plan(self.layer)
                 elif self.walkinggait_stop and not self.first_in:
                     send.sendBodyAuto(0,0,0,0,1,0)
                     self.walkinggait_stop = False
@@ -265,6 +266,7 @@ class LiftandCarry:
             time.sleep(5)  
             send.sendBodySector(39)               
             send.sendWalkParameter('send',\
+                                    walk_mode = 1,\
                                     stand_height = 23.5)
             time.sleep(2)                           #剛下板,等待搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
@@ -613,12 +615,13 @@ class LiftandCarry:
         start = rospy.get_time()
         end   = 99999
         rospy.sleep(1)       #啟動步態後穩定時間
-        while (end-start) < ROUTE_PLAN_TIME[now_layer-2]:
+        while (end-start) < ROUTE_PLAN_TIME[now_layer-1]:
             end = rospy.get_time()
             print(end-start)
-            self.forward     = ROUTE_PLAN_FORWARD[now_layer-2]
-            self.translation = ROUTE_PLAN_TRANSLATION[now_layer-2]
-            self.theta       = ROUTE_PLAN_THETA[now_layer-2]
+            self.forward     = ROUTE_PLAN_FORWARD[now_layer-1]
+            self.translation = ROUTE_PLAN_TRANSLATION[now_layer-1]
+            self.theta       = ROUTE_PLAN_THETA[now_layer-1]
+            rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
             send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
                  
     def aa(self):
@@ -668,9 +671,13 @@ class ObjectInfo:
         self.find_object = update_strategy[object_type]
 
     def get_object(self):
-        max_object_size = max(send.color_mask_subject_size[self.color])
-        max_object_idx = send.color_mask_subject_size[self.color].index(max_object_size)
-        return max_object_idx if max_object_size > 10000 else None
+        if send.color_mask_subject_size[self.color] != []:
+            print(send.color_mask_subject_size[self.color])
+            print(send.color_mask_subject_size)
+            print(self.color)
+            max_object_size = max(send.color_mask_subject_size[self.color])
+            max_object_idx = send.color_mask_subject_size[self.color].index(max_object_size)
+            return max_object_idx if max_object_size > 10000 else None
 
     def get_ball_object(self):
         object_idx = None

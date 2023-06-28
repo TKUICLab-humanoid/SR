@@ -4,6 +4,8 @@ import sys
 import rospy
 import numpy as np
 import math
+import sys
+sys.path.append('/home/iclab/Desktop/kid_hurocup/src/strategy')
 from Python_API import Sendmessage
 from lift_and_carry import LiftandCarry
 from wall_climbing import WallClimbing
