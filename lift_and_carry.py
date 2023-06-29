@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #coding=utf-8
+from re import T
 import sys
 import rospy
 import numpy as np
@@ -19,22 +20,22 @@ BASE_CHANGE                = 100
 LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 24000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [0, -700, 1500, -700, 600]
-ROUTE_PLAN_TRANSLATION     = [800, -1000, 0, 1500, -500]
-ROUTE_PLAN_THETA           = [-5, 7, 0, -7, -2]
-ROUTE_PLAN_TIME            = [6, 7, 5, 7, 3]
+ROUTE_PLAN_FORWARD         = [3000  , 500    , 200   , 1500  , 200  , 600]
+ROUTE_PLAN_TRANSLATION     = [0  , 800  , -1500  ,    0     , -1500  , 500]
+ROUTE_PLAN_THETA           = [0  , -2   , 3     , 0     , -2    , -4]
+ROUTE_PLAN_TIME            = [5  , 3    , 8      , 3     , 6     ,  0]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
+STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
 DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Blue"   ,           #Blue Red Yellow Green
-                              "Red"    , 
+                              "Red"   ,           #Blue Red Yellow Green
+                              "Blue"    , 
                               "Yellow" , 
-                              "Red"    , 
-                              "Blue"   , 
+                              "Blue"    , 
+                              "Red"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
@@ -42,7 +43,7 @@ FOOT                       = [115 , 134, 153, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1320                  #頭垂直 #down 
 ##判斷值
-FOOTBOARD_LINE             = 185                   #上板基準線
+FOOTBOARD_LINE             = 195                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -51,7 +52,7 @@ THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 ##前後值
 BACK_MIN                   = -500                  #小退後
-BACK_NORMAL                = -1000                 #退後
+BACK_NORMAL                = -700                 #退後
 FORWARD_MIN                = 1500                  #小前進
 FORWARD_NORMAL             = 2000                  #前進
 FORWARD_BIG                = 3000                  #大前進
@@ -110,6 +111,7 @@ class LiftandCarry:
                 send.sendHeadMotor(1,self.head_Horizontal,100)  #水平
                 send.sendHeadMotor(2,self.head_Vertical,100)    #垂直
                 send.sendBodyAuto(0,0,0,0,1,0)
+                rospy.sleep(2)
                 send.sendBodySector(29)             #基礎站姿磁區
                 # while not send.execute:
                 #     rospy.logdebug("站立姿勢")
@@ -134,7 +136,8 @@ class LiftandCarry:
                         rospy.logdebug("站立姿勢")
                     send.execute = False
                     if STAND_CORRECT_LC:
-                        send.sendBodySector(30)             #LC基礎站姿調整磁區
+                        #send.sendBodySector(30)             #LC基礎站姿調整磁區
+                        send.sendBodySector(2) 
                         while not send.execute:
                             rospy.logdebug("站立姿勢調整")
                         send.execute = False
@@ -142,6 +145,7 @@ class LiftandCarry:
                     send.sendBodyAuto(self.forward,0,0,0,1,0)
                     self.walkinggait_stop = False
                     self.first_in         = False
+                    self.route_plan(self.layer)
                 elif self.walkinggait_stop and not self.first_in:
                     send.sendBodyAuto(0,0,0,0,1,0)
                     self.walkinggait_stop = False
@@ -231,10 +235,7 @@ class LiftandCarry:
                         rospy.logdebug("下板前姿勢")
                     rospy.sleep(1.5)
                     send.execute = False               #微調站姿延遲
-                if self.layer == 4:
-                    send.sendBodyAuto(18000, 0, 0, 0, 3, 0)
-                else:
-                    send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
+                send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             rospy.sleep(5)                           #剛下板,等待搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
@@ -242,7 +243,8 @@ class LiftandCarry:
             send.execute = False
             rospy.sleep(1.5)
             if STAND_CORRECT_LC:
-                send.sendBodySector(30)              #基礎站姿調整
+                #send.sendBodySector(30)              #基礎站姿調整
+                send.sendBodySector(2)
                 while not send.execute:
                     rospy.logdebug("站立姿勢調整")
                 send.execute = False
@@ -307,6 +309,11 @@ class LiftandCarry:
         else:
             if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[1] <= WARNING_DISTANCE) or (self.distance[2] <= WARNING_DISTANCE) or (self.distance[3] <= WARNING_DISTANCE) or (self.distance[4] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE): 
             #即將踩板
+                if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE):
+                    if (self.distance[0] <= WARNING_DISTANCE) and (self.distance[2] <= GO_UP_DISTANCE+5) and (self.distance[3] <= GO_UP_DISTANCE + 6):
+                        rospy.sleep(0.7)
+                        self.state = "曲面上板!!"
+                        return 'ready_to_lc'
                 if self.layer == 4:
                     self.special_case()
                 else:
@@ -402,7 +409,7 @@ class LiftandCarry:
                         else:
                             self.forward     = FORWARD_BIG + FORWARD_CORRECTION
                             self.state = '大前進'
-                    self.translation = TRANSLATION_CORRECTION           #距離板太遠不須平移
+                        self.translation = TRANSLATION_CORRECTION           #距離板太遠不須平移
             return 'walking'
 
     def theta_change(self):
@@ -582,12 +589,12 @@ class LiftandCarry:
         start = rospy.get_time()
         end   = 99999
         rospy.sleep(1)       #啟動步態後穩定時間
-        while (end-start) < ROUTE_PLAN_TIME[now_layer-2]:
+        while (end-start) < ROUTE_PLAN_TIME[now_layer - 1]:
             end = rospy.get_time()
             print(end-start)
-            self.forward     = ROUTE_PLAN_FORWARD[now_layer-2]
-            self.translation = ROUTE_PLAN_TRANSLATION[now_layer-2]
-            self.theta       = ROUTE_PLAN_THETA[now_layer-2]
+            self.forward     = ROUTE_PLAN_FORWARD[now_layer - 1]
+            self.translation = ROUTE_PLAN_TRANSLATION[now_layer - 1]
+            self.theta       = ROUTE_PLAN_THETA[now_layer - 1]
             send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
                  
     def aa(self):
