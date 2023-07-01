@@ -69,7 +69,7 @@ class deep_calculate:
 
         output = cv2.medianBlur(img, 15)
         edges = cv2.Canny(output, 30, 50)
-        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 10, minLineLength=15, maxLineGap=10)
+        lines = cv2.HoughLinesP(edges, 1, np.pi/180, 20, minLineLength=15, maxLineGap=10)
 
         if lines is not None:
             closest_line = None

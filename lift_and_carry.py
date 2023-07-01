@@ -1,29 +1,29 @@
 #!/usr/bin/env python
 #coding=utf-8
+from re import T
 import sys
 import rospy
-import time
 import numpy as np
 import math
 from Python_API import Sendmessage
 from calculate_edge import deep_calculate
 #--校正量--#
 #前進量校正
-FORWARD_CORRECTION         = 0
+FORWARD_CORRECTION         = -300
 #平移校正
-TRANSLATION_CORRECTION     = 0
+TRANSLATION_CORRECTION     = 200
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP                       = 18000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 18000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [1000, 500,  0, 1500, 0,    600]
-ROUTE_PLAN_TRANSLATION     = [2000, 2500, 1500, 0,   1000, 1000]
-ROUTE_PLAN_THETA           = [0,    -5,   2,    0,   0,     -2]
-ROUTE_PLAN_TIME            = [5,    3,    6,    3,   2,      4]
+ROUTE_PLAN_FORWARD         = [1000,   300,    0, 1500,    0,  600]
+ROUTE_PLAN_TRANSLATION     = [2000, -1000, 1500,    0, 1000, 1000]
+ROUTE_PLAN_THETA           = [   0,     0,    2,    0,    0,   -2]
+ROUTE_PLAN_TIME            = [   0,     0,    0,    0,    0,    0]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = False                 #sector(30) LC_stand微調站姿
 UPBOARD_GROUND_CORRECT     = False                 #第一層上板站姿 (地板 -> 板子)  磁區暫定33記得改!!
@@ -32,18 +32,18 @@ DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站�
 DOWNBOARD_GROUND_CORRECT   = False                 #第6層下板站姿 (板子 -> 地板)  磁區暫定34記得改!!
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
-BOARD_COLOR                = ["Green"   ,           #板子顏色(根據比賽現場調整)
-                              "Red"     ,           #Blue Red Yellow Green
+BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
+                              "Red"   ,           #Blue Red Yellow Green
+                              "Yellow" ,
+                              "Blue"    ,  
                               "Yellow"    , 
-                              "Blue"  , 
-                              "Yellow"    , 
-                              "Red"     , 
+                              "Red"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
-FOOT                       = [115 , 134, 153, 176, 194, 213]
+FOOT                       = [106 , 125, 144, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
-HEAD_VERTICAL              = 1380                  #頭垂直 #down 
+HEAD_VERTICAL              = 1350                  #頭垂直 #down 
 ##判斷值
 FOOTBOARD_LINE             = 230                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
@@ -54,11 +54,11 @@ THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 ##前後值
 BACK_MIN                   = -500                  #小退後
-BACK_NORMAL                = -1000                 #退後
-FORWARD_MIN                = 800                  #小前進
-FORWARD_NORMAL             = 1000                  #前進
-FORWARD_BIG                = 2000                  #大前進
-FORWARD_SUPER              = 3000                  #超大前進
+BACK_NORMAL                = -700                 #退後
+FORWARD_MIN                = 500                  #小前進
+FORWARD_NORMAL             = 800                  #前進
+FORWARD_BIG                = 1500                  #大前進
+FORWARD_SUPER              = 2000                  #超大前進
 ##平移值
 TRANSLATION_MIN            = 500                   #小平移
 TRANSLATION_NORMAL         = 1000                  #平移
@@ -113,7 +113,7 @@ class LiftandCarry:
                 send.sendHeadMotor(1,self.head_Horizontal,100)  #水平
                 send.sendHeadMotor(2,self.head_Vertical,100)    #垂直
                 send.sendBodyAuto(0,0,0,0,1,0)
-                rospy.sleep(1.5)
+                rospy.sleep(2)
                 send.sendBodySector(29)             #基礎站姿磁區
                 # while not send.execute:
                 #     rospy.logdebug("站立姿勢")
@@ -138,7 +138,8 @@ class LiftandCarry:
                         rospy.logdebug("站立姿勢")
                     send.execute = False
                     if STAND_CORRECT_LC:
-                        send.sendBodySector(30)             #LC基礎站姿調整磁區
+                        #send.sendBodySector(30)             #LC基礎站姿調整磁區
+                        send.sendBodySector(2) 
                         while not send.execute:
                             rospy.logdebug("站立姿勢調整")
                         send.execute = False
@@ -197,7 +198,7 @@ class LiftandCarry:
         next_edge_point       = [9999,9999,9999,9999,9999,9999]
         #-------距離判斷-------#
         for i in range(6):
-            self.distance[i],now_edge_point[i] = self.return_real_board(outset=FOOTBOARD_LINE,x=FOOT[i],board=self.now_board.color_parameter)
+            self.distance[i],now_edge_point[i] = self.return_real_board(outset=FOOTBOARD_LINE, end_range=10, x=FOOT[i],board=self.now_board.color_parameter, translate_bool=True)
         #-----------------#
         if self.layer != 6 or self.layer != 3:
         #除了上最頂層和下最底層以外,偵測上下板空間
@@ -205,14 +206,14 @@ class LiftandCarry:
                 if now_edge_point[i]>240:
                     continue
                 else:
-                    self.next_distance[i] ,next_edge_point[i]= self.return_real_board(outset=now_edge_point[i],x=FOOT[i],board=self.next_board.color_parameter)
+                    self.next_distance[i] ,next_edge_point[i]= self.return_real_board(outset=now_edge_point[i], end_range=10, x=FOOT[i],board=self.next_board.color_parameter, translate_bool=True)
     
     def walkinggait(self,motion):
     #步態函數,用於切換countiue 或 LC 步態
         if motion == 'ready_to_lc':
             rospy.loginfo("對正板子")
             send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
-            time.sleep(5)                           #穩定停止後的搖晃
+            rospy.sleep(3)                           #穩定停止後的搖晃
             send.sendSensorReset(1,1,1)              #IMU reset 避免機器人步態修正錯誤
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
@@ -223,7 +224,8 @@ class LiftandCarry:
                     rospy.loginfo("準備上板")
                     send.sendWalkParameter('send',\
                                             walk_mode = 2,\
-                                            com_y_shift = -3,\
+                                            com_y_shift = 0,\
+                                            y_swing = 5.5,\
                                             period_t = 600,\
                                             t_dsp = 0.3,\
                                             base_default_z = 5,\
@@ -232,11 +234,11 @@ class LiftandCarry:
                                             com_height = 27.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
-                    time.sleep(1.5)
+                    rospy.sleep(1.5)
                     send.sendBodySector(31)          #上板前站姿調整
                     while not send.execute:
                         rospy.logdebug("上板前姿勢")
-                    time.sleep(1.5)
+                    rospy.sleep(1.5)
                     send.execute = False                   #微調站姿延遲
                 send.sendBodyAuto(LCUP,0,0,0,2,0)    #上板步態
             else:
@@ -245,41 +247,42 @@ class LiftandCarry:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
+                                            y_swing = 5.5,\
                                             period_t = 570,\
                                             t_dsp = 0.3,\
-                                            base_default_z = 3,\
+                                            base_default_z = 3.2,\
                                             right_z_shift = 1,\
-                                            base_lift_z = -1,\
+                                            base_lift_z = -2,\
                                             com_height = 59.5,\
                                             stand_height = 21.5,\
                                             back_flag = 0)
-                    time.sleep(1.5)
+                    rospy.sleep(1.5)
                     send.sendBodySector(32)          #下板前站姿調整
                     while not send.execute:
                         rospy.logdebug("下板前姿勢")
-                    time.sleep(1.5)
+                    rospy.sleep(1.5)
                     send.execute = False               #微調站姿延遲
                 if self.layer == 4:
                     send.sendBodyAuto(18000, 0, 0, 0, 3, 0)
                 else:
                     send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
-            time.sleep(5)  
+            rospy.sleep(5)  
             send.sendBodySector(39)               
             send.sendWalkParameter('send',\
                                     walk_mode = 1,\
                                     stand_height = 23.5)
-            time.sleep(2)                           #剛下板,等待搖晃
+            rospy.sleep(2)                           #剛下板,等待搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
                 rospy.logdebug("站立姿勢")
             send.execute = False
-            time.sleep(1.5)
+            rospy.sleep(1.5)
             if STAND_CORRECT_LC:
                 send.sendBodySector(30)              #基礎站姿調整
                 while not send.execute:
                     rospy.logdebug("站立姿勢調整")
                 send.execute = False
-            time.sleep(1)
+            rospy.sleep(1)
             #-初始化-#
             self.forward        = 0
             self.translation    = 0
@@ -328,115 +331,81 @@ class LiftandCarry:
 
     def edge_judge(self):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if ((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
-           (self.distance[2] < GO_UP_DISTANCE+5) and (self.distance[3] < GO_UP_DISTANCE+3) and\
-           (self.distance[4] < GO_UP_DISTANCE+5)) or\
-           ((self.distance[1] < GO_UP_DISTANCE+3) and (self.distance[2] < GO_UP_DISTANCE+3) and\
-           (self.distance[3] < GO_UP_DISTANCE+5) and (self.distance[4] < GO_UP_DISTANCE+5) and\
-           (self.distance[5] < GO_UP_DISTANCE+5)):
+        if ((self.distance[0] < GO_UP_DISTANCE ) and (self.distance[1] < GO_UP_DISTANCE ) and\
+           (self.distance[2] < GO_UP_DISTANCE ) and (self.distance[3] < GO_UP_DISTANCE) and\
+           (self.distance[4] < GO_UP_DISTANCE) and (self.distance[5] < GO_UP_DISTANCE + 5)) or \
+           ((self.distance[0] < GO_UP_DISTANCE + 5) and (self.distance[1] < GO_UP_DISTANCE ) and \
+           (self.distance[2] < GO_UP_DISTANCE ) and (self.distance[3] < GO_UP_DISTANCE) and \
+           (self.distance[4] < GO_UP_DISTANCE) and (self.distance[5] < GO_UP_DISTANCE)):
            #上板
-           self.state = "上板"
-           return 'ready_to_lc'
+           if self.layer <= 3:
+                self.state = "上板"
+                return 'ready_to_lc'
+           else:
+                if((self.distance[0] < GO_UP_DISTANCE - 7) and (self.distance[1] < GO_UP_DISTANCE - 7) and\
+                    (self.distance[2] < GO_UP_DISTANCE - 7) and (self.distance[3] < GO_UP_DISTANCE - 7) and\
+                    (self.distance[4] < GO_UP_DISTANCE - 7)) or\
+                    ((self.distance[1] < GO_UP_DISTANCE - 7) and (self.distance[2] < GO_UP_DISTANCE - 7) and\
+                    (self.distance[3] < GO_UP_DISTANCE - 7) and (self.distance[4] < GO_UP_DISTANCE - 7) and\
+                    (self.distance[5] < GO_UP_DISTANCE - 7)):
+                    self.state = "下板"
+                    return 'ready_to_lc'
+                else:
+                    self.forward     = FORWARD_MIN + FORWARD_CORRECTION
+                    self.translation = TRANSLATION_CORRECTION
+                    self.theta       = THETA_CORRECTION
+    #===============================================================================================
         else:
-            if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[1] <= WARNING_DISTANCE) or (self.distance[2] <= WARNING_DISTANCE) or (self.distance[3] <= WARNING_DISTANCE) or (self.distance[4] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE): 
-            #即將踩板
+            #前後!!!
+            #踩板
+            if (self.distance[0] <= WARNING_DISTANCE ) or (self.distance[1] <= WARNING_DISTANCE ) or \
+               (self.distance[2] <= WARNING_DISTANCE ) or (self.distance[3] <= WARNING_DISTANCE ) or \
+               (self.distance[4] <= WARNING_DISTANCE ) or (self.distance[5] <= WARNING_DISTANCE ):
+                #需要再改!!!
                 if self.layer == 4:
                     self.special_case()
                 else:
-                    if self.layer < 4:
-                        if max(self.distance[0],self.distance[1],self.distance[2])>240:
-                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
-                            self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            self.theta   =  0
-                            self.state   = "!!!右平移!!!"
-                        elif max(self.distance[3],self.distance[4],self.distance[5])>240:
-                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
-                            self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            self.theta   =  0
-                            self.state   = "!!!左平移!!!"
-                        else:
-                            self.forward = BACK_NORMAL + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = "!!!小心踩板,後退!!!"
-                    else:
-                        if self.distance[0] < GO_UP_DISTANCE and min(self.distance[3],self.distance[4],self.distance[5]) > GO_UP_DISTANCE:
-                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
-                            self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            self.theta   =  THETA_NORMAL*LEFT_THETA
-                            self.state   = "!!!右平移,左旋!!!"
-                        elif self.distance[5] < GO_UP_DISTANCE and min(self.distance[0],self.distance[1],self.distance[2]) > GO_UP_DISTANCE:
-                            self.forward = BACK_NORMAL + FORWARD_CORRECTION 
-                            self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            self.theta   =  THETA_NORMAL*RIGHT_THETA
-                            self.state   = "!!!左平移,右旋!!!"
-                        else:
-                            self.forward = BACK_NORMAL + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = "!!!小心踩板,後退!!!"
-            elif (self.distance[0] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[1] < SECOND_FORWORD_CHANGE_LINE) and\
-                 (self.distance[2] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>240):
-            #左平移
-                if self.layer != 1:
-                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
-                else:
-                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
-                self.theta       =  1
-                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                self.state ="左平移"
-            elif (self.distance[3] < SECOND_FORWORD_CHANGE_LINE) and (self.distance[4] < SECOND_FORWORD_CHANGE_LINE) and\
-                 (self.distance[5] < SECOND_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>240):
-            #右平移
-                if self.layer != 1:
-                    self.forward     = BACK_NORMAL+ FORWARD_CORRECTION
-                else:
-                    self.forward     = BACK_MIN+ FORWARD_CORRECTION
-                self.theta       =  -1
-                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                self.state ="右平移"
+                    self.forward = BACK_NORMAL + FORWARD_CORRECTION
+            elif min(self.distance) <= WARNING_DISTANCE + 3:
+                self.forward = FORWARD_CORRECTION
+            elif min(self.distance) >= SECOND_FORWORD_CHANGE_LINE:
+                self.forward = FORWARD_BIG + FORWARD_CORRECTION
+            elif min(self.distance) <= FIRST_FORWORD_CHANGE_LINE:
+                self.forward = FORWARD_MIN + FORWARD_CORRECTION
+            
+            #translate
+            left_point = self.return_real_board(outset = FOOTBOARD_LINE + 5, end_range = 70, x = FOOT[0], board = self.now_board.color_parameter, translate_bool = False)
+            right_point = self.return_real_board(outset = FOOTBOARD_LINE + 5, end_range = FOOT[5], x = 260, board = self.now_board.color_parameter, translate_bool = False)
+            if left_point and right_point:
+                self.translation = 0
+            elif not left_point and not right_point:
+                self.translation = 0
+            elif left_point or right_point:
+                self.translation = TRANSLATION_NORMAL if right_point else -TRANSLATION_NORMAL
+
+            #theta
+            rotate = min(self.distance[0], self.distance[1], self.distance[2]) - min(self.distance[3], self.distance[4], self.distance[5])
+            foot_distance_left  = [self.distance[0], self.distance[1], self.distance[2]]
+            foot_distance_right = [self.distance[3], self.distance[4], self.distance[5]]
+            if ((foot_distance_left.index(min(foot_distance_left)) == 1) or (foot_distance_left.index(min(foot_distance_left)) == 2)) and \
+                ((foot_distance_right.index(min(foot_distance_right)) == 0) or (foot_distance_right.index(min(foot_distance_right)) == 1)):
+                if (foot_distance_left[0] - foot_distance_left[2]) > (foot_distance_right[2] - foot_distance_right[0]):
+                    self.theta = RIGHT_THETA * THETA_NORMAL
+                elif (foot_distance_left[0] - foot_distance_left[2]) < (foot_distance_right[2] - foot_distance_right[0]):
+                    self.theta = LEFT_THETA * THETA_NORMAL
+            elif (max(self.distance) - min(self.distance) <= 3):
+                self.theta = 0
+            elif abs(rotate) >= 40:
+                self.theta = RIGHT_THETA * THETA_BIG if rotate > 0 else LEFT_THETA * THETA_BIG
+            elif abs(rotate) >= 20:
+                self.theta = RIGHT_THETA * THETA_NORMAL if rotate > 0 else LEFT_THETA * THETA_NORMAL
+            elif abs(rotate) >= 10:
+                self.theta = RIGHT_THETA * THETA_MIN if rotate > 0 else LEFT_THETA * THETA_MIN
             else:
-                if self.layer > 1 and self.distance[0] > 240  and self.distance[1] > 240 and self.distance[4] > 240 and self.distance[5] > 240:
-                    self.state = "前方沒有要上的板子"
-                    self.no_up_board()
-                else:
-                    if self.layer == 4:
-                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_CORRECTION
-                    elif self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
-                        if  self.layer != 3 and self.layer != 4 and self.layer != 6 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
-                            #左邊空間較大
-                            if (self.next_distance[0] + self.next_distance[1]) > (self.next_distance[4] + self.next_distance[5]):
-                                self.forward     = BACK_MIN + FORWARD_CORRECTION
-                                self.theta       = THETA_CORRECTION 
-                                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                                self.state = "空間不足,往左移"
-                            #右邊空間較大
-                            elif (self.next_distance[0] + self.next_distance[1]) < (self.next_distance[4] + self.next_distance[5]):
-                                self.forward     = BACK_MIN + FORWARD_CORRECTION
-                                self.theta       = THETA_CORRECTION 
-                                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                                self.state = "空間不足,往右移"
-                        else:
-                            self.forward     = FORWARD_MIN + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '小前進'
-                    elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
-                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                        self.theta_change()
-                        self.state = '前進'
-                    elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE or self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
-                        self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                        self.theta_change()
-                        self.state = '大前進'
-                    else:
-                        self.theta = THETA_CORRECTION
-                        if self.layer == 1:
-                            self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
-                            self.state = '超大前進' 
-                        else:
-                            self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                            self.state = '大前進'
-                    self.translation = TRANSLATION_CORRECTION           #距離板太遠不須平移
-            return 'walking'
+                self.theta = RIGHT_THETA * 0 if rotate >= 0 else LEFT_THETA * 0
+            self.theta += THETA_CORRECTION
+
+            # if abs(rotate) < 5 and 
 
     def theta_change(self):
     #旋轉修正
@@ -552,18 +521,26 @@ class LiftandCarry:
         send.drawImageFunction(12,1,FOOT[4]-5,FOOT[4]+5,FOOTBOARD_LINE-self.distance[4]-5,FOOTBOARD_LINE-self.distance[4]+5,255,0,128)
         send.drawImageFunction(13,1,FOOT[5]-5,FOOT[5]+5,FOOTBOARD_LINE-self.distance[5]-5,FOOTBOARD_LINE-self.distance[5]+5,255,0,128)
 
-    def return_real_board(self,x,board,outset):
+    def return_real_board(self, x, board, outset, end_range, translate_bool):
     #檢查回傳的物件是否為板子,確認連續10個點為同一色模
-        for y in range(outset,10,-1):
-            real_distance_flag = (send.Label_Model[320*y+x] == board)
-            if real_distance_flag:
-                for i in range(1,11):
-                    real_distance_flag = (real_distance_flag and send.Label_Model[320*(y-i)+x] == board)
-                    if not real_distance_flag:
-                        break
-            if  real_distance_flag:
-                break 
-        return (outset - y,y)if real_distance_flag else (9999,9999)
+        if translate_bool: 
+            for y in range(outset, end_range,-1):
+                real_distance_flag = (send.Label_Model[320*y+x] == board)
+                if real_distance_flag:
+                    for i in range(1,11):
+                        real_distance_flag = (real_distance_flag and send.Label_Model[320*(y-i)+x] == board)
+                        if not real_distance_flag:
+                            break
+                if  real_distance_flag:
+                    break 
+            return (outset - y,y) if real_distance_flag else (9999,9999)
+        else:
+            for y in range(x, end_range, -1):
+                real_distance_flag = (send.Label_Model[320*outset + y] == board)
+                if  real_distance_flag:
+                    break 
+            return True if real_distance_flag else False
+        
     
     def special_case(self):
     #頂板判斷
@@ -615,13 +592,12 @@ class LiftandCarry:
         start = rospy.get_time()
         end   = 99999
         rospy.sleep(1)       #啟動步態後穩定時間
-        while (end-start) < ROUTE_PLAN_TIME[now_layer-1]:
+        while (end-start) < ROUTE_PLAN_TIME[now_layer - 1]:
             end = rospy.get_time()
             print(end-start)
-            self.forward     = ROUTE_PLAN_FORWARD[now_layer-1]
-            self.translation = ROUTE_PLAN_TRANSLATION[now_layer-1]
-            self.theta       = ROUTE_PLAN_THETA[now_layer-1]
-            rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
+            self.forward     = ROUTE_PLAN_FORWARD[now_layer - 1]
+            self.translation = ROUTE_PLAN_TRANSLATION[now_layer - 1]
+            self.theta       = ROUTE_PLAN_THETA[now_layer - 1]
             send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
                  
     def aa(self):
@@ -671,13 +647,9 @@ class ObjectInfo:
         self.find_object = update_strategy[object_type]
 
     def get_object(self):
-        if send.color_mask_subject_size[self.color] != []:
-            print(send.color_mask_subject_size[self.color])
-            print(send.color_mask_subject_size)
-            print(self.color)
-            max_object_size = max(send.color_mask_subject_size[self.color])
-            max_object_idx = send.color_mask_subject_size[self.color].index(max_object_size)
-            return max_object_idx if max_object_size > 10000 else None
+        max_object_size = max(send.color_mask_subject_size[self.color])
+        max_object_idx = send.color_mask_subject_size[self.color].index(max_object_size)
+        return max_object_idx if max_object_size > 10000 else None
 
     def get_ball_object(self):
         object_idx = None
@@ -768,6 +740,83 @@ class ObjectInfo:
 # +++    #%   +@+=====================+%=                   .:+#@@%%%%%%*=:.-=*%@@@%+++++++++*@#++++++
 # ++=    @+   +@+======================#%:                :*@%#*+=======+*%%*:  :=#@#+++++++++#%++++++
 # ++-   .@-   .%#======================*@:               =@#+==============+*%#:  .@%*++++++++*@*+++++
+# ++:   =@:    :@*=====================%%.              =@#===================*@-  #%++++++++++%#+++++
+# ++:   =@.     -%#+=================+%%:              .@%=====================#@. +%++++++++++%%+++++
+# ++-   =%       .+%#*=============+#@+.               :@#======================@= +%++++++++++#@+++++
+# ++=   +%         .-*%%##*+++**#%@#=.                  %@+=====================@= +%++++++++++#@+++++
+# **+   +%             .:=++***+=-.                     -%%====================*@: +%++++++++++*@+++++
+# **+:  =@.                                              .*%*+===============+#@=  +%++++++++++#@+++++
+# +%*=  :@:                                                :+%%#++========+*%@*:   *%++++++++++#@+++++
+# +*@*-  %+                                 .-*#+             :=*%%%%##%%@%*-.     %#++++++++++%%+++++
+# ++#%*. *@#=.                            =#@#=-%#:                .:-::..        .@#++++++**+*@*+++++
+# +++%@+ .@%%@#=:                         .:.   .+%#.                             =@*++++++#%+#@++++++
+# %*++#@+.=@**%@@%+-.                             .:.                             #%++++++*@#*@#++++++
+# #%@%##%%+*%%+*%##%@%+-:                                                        :@#++++++%@+%%+++++++
+# ++*##%##%@%+:%+#%**##@@%#*=-.                                                 :*%++++++#@*#@++++++++
+# ++++++*%#.:--@:.#@#**#@#:-=*#%#*+=-:.                                  .:-=+#%@@*+++++#@#*@@*+++++++
+# +++++*@*.   =@.  +@%***%@=    .:-=+*#%%#**+===--::::::::::---===++**#%%%%%##**%%+++++#@#*%*%%+++++++
+# ++++*@+     +#    :%%#**#@%-           .:%#=+@#****#####**#@@@%@%+%#*++++++++#%*+++*%%*+*++#@+++++++
+# +++*@#      #*     .%@#***%@+            -@*#@.         -#@@%#*#@:=@#++++++++%*+++*@%++++++#@+++++++                                                                  
+#                                                           ...                                                                      
+#      =+=:        .-==.                              .-=++++++++++++++=+=-:                                                          
+#     -=.:=++    ++=-:-+                           :=++==++***++*+++++*++++*#*-:                                                      
+#     #.::-.#    #.-::.#.                       .=+==+*+++***++++++++##++++*+*%##+:                                                   
+#    :+::::+-    -=::::=-                   =+:++-+*++++++*=#+++++++#=#+++*##*****##+..                                               
+#    *::::.#     .#.-:-:*                   -#*+++++******-+#++****#-=#++##**#*******#**:                                             
+#    #.:::==      +:-:-.#.                 .*+=+****=----+=+*#+=---=-+####*##**#**#**#=+-                                             
+#   .*.:::+*+-    -=:--:+:        .%*=-.  -%=*#-=+=-=+*####*+--+*****##***#*##*****#**+*-                                             
+#   :*:--.=.:=*=  .*:--:==         :*=*#*#+-=*++==+#*+====--=*#==++**+#****##**#****#**-#.                                            
+#   :*:--:.---.#. .#.---:+          :#-=#++*+-=-**++**+*-=#*++**++-**##*#***#*#*#****#*-%%.                                           
+#   :*:--:---:==   #.---:*           =*--==-=+**+++++++*=+*+++++*#-#++#***#**#*********=++#-:                                         
+#   .#.------:*    #.---.#           +#+---+-#*+++++++++#*++++++*-**++*###*****#***#***==-==*+                                        
+#    *:-----:#.    =+===++          +#+*%#**+#+-+++++++++*++++++*-==*+#***##*#*****#**++..:-:-*:                                      
+#    :*:---:*:      ....         :+##++%*+++%+*-*=  =++++++++++++=  -**:##***#*******=.::..:.--*-                                     
+#     -*--=*:                 .+%#+=+*##=+++*+*-*.  :+:=+++=++++++  ..#-+*#****++++-*::.::.::::++                                     
+#      .:-:++++=-:.            .-=**%-#=+++*++#=*   == -++*.-+++++ ....==+*####%**+== ::... :-:=#.                                    
+#         *--:::-==++=              +=*-+++*+**=#::-*+++++++++*+++     --*++++++#==--:.:...:.-:+=#                                    
+#        ==:-----==-.#.             #*+=+++#+*==#:*+*+++++++++*+++    .--**+++++*=+--:::.....==+#=                                    
+#        .+++=----=:+-             .#+=++++#+*-=*:++*+++++++++*++=    ..-+#++++#==+=-=:::---=-*-                                      
+#     .=+++=+==--:::-*-        .    #=-+++**+=:-*-=++*++++++++*++-     .=++*++++#*====*+==---##+                                      
+#     +-::--=========.#     .=#+#*. =#-+++*++:.=+=-++#++++++++*+*:.   . ====++++**#*#=+++=++#*+*%:                                    
+#     +:=============-+    .#-=.--+  %-+==++*--+*+=+=**====+++#+*==----:==+ *+++++*+*###%%##*#%=-.                                    
+#     *:-:--=.:====-=+.   .%= - ::%+.%-+===+*. .*-=-==#====++=*=+       ==+.*+++++++++**%#****%.                                      
+#     :*+*%=-=====:-+=    .#:.: -.==+#-+===++:::-*--*=*+====+=+*=::::-: ===:*+*++*++++**%*##**%                                       
+#      :+=-=========.#.-=-.%..  .:.-+*-===###****%*#++=*====+%#%#*******#=-.*+++++++++*##*#*%%-                                       
+#    .++-=====--:===:==-:+:%. :::-.:*+=-+-*-**=:::*=:+=++=-=-=*+#-::--#-++: ++++*++++**%**#+%-                                        
+#    #:=====-++#:+===+++-*:+=  .:. .%+*-*=* +*.   =-. .=.:=++=+**     #.*+. =+++***++*##***+%                                         
+#    -*-==-++. *-=+++++=:#.:%.  .-++=#%:=#=::*:   +:        .::-*     % ++  =+*+-::+**%***++%                                         
+#     .++=*:  .:+*====+++=  ++-==.**=*@==##+ :*   #       .   . -+   =+:+-  =*-.--. #%#**+++%                                         
+#       ..   -*==++...      +#- .=#%#=*%-##-..-+++:  .        .  -++*+.=*.. =-.=- . **#*++++%                                         
+#            +:++:#       .*= .+%#=-%-.#***.....    .         .   .....*-   . -:--  #*#+++++%                                         
+#            *.++.*      .#: -##-   :%:.#*=.....  .               ....-= .  . =--: +#**+++++%                                         
+#            #:++.*      +-:+%=      -%:.%+         .              . .-   . . .= .*%*+*+++++%                                 .       
+#           .*-++:*      .#+%:        -%--@-       ..+=====++             .=*=#**#*%*+++++++%                                 .       
+#           :+=+*:*       :@-:         =%%##*-      .--:::--=           :==::-=#**+%*+++++++%                                         
+#           -=++*:*        ==::         *%#**##+-.           ..     :=+++::-::=*++*#*++++*++%                                         
+#           =-++*:*         +-:.       :####*##*##%*++==----====++#+==::-----:*=++##+++++*++%                                         
+#           +-*+*:*        =.*-:.      -*%%**#**#*%*#*---=+#=-:--=+**--------:*+++##+++++*++%.                                        
+#           +:*+*.*        *  *::.      -#%##%*+*+%*#=+*++*****+*++*----------++++*#+*+++*++%:                                        
+#           *:***.*       :=  .#::.      =#%##*+*+#*#:**:.+=+=-*:=*--=++-=-+-+-++#+*+*++*#*+#-                                        
+#           *:***:*       :+   .#::.      +%##+++*#*#=*=:.-*+%-=-....  .=%#%+#-++%+*+*++#**+*+                                        
+#           *---==+       -+    .*:::    .+#%%=++#*#*##. ..++: ......    :#**#-++%##**++#**++#                                        
+#       =++-.-=--:  :-==. :*     .*-::. :=**-*=++%*#=*+ . =.+ . ... . . . =%%%-++#*#%+++#*#++%:                                       
+#      :*-==+*.   =+===:* .#  -.   ++::. +.= ===*-*+*#-.  :=.  .-:-::- . .:%%%++=#*##++*%*#+=**                                       
+#      *:***-*.   +:***=+: #  =.    :*-::.*.+=+=* :*++***+===+++++++#=.   .%%%%+++%#%==##%#+==%.                                      
+#     .*-***-+    :*=***-+ +: =:      #+.::+--=++.#++++++++++++++++++**=.. %%%%%%%%%#==#***##*+*                                      
+#     =-***-*.     *:#*#:# :+ --      *+=:::+==#-#*++++++++++++++++++%*+*=.#%%%%%%%%+==%****%*=#:                                     
+#     *:***:+      ==***=+: +..*      #-%::--===#%+++++++++++++++++++%:=***#*%%%%%%%===%%%#**##=#                                     
+#     #:#**=*+=.   .*=***-= .= *.    .#:*+.=--+*:%*+++++++*+++++++++*%- .-+*%%%%%%%%===%%%%#**#**-                                    
+#    .#-#*+--=-++.  #-#*#:*    .+    .*:*::=--#*+-%*++++++#+++++++++#@=  -*=%%%#%%%@=-=%%#*****#=#                                    
+#    .#-***.**#=+:  #:#*#:#     -:   :+-+ ----%:=:*%##++++*#++++***#%%+:*#####****#%=-=%%#****#%+#:                                   
+#     #-#******-+   *:###-#.     .   -=*: =:-=* :*-%#%%***+*#*%##%**#%##***********#=-=#****##%%==+                                   
+#     #:#*#*##:#.   +:###=*.         =-#  =--+: ==:%++####**#***++*##**************#+--%****#%%%=-#                                   
+#     =-*#*##-*:    -*==++*          **-  =-++ :-.##*+**###*+++++*+*%***************#--%***#%%%@-:#.                                  
+#     .#-*##-*-       ...           -#*#.:=-*+ =  *##**++++++++++*#%#***************%--#***##%%#+-*-                                  
+#      :*===*-                      *+####=-#=:- .%**+++++++++*#%#*#%***************#=:+#**%%++*#-+=                                  
+#        :-:                       -*=%=..+-%=*  +#++++++*####*+++*%%#%**#***********#:=*#%**++*%-==                                  
+#                                  #-##:  *-#-+ .%########+*####***%%%%####**********#=-=+:-*++#%=+=                                  
+#                                 +##*    *:+++ +#+++++++%#+++++***%%%##**###++%#*%%+#*:-+::#+=%#=+-                                  
+#                                 .#=.    =-+++.#+++++=+*+*#+++++++###**#*=.. ..+:**++-+::*.#=+++-*.++
 # ++:   =@:    :@*=====================%%.              =@#===================*@-  #%++++++++++%#+++++
 # ++:   =@.     -%#+=================+%%:              .@%=====================#@. +%++++++++++%%+++++
 # ++-   =%       .+%#*=============+#@+.               :@#======================@= +%++++++++++#@+++++
