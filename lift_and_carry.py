@@ -20,23 +20,23 @@ BASE_CHANGE                = 100
 LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 18000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [1000,   300,    0, 1500,    0,  600]
-ROUTE_PLAN_TRANSLATION     = [2000, -1000, 1500,    0, 1000, 1000]
-ROUTE_PLAN_THETA           = [   0,     0,    2,    0,    0,   -2]
-ROUTE_PLAN_TIME            = [   0,     0,    0,    0,    0,    0]
+ROUTE_PLAN_FORWARD         = [1000,   300,   800, 1500,    0,  600]
+ROUTE_PLAN_TRANSLATION     = [2000, -1000, -2000,    0, 1000, 1000]
+ROUTE_PLAN_THETA           = [   0,     0,    -2,    0,    0,   -2]
+ROUTE_PLAN_TIME            = [   0,     0,     5,    0,    0,    0]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = False                 #sector(30) LC_stand微調站姿
 UPBOARD_GROUND_CORRECT     = False                 #第一層上板站姿 (地板 -> 板子)  磁區暫定33記得改!!
 UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
-DOWNBOARD_CORRECT          = True                  #sector(32) 下板微調站姿
+DOWNBOARD_CORRECT          = False                  #sector(32) 下板微調站姿
 DOWNBOARD_GROUND_CORRECT   = False                 #第6層下板站姿 (板子 -> 地板)  磁區暫定34記得改!!
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
                               "Red"   ,           #Blue Red Yellow Green
-                              "Yellow" ,
-                              "Blue"    ,  
-                              "Yellow"    , 
+                              "Blue" ,
+                              "Yellow"    ,  
+                              "Blue"    , 
                               "Red"   , 
                               "Green"]              
 #----------#                       右腳           左腳
@@ -45,7 +45,7 @@ FOOT                       = [106 , 125, 144, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1350                  #頭垂直 #down 
 ##判斷值
-FOOTBOARD_LINE             = 230                   #上板基準線
+FOOTBOARD_LINE             = 200                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -220,9 +220,7 @@ class LiftandCarry:
                 rospy.logdebug("站立姿勢")
             send.execute = False
             if self.layer < 4:
-                if UPBOARD_CORRECT:
-                    rospy.loginfo("準備上板")
-                    send.sendWalkParameter('send',\
+                send.sendWalkParameter('send',\
                                             walk_mode = 2,\
                                             com_y_shift = 0,\
                                             y_swing = 5.5,\
@@ -234,7 +232,9 @@ class LiftandCarry:
                                             com_height = 27.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
-                    rospy.sleep(1.5)
+                rospy.sleep(1.5)
+                if UPBOARD_CORRECT:
+                    rospy.loginfo("準備上板")
                     send.sendBodySector(31)          #上板前站姿調整
                     while not send.execute:
                         rospy.logdebug("上板前姿勢")
@@ -242,21 +242,21 @@ class LiftandCarry:
                     send.execute = False                   #微調站姿延遲
                 send.sendBodyAuto(LCUP,0,0,0,2,0)    #上板步態
             else:
-                if DOWNBOARD_CORRECT:
-                    rospy.loginfo("準備下板")
-                    send.sendWalkParameter('send',\
+                send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
+                                            com_y_shift = -4,\
                                             y_swing = 5.5,\
                                             period_t = 570,\
                                             t_dsp = 0.3,\
                                             base_default_z = 3.2,\
                                             right_z_shift = 1,\
-                                            base_lift_z = -2,\
+                                            base_lift_z = -1,\
                                             com_height = 59.5,\
                                             stand_height = 21.5,\
                                             back_flag = 0)
-                    rospy.sleep(1.5)
+                rospy.sleep(3)
+                if DOWNBOARD_CORRECT:
+                    rospy.loginfo("準備下板")
                     send.sendBodySector(32)          #下板前站姿調整
                     while not send.execute:
                         rospy.logdebug("下板前姿勢")
@@ -331,12 +331,12 @@ class LiftandCarry:
 
     def edge_judge(self):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if ((self.distance[0] < GO_UP_DISTANCE ) and (self.distance[1] < GO_UP_DISTANCE ) and\
-           (self.distance[2] < GO_UP_DISTANCE ) and (self.distance[3] < GO_UP_DISTANCE) and\
-           (self.distance[4] < GO_UP_DISTANCE) and (self.distance[5] < GO_UP_DISTANCE + 5)) or \
-           ((self.distance[0] < GO_UP_DISTANCE + 5) and (self.distance[1] < GO_UP_DISTANCE ) and \
-           (self.distance[2] < GO_UP_DISTANCE ) and (self.distance[3] < GO_UP_DISTANCE) and \
-           (self.distance[4] < GO_UP_DISTANCE) and (self.distance[5] < GO_UP_DISTANCE)):
+        if ((self.distance[0] < GO_UP_DISTANCE + 7) and (self.distance[1] < GO_UP_DISTANCE + 7) and\
+           (self.distance[2] < GO_UP_DISTANCE + 7) and (self.distance[3] < GO_UP_DISTANCE + 7) and\
+           (self.distance[4] < GO_UP_DISTANCE + 7) and (self.distance[5] < GO_UP_DISTANCE + 7)) or \
+           ((self.distance[0] < GO_UP_DISTANCE + 7) and (self.distance[1] < GO_UP_DISTANCE + 7) and \
+           (self.distance[2] < GO_UP_DISTANCE + 7) and (self.distance[3] < GO_UP_DISTANCE + 7) and \
+           (self.distance[4] < GO_UP_DISTANCE + 7) and (self.distance[5] < GO_UP_DISTANCE + 7)):
            #上板
            if self.layer <= 3:
                 self.state = "上板"
