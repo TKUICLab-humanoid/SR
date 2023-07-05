@@ -20,14 +20,14 @@ BASE_CHANGE                = 100
 LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 24000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [1500  , -800  , 200   , 1500  , -1500 , 600]
-ROUTE_PLAN_TRANSLATION     = [500   , 1000  , 500   , -1500 , -1000 , 500]
-ROUTE_PLAN_THETA           = [0     , -4    , 0     , 3     , 4     , -4]
-ROUTE_PLAN_TIME            = [5     , 6     , 3     , 15     , 5     ,  0]
+ROUTE_PLAN_FORWARD         = [1500  , 1600  , -800  , 2000  , 0    , 0]
+ROUTE_PLAN_TRANSLATION     = [500   , 1000  , 1700  , -1500 , 0    , 0]
+ROUTE_PLAN_THETA           = [0     , -3    , 0    , 4     , 0    , -5]
+ROUTE_PLAN_TIME            = [0     , 0     , 3     , 5     , 0    , 4]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
+STAND_CORRECT_LC           = True                 #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
-DOWNBOARD_CORRECT          = False                  #sector(32) 下板微調站姿
+DOWNBOARD_CORRECT          = True                 #sector(32) 下板微調站姿
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
@@ -38,7 +38,7 @@ BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現
                               "Red"   , 
                               "Green"]              
 #----------#                       右腳           左腳
-#                              左 ,  中,  右|  左,  中,   右
+#                              左 ,  中,  右 |  左,  中,   右
 FOOT                       = [105 , 124, 143, 160, 176, 196]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1320                  #頭垂直 #down 
@@ -51,8 +51,8 @@ SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 ##前後值
-BACK_MIN                   = -500                  #小退後
-BACK_NORMAL                = -1000                  #退後
+BACK_MIN                   = -1000                  #小退後
+BACK_NORMAL                = -1500                  #退後
 FORWARD_MIN                = 1500                  #小前進
 FORWARD_NORMAL             = 2000                  #前進
 FORWARD_BIG                = 3000                  #大前進
@@ -62,9 +62,9 @@ TRANSLATION_MIN            = 500                   #小平移
 TRANSLATION_NORMAL         = 1000                  #平移
 TRANSLATION_BIG            = 1500                  #大平移
 ##旋轉值
-THETA_MIN                  = 4                     #小旋轉
-THETA_NORMAL               = 6                     #旋轉
-THETA_BIG                  = 8                     #大旋轉
+THETA_MIN                  = 2                     #小旋轉
+THETA_NORMAL               = 4                     #旋轉
+THETA_BIG                  = 6                     #大旋轉
 SLOPE_MIN                  = 1                     #有點斜
 SLOPE_NORMAL               = 3                     #斜
 SLOPE_BIG                  = 7                     #過斜
@@ -95,7 +95,8 @@ class LiftandCarry:
         rospy.loginfo('________________________________________')
         rospy.loginfo(f'x: {self.now_forward} ,y: {self.now_translation} ,theta: {self.now_theta}')
         rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
-        rospy.loginfo(f"機器人狀態: {self.state}")
+        rospy.loginfo(f"機器人前進: {self.state}")
+        rospy.loginfo(f'機器人平移: {self.translate_state}')
         rospy.loginfo(f"機器人角度: {self.angle}")
         rospy.loginfo(f"SLOPE: {edge.slope}")
         if self.layer < 7:
@@ -136,8 +137,7 @@ class LiftandCarry:
                         rospy.logdebug("站立姿勢")
                     send.execute = False
                     if STAND_CORRECT_LC:
-                        #send.sendBodySector(30)             #LC基礎站姿調整磁區
-                        send.sendBodySector(2) 
+                        send.sendBodySector(30)             #LC基礎站姿調整磁區
                         while not send.execute:
                             rospy.logdebug("站立姿勢調整")
                         send.execute = False
@@ -157,10 +157,13 @@ class LiftandCarry:
     def init(self):
         #狀態
         self.state                 = '停止'
-        self.angle                 = '直走'
+        self.translate_state       = '無'
+        self.angle                 = '無'
         #步態啟動旗標
         self.walkinggait_stop      = True
         self.first_in              = True  
+        self.arc                   = False
+        
         #層數       
         self.layer                 = START_LAYER
         #設定頭部馬達
@@ -176,6 +179,7 @@ class LiftandCarry:
         self.now_forward           = 0 
         self.now_translation       = 0
         self.now_theta             = 0  
+        self.number                = 0
         #建立板子資訊
         self.next_board            = ObjectInfo(BOARD_COLOR[self.layer+1],'Board') #設定下一個尋找的板子
         self.now_board             = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
@@ -243,8 +247,8 @@ class LiftandCarry:
             send.execute = False
             rospy.sleep(1.5)
             if STAND_CORRECT_LC:
-                #send.sendBodySector(30)              #基礎站姿調整
-                send.sendBodySector(2)
+                send.sendBodySector(30)              #基礎站姿調整
+                #send.sendBodySector(2)
                 while not send.execute:
                     rospy.logdebug("站立姿勢調整")
                 send.execute = False
@@ -299,26 +303,55 @@ class LiftandCarry:
     def edge_judge(self):
         if self.layer < 4:
     #邊緣判斷,回傳機器人走路速度與走路模式
-            if ((self.distance[0] < GO_UP_DISTANCE+8) and (self.distance[1] < GO_UP_DISTANCE+8) and\
+            if (((self.distance[0] < GO_UP_DISTANCE+8) and (self.distance[1] < GO_UP_DISTANCE+8) and\
                 (self.distance[2] < GO_UP_DISTANCE+8) and (self.distance[3] < GO_UP_DISTANCE+8) and\
-                (self.distance[4] < GO_UP_DISTANCE+8)) or\
+                (self.distance[4] < GO_UP_DISTANCE)) or\
                ((self.distance[1] < GO_UP_DISTANCE+8) and (self.distance[2] < GO_UP_DISTANCE+8) and\
                 (self.distance[3] < GO_UP_DISTANCE+8) and (self.distance[4] < GO_UP_DISTANCE+8) and\
-                (self.distance[5] < GO_UP_DISTANCE+8)):
+                (self.distance[5] < GO_UP_DISTANCE))):
+                if (self.next_distance[0] > UP_BOARD_DISTANCE or self.next_distance[2] > UP_BOARD_DISTANCE or self.distance[3] > UP_BOARD_DISTANCE or self.next_distance[5] > UP_BOARD_DISTANCE):
                 #上板
-                self.state = "上板"
-                return 'ready_to_lc'
+                    self.state = "上板"
+                    return 'ready_to_lc'
+                else:
+                    if self.next_distance[0] >= self.next_distance[5]:
+                        self.forward     = FORWARD_CORRECTION
+                        self.translation = TRANSLATION_NORMAL
+                        self.theta       = THETA_CORRECTION
+                        self.translate_state = '空間不足，左平移'
+                    elif self.next_distance[0] < self.next_distance[5]:
+                        self.forward     = FORWARD_CORRECTION
+                        self.translation = -TRANSLATION_NORMAL
+                        self.theta       = THETA_CORRECTION
+                        self.translate_state = '空間不足，右平移'
+                    return 'walking'
     #===============================================================================================
         else:
-            if ((self.distance[0] < GO_UP_DISTANCE+2) and (self.distance[1] < GO_UP_DISTANCE+2) and\
-                (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+5) and\
-                (self.distance[4] < GO_UP_DISTANCE+5)) or\
-               ((self.distance[1] < GO_UP_DISTANCE+2) and (self.distance[2] < GO_UP_DISTANCE+3) and\
-                (self.distance[3] < GO_UP_DISTANCE+5) and (self.distance[4] < GO_UP_DISTANCE+5) and\
-                (self.distance[5] < GO_UP_DISTANCE+5)):
-                #上板
-                self.state = "下板"
-                return 'ready_to_lc'
+            if (((self.distance[0] < GO_UP_DISTANCE-3) and (self.distance[1] < GO_UP_DISTANCE-3) and \
+                (self.distance[2] < GO_UP_DISTANCE-3) and (self.distance[3] < GO_UP_DISTANCE-3) and \
+                (self.distance[4] < GO_UP_DISTANCE+5)) or \
+               ((self.distance[1] < GO_UP_DISTANCE-3) and (self.distance[2] < GO_UP_DISTANCE-3) and \
+                (self.distance[3] < GO_UP_DISTANCE-3) and (self.distance[4] < GO_UP_DISTANCE+5) and \
+                (self.distance[5] < GO_UP_DISTANCE+5))):
+                if self.layer == 6:
+                    self.state = "下板"
+                    return 'ready_to_lc'
+                elif (self.layer != 6) and (self.next_distance[0] > UP_BOARD_DISTANCE + 30 or self.next_distance[2] > UP_BOARD_DISTANCE or self.distance[3] > UP_BOARD_DISTANCE or self.next_distance[5] > UP_BOARD_DISTANCE):
+                    self.state = "下板"
+                    return 'ready_to_lc'
+                else:
+                    if self.next_distance[0] >= self.next_distance[5]:
+                        self.forward     = FORWARD_CORRECTION
+                        self.translation = TRANSLATION_NORMAL
+                        self.theta       = THETA_CORRECTION
+                        self.translate_state = '空間不足，左平移'
+                    elif self.next_distance[0] < self.next_distance[5]:
+                        self.forward     = FORWARD_CORRECTION
+                        self.translation = -TRANSLATION_NORMAL
+                        self.theta       = THETA_CORRECTION
+                        self.translate_state = '空間不足，右平移'
+                    return 'walking'
+        
         #前後!!!
         #踩板
         if (self.distance[0] <= WARNING_DISTANCE ) or (self.distance[1] <= WARNING_DISTANCE ) or \
@@ -329,12 +362,28 @@ class LiftandCarry:
                 self.special_case()
             else:
                 self.forward = BACK_NORMAL + FORWARD_CORRECTION
+                self.state = '後退'
+        # elif (self.layer != 3) and (self.layer != 4) and (self.layer != 6) and (self.next_distance[0] <= UP_BOARD_DISTANCE or self.next_distance[2] <= UP_BOARD_DISTANCE or self.distance[3] <= UP_BOARD_DISTANCE or self.next_distance[5] <= UP_BOARD_DISTANCE):
+        #     self.forward = BACK_MIN + FORWARD_CORRECTION
+        #     self.state = '空間不足，後退'
         elif min(self.distance) <= WARNING_DISTANCE+5:
             self.forward = FORWARD_CORRECTION
+            self.state = '停止'
         elif min(self.distance) >= SECOND_FORWORD_CHANGE_LINE:
-            self.forward = FORWARD_BIG + FORWARD_CORRECTION
+            self.forward = FORWARD_NORMAL + FORWARD_CORRECTION
+            self.state = '大前進'
         elif min(self.distance) <= FIRST_FORWORD_CHANGE_LINE:
             self.forward = FORWARD_MIN + FORWARD_CORRECTION
+            self.state = '小前進'
+
+        #弧形判斷修正
+        if self.arc:
+            if self.number <= 5:
+                self.number += 1
+                return 'walking'
+            else:
+                self.number = 0
+                self.arc = False
         
         #translate
         left_point = self.return_real_board(outset = FOOTBOARD_LINE + 5, end_range = 85, x = FOOT[0], board = self.now_board.color_parameter, translate_bool = False)
@@ -342,34 +391,62 @@ class LiftandCarry:
         if left_point and right_point:
             self.translation = 0
         elif not left_point and not right_point:
-            if (self.layer != 1) and (self.layer != 3) and(self.layer != 4) and (self.layer != 6) and (self.next_distance[0] <= UP_BOARD_DISTANCE or self.next_distance[2] <= UP_BOARD_DISTANCE or self.next_distance[5] <= UP_BOARD_DISTANCE):
-                if self.next_distance[0] > self.next_distance[5]:
-                    self.translation = -TRANSLATION_NORMAL
-                elif self.next_distance[0] < self.next_distance[5]:
-                    self.translation = TRANSLATION_NORMAL
-            else:
-                self.translation = 0
+            # if (self.layer != 3) and (self.layer != 4) and (self.layer != 6) and \
+            #     (self.next_distance[0] <= UP_BOARD_DISTANCE or self.next_distance[2] <= UP_BOARD_DISTANCE or self.distance[3] <= UP_BOARD_DISTANCE or self.next_distance[5] <= UP_BOARD_DISTANCE):
+            #     if self.next_distance[0] >= self.next_distance[5]:
+            #         self.translation = TRANSLATION_NORMAL
+            #         self.translate_state = '空間不足，左平移'
+            #     elif self.next_distance[0] < self.next_distance[5]:
+            #         self.translation = -TRANSLATION_NORMAL
+            #         self.translate_state = '空間不足，右平移'
+            # else:
+            self.translation = 0
+            self.translate_state = '無'
         elif left_point or right_point:
             self.translation = TRANSLATION_NORMAL if right_point else -TRANSLATION_NORMAL
+            self.translate_state = '普通平移'
 
         #theta
         rotate = min(self.distance[0], self.distance[1], self.distance[2]) - min(self.distance[3], self.distance[4], self.distance[5])
         foot_distance_left  = [self.distance[0], self.distance[1], self.distance[2]]
         foot_distance_right = [self.distance[3], self.distance[4], self.distance[5]]
-        if ((foot_distance_left.index(min(foot_distance_left)) == 1) or (foot_distance_left.index(min(foot_distance_left)) == 2)) and \
-            ((foot_distance_right.index(min(foot_distance_right)) == 0) or (foot_distance_right.index(min(foot_distance_right)) == 1)):
-            if (foot_distance_left[0] - foot_distance_left[2]) > (foot_distance_right[2] - foot_distance_right[0]):
+        if ((foot_distance_left[0] - foot_distance_left[2]) * (foot_distance_right[0] - foot_distance_right[2]) <= -30) and \
+           ((max(foot_distance_left) - min(foot_distance_left) >= 15) or (max(foot_distance_right) - min(foot_distance_right) >= 15)):
+            self.arc = True
+            if (foot_distance_left[0] - foot_distance_left[2]) > (foot_distance_right[2] - foot_distance_left[0]):
                 self.theta = RIGHT_THETA * THETA_NORMAL
+                self.translation = TRANSLATION_NORMAL
+                self.translate_state = '左平移'
+                self.angle = '右旋'
             elif (foot_distance_left[0] - foot_distance_left[2]) < (foot_distance_right[2] - foot_distance_right[0]):
                 self.theta = LEFT_THETA * THETA_NORMAL
+                self.translation = -TRANSLATION_NORMAL
+                self.translate_state = '右平移'
+                self.angle = '左旋'
+        # if ((foot_distance_left.index(min(foot_distance_left)) == 1) or (foot_distance_left.index(min(foot_distance_left)) == 2)) and \
+        #     ((foot_distance_right.index(min(foot_distance_right)) == 0) or (foot_distance_right.index(min(foot_distance_right)) == 1)):
+        #     if (foot_distance_left[0] - foot_distance_left[2]) > (foot_distance_right[2] - foot_distance_right[0]):
+        #         self.theta = RIGHT_THETA * THETA_NORMAL
+        #         self.translation = TRANSLATION_NORMAL
+        #         self.translate_state = '左平移'
+        #         self.angle = '右旋'
+        #     elif (foot_distance_left[0] - foot_distance_left[2]) < (foot_distance_right[2] - foot_distance_right[0]):
+        #         self.theta = LEFT_THETA * THETA_NORMAL
+        #         self.translation = -TRANSLATION_NORMAL
+        #         self.translation = '右平移'
+        #         self.angle = '左旋'
         elif (max(self.distance) - min(self.distance) <= 3):
             self.theta = 0
+            self.angle = '無'
+        # elif abs(rotate) >= 20:
+        #     self.theta = RIGHT_THETA * THETA_BIG if rotate > 0 else LEFT_THETA * THETA_BIG
+        #     self.angle = '大旋'
         elif abs(rotate) >= 20:
-            self.theta = RIGHT_THETA * THETA_BIG if rotate > 0 else LEFT_THETA * THETA_BIG
-        elif abs(rotate) >= 10:
             self.theta = RIGHT_THETA * THETA_NORMAL if rotate > 0 else LEFT_THETA * THETA_NORMAL
-        elif abs(rotate) >= 5:
+            self.angle = '中旋'
+        elif abs(rotate) >= 10:
             self.theta = RIGHT_THETA * THETA_MIN if rotate > 0 else LEFT_THETA * THETA_MIN
+            self.angle = '小旋'
         self.theta += THETA_CORRECTION    
 
         return 'walking'
