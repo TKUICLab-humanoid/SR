@@ -20,10 +20,10 @@ BASE_CHANGE                = 100
 LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 24000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [1500  , 1600  , -800  , 2000  , 0    , 0]
-ROUTE_PLAN_TRANSLATION     = [500   , 1000  , 1700  , -1500 , 0    , 0]
-ROUTE_PLAN_THETA           = [0     , -3    , 0    , 4     , 0    , -5]
-ROUTE_PLAN_TIME            = [0     , 0     , 3     , 5     , 0    , 4]
+ROUTE_PLAN_FORWARD         = [1500  , 1600  , 1200  , 2000  , 0    , 0]
+ROUTE_PLAN_TRANSLATION     = [500   , 1000  , -2000  , -1500 , -800    , 0]
+ROUTE_PLAN_THETA           = [0     , -3    , 4    , 4     , -4    , -4]
+ROUTE_PLAN_TIME            = [0     , 0     , 0    , 0     , 3    , 5]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                 #sector(30) LC_stand微調站姿
 UPBOARD_CORRECT            = True                  #sector(31) 上板微調站姿
@@ -52,7 +52,7 @@ THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 ##前後值
 BACK_MIN                   = -1000                  #小退後
-BACK_NORMAL                = -1500                  #退後
+BACK_NORMAL                = -2000                  #退後
 FORWARD_MIN                = 1500                  #小前進
 FORWARD_NORMAL             = 2000                  #前進
 FORWARD_BIG                = 3000                  #大前進
@@ -78,7 +78,7 @@ FORWARD_PARAM              = 1
 BACK_PARAM                 = -1
 
 send       = Sendmessage()
-edge       = deep_calculate(5)
+# edge       = deep_calculate(5)
 class LiftandCarry:
 #LC主策略
     def __init__(self):
@@ -98,7 +98,7 @@ class LiftandCarry:
         rospy.loginfo(f"機器人前進: {self.state}")
         rospy.loginfo(f'機器人平移: {self.translate_state}')
         rospy.loginfo(f"機器人角度: {self.angle}")
-        rospy.loginfo(f"SLOPE: {edge.slope}")
+        # rospy.loginfo(f"SLOPE: {edge.slope}")
         if self.layer < 7:
             rospy.loginfo(f"層數: {self.layer},{BOARD_COLOR[self.layer]}")
         rospy.loginfo(f"距離板: {self.distance}")
@@ -184,7 +184,7 @@ class LiftandCarry:
         self.next_board            = ObjectInfo(BOARD_COLOR[self.layer+1],'Board') #設定下一個尋找的板子
         self.now_board             = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
         self.last_board            = None                                          #設定前一階板子
-        edge.color                 = ObjectInfo.color_dict[BOARD_COLOR[self.layer]]
+        # edge.color                 = ObjectInfo.color_dict[BOARD_COLOR[self.layer]]
         
     def find_board(self):
     #獲取板子資訊、距離資訊
@@ -258,8 +258,8 @@ class LiftandCarry:
             self.translation    = 0
             self.theta          = 0
             self.layer += 1                          #層數加一
-            if self.layer < 7:
-                edge.color = ObjectInfo.color_dict[BOARD_COLOR[self.layer]]
+            # if self.layer < 7:
+                # edge.color = ObjectInfo.color_dict[BOARD_COLOR[self.layer]]
             self.walkinggait_stop   = True
             if self.layer < 7:
                 self.now_board  = ObjectInfo(BOARD_COLOR[self.layer],'Board')   #設定當前尋找的板子
@@ -303,10 +303,10 @@ class LiftandCarry:
     def edge_judge(self):
         if self.layer < 4:
     #邊緣判斷,回傳機器人走路速度與走路模式
-            if (((self.distance[0] < GO_UP_DISTANCE+8) and (self.distance[1] < GO_UP_DISTANCE+8) and\
-                (self.distance[2] < GO_UP_DISTANCE+8) and (self.distance[3] < GO_UP_DISTANCE+8) and\
+            if (((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
+                (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+8) and\
                 (self.distance[4] < GO_UP_DISTANCE)) or\
-               ((self.distance[1] < GO_UP_DISTANCE+8) and (self.distance[2] < GO_UP_DISTANCE+8) and\
+               ((self.distance[1] < GO_UP_DISTANCE+3) and (self.distance[2] < GO_UP_DISTANCE+3) and\
                 (self.distance[3] < GO_UP_DISTANCE+8) and (self.distance[4] < GO_UP_DISTANCE+8) and\
                 (self.distance[5] < GO_UP_DISTANCE))):
                 if (self.next_distance[0] > UP_BOARD_DISTANCE or self.next_distance[2] > UP_BOARD_DISTANCE or self.distance[3] > UP_BOARD_DISTANCE or self.next_distance[5] > UP_BOARD_DISTANCE):
@@ -354,12 +354,14 @@ class LiftandCarry:
         
         #前後!!!
         #踩板
+        self.forward = 0
         if (self.distance[0] <= WARNING_DISTANCE ) or (self.distance[1] <= WARNING_DISTANCE ) or \
             (self.distance[2] <= WARNING_DISTANCE ) or (self.distance[3] <= WARNING_DISTANCE ) or \
             (self.distance[4] <= WARNING_DISTANCE ) or (self.distance[5] <= WARNING_DISTANCE ):
             #需要再改!!!
             if self.layer == 4:
                 self.special_case()
+                return 'walking'
             else:
                 self.forward = BACK_NORMAL + FORWARD_CORRECTION
                 self.state = '後退'
@@ -378,7 +380,7 @@ class LiftandCarry:
 
         #弧形判斷修正
         if self.arc:
-            if self.number <= 5:
+            if self.number <= 10:
                 self.number += 1
                 return 'walking'
             else:
@@ -386,41 +388,52 @@ class LiftandCarry:
                 self.arc = False
         
         #translate
+        self.translation = 0
         left_point = self.return_real_board(outset = FOOTBOARD_LINE + 5, end_range = 85, x = FOOT[0], board = self.now_board.color_parameter, translate_bool = False)
         right_point = self.return_real_board(outset = FOOTBOARD_LINE + 5, end_range = FOOT[5], x = 245, board = self.now_board.color_parameter, translate_bool = False)
-        if left_point and right_point:
-            self.translation = 0
-        elif not left_point and not right_point:
-            # if (self.layer != 3) and (self.layer != 4) and (self.layer != 6) and \
-            #     (self.next_distance[0] <= UP_BOARD_DISTANCE or self.next_distance[2] <= UP_BOARD_DISTANCE or self.distance[3] <= UP_BOARD_DISTANCE or self.next_distance[5] <= UP_BOARD_DISTANCE):
-            #     if self.next_distance[0] >= self.next_distance[5]:
-            #         self.translation = TRANSLATION_NORMAL
-            #         self.translate_state = '空間不足，左平移'
-            #     elif self.next_distance[0] < self.next_distance[5]:
-            #         self.translation = -TRANSLATION_NORMAL
-            #         self.translate_state = '空間不足，右平移'
-            # else:
-            self.translation = 0
-            self.translate_state = '無'
-        elif left_point or right_point:
-            self.translation = TRANSLATION_NORMAL if right_point else -TRANSLATION_NORMAL
-            self.translate_state = '普通平移'
+        if self.layer != 4:
+            if (max(self.distance[3], self.distance[4], self.distance[5]) - min(self.distance[3], self.distance[4], self.distance[5]) <= 3) and (self.distance[0] == 9999):
+                self.translation = -TRANSLATION_BIG
+                self.translate_state = '右平移'
+                return 'walking'
+            elif(max(self.distance[0], self.distance[1], self.distance[2]) - min(self.distance[0], self.distance[1], self.distance[2]) <= 3) and (self.distance[5] == 9999):
+                self.translation = TRANSLATION_BIG
+                self.translate_state = '左平移'
+                return 'walking'
+            elif left_point and right_point:
+                self.translation = 0
+            elif not left_point and not right_point:
+                # if (self.layer != 3) and (self.layer != 4) and (self.layer != 6) and \
+                #     (self.next_distance[0] <= UP_BOARD_DISTANCE or self.next_distance[2] <= UP_BOARD_DISTANCE or self.distance[3] <= UP_BOARD_DISTANCE or self.next_distance[5] <= UP_BOARD_DISTANCE):
+                #     if self.next_distance[0] >= self.next_distance[5]:
+                #         self.translation = TRANSLATION_NORMAL
+                #         self.translate_state = '空間不足，左平移'
+                #     elif self.next_distance[0] < self.next_distance[5]:
+                #         self.translation = -TRANSLATION_NORMAL
+                #         self.translate_state = '空間不足，右平移'
+                # else:
+                self.translation = 0
+                self.translate_state = '無'
+            elif left_point or right_point:
+                self.translation = TRANSLATION_MIN if right_point else -TRANSLATION_NORMAL
+                self.translate_state = '普通平移'
 
         #theta
+        self.theta = 0
         rotate = min(self.distance[0], self.distance[1], self.distance[2]) - min(self.distance[3], self.distance[4], self.distance[5])
         foot_distance_left  = [self.distance[0], self.distance[1], self.distance[2]]
         foot_distance_right = [self.distance[3], self.distance[4], self.distance[5]]
         if ((foot_distance_left[0] - foot_distance_left[2]) * (foot_distance_right[0] - foot_distance_right[2]) <= -30) and \
            ((max(foot_distance_left) - min(foot_distance_left) >= 15) or (max(foot_distance_right) - min(foot_distance_right) >= 15)):
             self.arc = True
-            if (foot_distance_left[0] - foot_distance_left[2]) > (foot_distance_right[2] - foot_distance_left[0]):
+            if (foot_distance_left[0] - foot_distance_left[2]) < (foot_distance_right[2] - foot_distance_left[0]):
                 self.theta = RIGHT_THETA * THETA_NORMAL
-                self.translation = TRANSLATION_NORMAL
+                self.translation = TRANSLATION_BIG
                 self.translate_state = '左平移'
                 self.angle = '右旋'
-            elif (foot_distance_left[0] - foot_distance_left[2]) < (foot_distance_right[2] - foot_distance_right[0]):
+            elif (foot_distance_left[0] - foot_distance_left[2]) > (foot_distance_right[2] - foot_distance_right[0]):
                 self.theta = LEFT_THETA * THETA_NORMAL
-                self.translation = -TRANSLATION_NORMAL
+                self.translation = -TRANSLATION_BIG
                 self.translate_state = '右平移'
                 self.angle = '左旋'
         # if ((foot_distance_left.index(min(foot_distance_left)) == 1) or (foot_distance_left.index(min(foot_distance_left)) == 2)) and \
@@ -459,7 +472,7 @@ class LiftandCarry:
         # else:
         #     slope = 0
 
-        slope = edge.slope
+        # slope = edge.slope
         
         # if self.now_board.edge_min.x > self.distance[1] and slope > 5:
         #     self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
