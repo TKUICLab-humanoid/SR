@@ -25,7 +25,7 @@ if __name__ == '__main__':
     try:
         lc = LiftandCarry()
         cw = WallClimbing()
-        rospy.init_node('SR_strategy', anonymous=True, log_level=rospy.INFO)   #初始化node
+        rospy.init_node('SR_strategy', anonymous=True, log_level=rospy.DEBUG)   #初始化node
         r = rospy.Rate(20)
         while not rospy.is_shutdown():
             # start    = rospy.get_time()
