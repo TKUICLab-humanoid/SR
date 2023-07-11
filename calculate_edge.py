@@ -18,7 +18,7 @@ WIDTH = 240/MULT
 #                 [xmin ymin xmax  ymax]
 ROI   = np.array([[ 115, 120], [215, 220]])/MULT
 LENTH_ROI = round((ROI[1][0]-ROI[0][0])/MULT)
-WIDTH_ROI = round(ROI[1][1]-ROI[0][1])/MULT)
+WIDTH_ROI = round((ROI[1][1]-ROI[0][1])/MULT)
 send = Sendmessage()
 #             Orange   Yellow      Blue        Green     Black   Red         White
 COLOR_MASK = [[0,0,0],[128,128,0],[128,0,128],[0,0,128],[0,0,0],[255,255,0],[0,0,0]]
