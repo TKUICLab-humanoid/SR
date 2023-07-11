@@ -22,8 +22,8 @@ DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 LADDER_COLOAR              = 'Red'                     
 
 #------------------#
-HEAD_HORIZONTAL            = 2068                  #頭水平
-HEAD_VERTICAL              = 2740                  #頭垂直 #down 2750
+HEAD_HORIZONTAL            = 2048                  #頭水平
+HEAD_VERTICAL              = 1400                  #頭垂直 #down 2750
 
 #判斷值
 FOOTLADDER_LINE            = 200                   #上梯基準線

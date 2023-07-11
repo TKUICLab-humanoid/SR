@@ -4,6 +4,8 @@ import sys
 import rospy
 import numpy as np
 import math
+import sys
+sys.path.append('/home/iclab/Desktop/kid_hurocup/src/strategy')
 from Python_API import Sendmessage
 from lift_and_carry import LiftandCarry
 from wall_climbing import WallClimbing
@@ -25,12 +27,12 @@ if __name__ == '__main__':
     try:
         lc = LiftandCarry()
         cw = WallClimbing()
-        rospy.init_node('SR_strategy', anonymous=True, log_level=rospy.DEBUG)   #初始化node
+        rospy.init_node('SR_strategy', anonymous=True, log_level=rospy.INFO)   #初始化node
         r = rospy.Rate(20)
         while not rospy.is_shutdown():
             # start    = rospy.get_time()
             strategy = Strategy_select()
-            rospy.loginfo(strategy)
+            # rospy.loginfo(strategy)
             if strategy == "Lift_and_Carry_off" or strategy =="Lift_and_Carry_on":
                 lc.main(strategy)
             elif strategy == "Wall_Climb_off" or strategy =="Wall_Climb_on":
