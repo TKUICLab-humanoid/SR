@@ -17,27 +17,27 @@ THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)s
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCDOWN                     = 24000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+LCUP                       = 19000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCDOWN                     = 19500                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [2500  , 0     , 500   , 3000  , 0 , 500]
-ROUTE_PLAN_TRANSLATION     = [0   , -800  , -1500  , 1000  , 800 , 1000]
-ROUTE_PLAN_THETA           = [0     , -3     , -2     , 0     , -3    , -3]
-ROUTE_PLAN_TIME            = [5     , 3.5     , 0    , 0     , 0    , 0]
+ROUTE_PLAN_FORWARD         = [2500  , 0     , 100   , 1000  , -700 , 1800]
+ROUTE_PLAN_TRANSLATION     = [0   , -800    , 1900  , 0     , 0    , 0]
+ROUTE_PLAN_THETA           = [0     , -3    , 0     , 0     , 0    , 0]
+ROUTE_PLAN_TIME            = [0     , 0     , 3.8    , 0    , 2.5  , 4]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                   #sector(30) LC_stand微調站姿
-GROUND_TO_BOARD            = False                  #地板到板磁區(33)
+GROUND_TO_BOARD            = True                  #地板到板磁區(33)
 UPBOARD_CORRECT            = True                   #sector(31) 上板微調站姿
 DOWNBOARD_CORRECT          = True                   #sector(32) 下板微調站姿
 BOARD_TO_GROUND            = False                  #板到地板磁區(34)
 DRAW_FUNCTION_FLAG         = True                   #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,            #板子顏色(根據比賽現場調整)
-                              "Red"   ,             #Blue Red Yellow Green
-                              "Blue"    , 
-                              "Yellow" , 
-                              "Blue"    , 
-                              "Red"   , 
+                              "Yellow"   ,             #Blue Red Yellow Green
+                              "Red"    , 
+                              "Blue" , 
+                              "Red"    , 
+                              "Yellow"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右 |  左,  中,   右
@@ -52,15 +52,15 @@ ORIGINAL_FORWARD_RIGHT          = -500
 ORIGINAL_TRANSLATE_RIGHT        = 700
 
 ##判斷值
-FOOTBOARD_LINE             = 198                   #上板基準線
+FOOTBOARD_LINE             = 210                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 10                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
-UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
+UP_BOARD_DISTANCE          = 50                    #最低上板需求距離
 ##前後值
-BACK_MIN                   = -1000                  #小退後
+BACK_MIN                   = -500                  #小退後
 BACK_NORMAL                = -2000                  #退後
 FORWARD_MIN                = 1500                  #小前進
 FORWARD_NORMAL             = 2000                  #前進
@@ -69,7 +69,7 @@ FORWARD_SUPER              = 5000                  #超大前進
 ##平移值
 TRANSLATION_MIN            = 500                   #小平移
 TRANSLATION_NORMAL         = 1000                  #平移
-TRANSLATION_BIG            = 1500                  #大平移
+TRANSLATION_BIG            = 2000                  #大平移
 ##旋轉值
 THETA_MIN                  = 2                     #小旋轉
 THETA_NORMAL               = 4                     #旋轉
@@ -166,9 +166,12 @@ class LiftandCarry:
                     self.first_in         = False
                     self.route_plan(self.layer)
                 elif self.walkinggait_stop and not self.first_in:
-                    send.sendBodyAuto(0,0,0,0,1,0)
-                    self.walkinggait_stop = False
-                    self.route_plan(self.layer)
+                    if self.layer == 4:
+                        self.walkinggait(motion = 'ready_to_lc')
+                    else:
+                        send.sendBodyAuto(0,0,0,0,1,0)
+                        self.walkinggait_stop = False
+                        self.route_plan(self.layer)
                 elif not self.walkinggait_stop:
                     self.find_board()
                     self.walkinggait(motion=self.edge_judge())
@@ -234,7 +237,7 @@ class LiftandCarry:
         if motion == 'ready_to_lc':
             rospy.loginfo("對正板子")
             rospy.sleep(0.25) 
-            if self.walkinggait_stop:
+            if (self.layer == 4):
                 pass
             else:
                 send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
@@ -260,7 +263,10 @@ class LiftandCarry:
                         rospy.logdebug("上板前姿勢")
                     rospy.sleep(1.5)
                     send.execute = False
-                send.sendBodyAuto(LCUP,0,0,0,2,0)    #上板步態
+                if self.layer == 1:
+                    send.sendBodyAuto(25000, 0, 0, 0, 2, 0)
+                else:
+                    send.sendBodyAuto(LCUP,0,0,0,2,0)    #上板步態
             else:
                 #下板前站姿調整
                 if BOARD_TO_GROUND and self.layer == 6:
@@ -277,7 +283,12 @@ class LiftandCarry:
                         rospy.logdebug("下板前姿勢")
                     rospy.sleep(1.5)
                     send.execute = False
-                send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
+                if self.layer == 4:
+                    send.sendBodyAuto(20000, 0,0,0,3,0)
+                elif self.layer == 6:
+                    send.sendBodyAuto(24000, 0,0 , 0, 3, 0) 
+                else:
+                    send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             rospy.sleep(5)                           #剛下板,等待搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
@@ -364,7 +375,7 @@ class LiftandCarry:
                 (self.distance[3] < GO_UP_DISTANCE+8) and (self.distance[4] < GO_UP_DISTANCE+20) and\
                 (self.distance[5] < GO_UP_DISTANCE+20))):
                 if (self.next_distance[0] > UP_BOARD_DISTANCE and self.next_distance[2] > UP_BOARD_DISTANCE and \
-                    self.next_distance[3] > UP_BOARD_DISTANCE and self.next_distance[5] > UP_BOARD_DISTANCE):
+                    self.next_distance[3] > UP_BOARD_DISTANCE and self.next_distance[4] > UP_BOARD_DISTANCE):
                 #上板
                     self.state = "上板"
                     return 'ready_to_lc'
