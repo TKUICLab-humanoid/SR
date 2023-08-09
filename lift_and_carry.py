@@ -8,34 +8,40 @@ from Python_API import Sendmessage
 from calculate_edge import deep_calculate
 #--校正量--#
 #前進量校正
-FORWARD_CORRECTION         = 0
+FORWARD_CORRECTION         = -400
 #平移校正
-TRANSLATION_CORRECTION     = 0
+TRANSLATION_CORRECTION     = 300
 #旋轉校正
-THETA_CORRECTION           = 0
+THETA_CORRECTION           = 1
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
 LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+LCDOWN                     = 15000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FLAG            = False
-ROUTE_PLAN_FORWARD         = [-1500, -2000, 0, -2000, -1000]
-ROUTE_PLAN_TRANSLATION     = [-1500, -1000, 1000, 2000, -1000]
-ROUTE_PLAN_THETA           = [-2, 6, 0, -7, 5]
-ROUTE_PLAN_TIME            = [0, 0, 0, 0, 0]
+ROUTE_PLAN_FLAG            = True
+ROUTE_PLAN_FORWARD         = [   0,  500, -400,    0,     -400, 0]
+ROUTE_PLAN_TRANSLATION     = [3000, -1000,  -200, 1000,     0, 0]
+ROUTE_PLAN_THETA           = [   0,    2,   4,    0,    -2, 5]
+ROUTE_PLAN_TIME            = [   0,    3,    2,    0,     2, 0]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
-UPBOARD_CORRECT            = False                  #sector(31) 上板微調站姿
-DOWNBOARD_CORRECT          = False                  #sector(32) 下板微調站姿
+STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
+
+GND_BOARD_LC               = False                  #地板到板 磁區33              1
+UPBOARD_LAYER_TWO          = False                 #sector(31) 上板微調站姿      2
+UPBOARD_LAYER_THREE        = True                 #sector(35) 上板微調站姿      3
+DOWNBOARD_LAYER_FOUR       = False                 #sector(32) 下板微調站姿      4
+DOWNBOARD_LAYER_FIVE       = False                 #sector(36) 下板微調站姿      5
+BOARD_GND_LC               = False                  #板到地 磁區34
+
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Red"   ,           #Blue Red Yellow Green
-                              "Blue"    , 
-                              "Yellow" , 
-                              "Blue"    , 
-                              "Red"   , 
+                              "Yellow"   ,           #Blue Red Yellow Green
+                              "Red"    , 
+                              "Blue" , 
+                              "Red"    , 
+                              "Yellow"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
@@ -47,24 +53,25 @@ FOOTBOARD_LINE             = 220                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 15                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
-SECOND_FORWORD_CHANGE_LINE = 100                    #前進判斷線
+SECOND_FORWORD_CHANGE_LINE = 100                   #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
-##前後值
-BACK_MIN                   = -500                  #小退後
-BACK_NORMAL                = -1000                 #退後
+
+BACK_MIN                   = -500                  #小後退
+BACK_NORMAL                = -1000                  #後退
 FORWARD_MIN                = 1000                  #小前進
 FORWARD_NORMAL             = 1500                  #前進
 FORWARD_BIG                = 2000                  #大前進
 FORWARD_SUPER              = 3000                  #超大前進
+
 ##平移值
 TRANSLATION_MIN            = 500                   #小平移
-TRANSLATION_NORMAL         = 1000                  #平移
-TRANSLATION_BIG            = 1500                  #大平移
+TRANSLATION_NORMAL         = 800                  #平移
+TRANSLATION_BIG            = 1200                  #大平移
 ##旋轉值
-THETA_MIN                  = 3                     #小旋轉
-THETA_NORMAL               = 6                     #旋轉
-THETA_BIG                  = 7                     #大旋轉
+THETA_MIN                  = 2                     #小旋轉
+THETA_NORMAL               = 3                     #旋轉
+THETA_BIG                  = 5                     #大旋轉
 SLOPE_MIN                  = 2                     #有點斜
 SLOPE_NORMAL               = 4                     #斜
 SLOPE_BIG                  = 12                     #過斜
@@ -132,8 +139,21 @@ class LiftandCarry:
                     send.sendBodyAuto(self.forward,0,0,0,1,0)
                     self.walkinggait_stop = False
                     self.first_in         = False
+                    self.route_plan(self.layer)
                 elif self.walkinggait_stop and not self.first_in:
+                    if self.layer > 3:
+                        send.data_check = False
+                        self.find_board()
+                        # if (max(self.distance) - min(self.distance) <= 5) and min(self.distance) == 0:
+                        if (self.distance[0] == 0 and self.distance[1] == 0 and self.distance[2] == 0 and self.distance[3] == 0) or \
+                           (self.distance[2] == 0 and self.distance[3] == 0 and self.distance[4] == 0 and self.distance[5] == 0) or \
+                           (self.distance[0] == 0 and self.distance[1] == 0 and max(self.distance) < 2) or \
+                           (self.distance[4] == 0 and self.distance[5] == 0 and max(self.distance) < 2):
+                            rospy.logwarn("！！！！！！！！！！直接下板！！！！！！！！！！")
+                            self.walkinggait(motion = 'continue_to_lc')
+                   
                     send.sendBodyAuto(0,0,0,0,1,0)
+                    self.walkinggait(motion = 'walking')
                     self.walkinggait_stop = False
                     self.route_plan(self.layer)
                 elif not self.walkinggait_stop:
@@ -205,59 +225,168 @@ class LiftandCarry:
     def walkinggait(self,motion):
     #步態函數,用於切換countiue 或 LC 步態
         rospy.loginfo(f"機器人狀態: {self.state}")
-        if motion == 'ready_to_lc':
+        if motion == 'ready_to_lc' or motion == 'continue_to_lc':
             rospy.loginfo("對正板子")
-            rospy.sleep(0.25) 
-            send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
-            rospy.sleep(5)                           #穩定停止後的搖晃
+            rospy.sleep(0.25)
+            if motion == 'ready_to_lc':
+                send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
+                rospy.sleep(3)                           #穩定停止後的搖晃
             send.sendSensorReset(1,1,1)              #IMU reset 避免機器人步態修正錯誤
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
                 rospy.logdebug("站立姿勢")
             send.execute = False
             if self.layer < 4:
-                send.sendWalkParameter('send',\
-                                            walk_mode = 2,\
-                                            com_y_shift = -1,\
-                                            y_swing = 4.5,\
-                                            period_t = 600,\
-                                            t_dsp = 0.3,\
-                                            base_default_z = 5,\
-                                            right_z_shift = 2.3,\
-                                            base_lift_z = 2.8,\
-                                            com_height = 27.5,\
-                                            stand_height = 23.5,\
-                                            back_flag = 0)
-                rospy.sleep(1.5)
-                if UPBOARD_CORRECT:
+                if GND_BOARD_LC and self.layer == 1:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 2,\
+                                                com_y_shift =-3,\
+                                                y_swing = 4.5,\
+                                                period_t = 540,\
+                                                t_dsp = 0.3,\
+                                                base_default_z = 4,\
+                                                right_z_shift = 2.3,\
+                                                base_lift_z = 2,\
+                                                com_height = 27.5,\
+                                                stand_height = 23.5,\
+                                                back_flag = 0)
+                    rospy.sleep(1.5)
+                    rospy.loginfo("準備上板")
+                    send.sendBodySector(33)          #上板前站姿調整
+                    while not send.execute:
+                        rospy.logdebug("上板前姿勢")
+                    rospy.sleep(1.5)
+                    send.execute = False  
+                elif UPBOARD_LAYER_TWO and self.layer == 2:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 2,\
+                                                com_y_shift =-2,\
+                                                y_swing = 4.5,\
+                                                period_t = 540,\
+                                                t_dsp = 0.3,\
+                                                base_default_z = 4,\
+                                                right_z_shift = 2.3,\
+                                                base_lift_z = 2,\
+                                                com_height = 27.5,\
+                                                stand_height = 23.5,\
+                                                back_flag = 0)
+                    rospy.sleep(1.5)
                     rospy.loginfo("準備上板")
                     send.sendBodySector(31)          #上板前站姿調整
                     while not send.execute:
                         rospy.logdebug("上板前姿勢")
                     rospy.sleep(1.5)
                     send.execute = False                   #微調站姿延遲
+                elif UPBOARD_LAYER_THREE and self.layer == 3:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 2,\
+                                                com_y_shift =-2,\
+                                                y_swing = 4.5,\
+                                                period_t = 480,\
+                                                t_dsp = 0.25,\
+                                                base_default_z = 4,\
+                                                right_z_shift = 2,\
+                                                base_lift_z = 2,\
+                                                com_height = 27.5,\
+                                                stand_height = 23.5,\
+                                                back_flag = 0)
+                    rospy.sleep(1.5)
+                    rospy.loginfo("準備上板")
+                    send.sendBodySector(35)          #上板前站姿調整
+                    while not send.execute:
+                        rospy.logdebug("上板前姿勢")
+                    rospy.sleep(1.5)
+                    send.execute = False                   #微調站姿延遲
+                else:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 2,\
+                                                com_y_shift =-3,\
+                                                y_swing = 4.5,\
+                                                period_t = 480,\
+                                                t_dsp = 0.25,\
+                                                base_default_z = 4,\
+                                                right_z_shift = 2,\
+                                                base_lift_z = 2,\
+                                                com_height = 27.5,\
+                                                stand_height = 23.5,\
+                                                back_flag = 0)
+                    rospy.sleep(1.5)
                 send.sendBodyAuto(LCUP,0,0,0,2,0)    #上板步態
             else:
-                send.sendWalkParameter('send',\
+                if BOARD_GND_LC and self.layer == 6:
+                    send.sendWalkParameter('send',\
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 540,\
-                                            t_dsp = 0.3,\
-                                            base_default_z = 3.2,\
+                                            period_t = 420,\
+                                            t_dsp = 0.35,\
+                                            base_default_z = 3,\
                                             right_z_shift = 1.5,\
                                             base_lift_z = -1,\
                                             com_height = 59.5,\
                                             stand_height = 21.5,\
                                             back_flag = 0)
-                rospy.sleep(2)
-                if DOWNBOARD_CORRECT:
+                    rospy.sleep(2)
+                    rospy.loginfo("準備下板")
+                    send.sendBodySector(34)          #下板前站姿調整
+                    while not send.execute:
+                        rospy.logdebug("下板前姿勢")
+                    rospy.sleep(1.5)
+                    send.execute = False               #微調站姿延遲
+                elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 3,\
+                                                com_y_shift = -2,\
+                                                y_swing = 4.5,\
+                                                period_t = 450,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
+                                                right_z_shift = 1.5,\
+                                                base_lift_z = -1,\
+                                                com_height = 59.5,\
+                                                stand_height = 21.5,\
+                                                back_flag = 0)
+                    rospy.sleep(2)
                     rospy.loginfo("準備下板")
                     send.sendBodySector(32)          #下板前站姿調整
                     while not send.execute:
                         rospy.logdebug("下板前姿勢")
                     rospy.sleep(1.5)
                     send.execute = False               #微調站姿延遲
+                elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 3,\
+                                                com_y_shift = -2,\
+                                                y_swing = 4.5,\
+                                                period_t = 450,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
+                                                right_z_shift = 1.5,\
+                                                base_lift_z = -1,\
+                                                com_height = 59.5,\
+                                                stand_height = 21.5,\
+                                                back_flag = 0)
+                    rospy.sleep(2)
+                    rospy.loginfo("準備下板")
+                    send.sendBodySector(36)          #下板前站姿調整
+                    while not send.execute:
+                        rospy.logdebug("下板前姿勢")
+                    rospy.sleep(1.5)
+                    send.execute = False               #微調站姿延遲
+                else:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 3,\
+                                                com_y_shift = -3,\
+                                                y_swing = 4.5,\
+                                                period_t = 450,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
+                                                right_z_shift = 1.5,\
+                                                base_lift_z = -1,\
+                                                com_height = 59.5,\
+                                                stand_height = 21.5,\
+                                                back_flag = 0)
+                    rospy.sleep(2)
                 if self.layer == 4:
                     send.sendBodyAuto(18000, 0, 0, 0, 3, 0)
                 else:
@@ -265,6 +394,13 @@ class LiftandCarry:
             rospy.sleep(3)                           #剛下板,等待搖晃
             send.sendBodySector(39)               
             send.sendWalkParameter('send',\
+                                    walk_mode = 1,\
+                                    com_y_shift = -1,\
+                                    y_swing = 4.5,\
+                                    period_t = 240,\
+                                    t_dsp = 0,\
+                                    base_default_z = 1.2,\
+                                    com_height = 27.5,\
                                     stand_height = 23.5)
             rospy.sleep(2) 
             send.sendBodySector(29)                  #這是基本站姿的磁區
@@ -329,20 +465,23 @@ class LiftandCarry:
 
     def edge_judge(self):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (min(self.distance[0],self.distance[1],self.distance[2])) < GO_UP_DISTANCE + 10 and\
-           (max(self.distance[0],self.distance[1],self.distance[2])) < GO_UP_DISTANCE + 20 and \
-           (min(self.distance[3],self.distance[4],self.distance[5])) < GO_UP_DISTANCE and \
-           (max(self.distance[3],self.distance[4],self.distance[5])) < GO_UP_DISTANCE +10 and \
-           self.layer < 4:
+        if ((self.distance[0] < GO_UP_DISTANCE+5) and (self.distance[1] < GO_UP_DISTANCE+3) and\
+           (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+2) and\
+           (self.distance[4] < GO_UP_DISTANCE+2)and self.layer < 4):
            #上板
-            self.state = "上板"
-            return 'ready_to_lc'
-        elif (min(self.distance[0],self.distance[1],self.distance[2])) < GO_UP_DISTANCE  and\
-             (max(self.distance[0],self.distance[1],self.distance[2])) < GO_UP_DISTANCE + 20 and \
-             (max(self.distance[3],self.distance[4],self.distance[5])) < GO_UP_DISTANCE +15 and \
-           self.layer >= 4:
-            self.state = "下板"
-            return 'ready_to_lc'
+           self.state = "上板"
+           return 'ready_to_lc'
+        elif ((self.distance[0] < GO_UP_DISTANCE + 10) and (self.distance[1] < GO_UP_DISTANCE+10) and\
+           (self.distance[2] < GO_UP_DISTANCE +10 ) and (self.distance[3] < GO_UP_DISTANCE+10) and\
+           (self.distance[4] < GO_UP_DISTANCE+10)and self.layer == 6):
+           self.state = "下底板"
+           return 'ready_to_lc'
+        elif ((self.distance[0] < GO_UP_DISTANCE) and (self.distance[1] < GO_UP_DISTANCE) and\
+           (self.distance[2] < GO_UP_DISTANCE) and (self.distance[3] < GO_UP_DISTANCE) and\
+           (self.distance[4] < GO_UP_DISTANCE)and self.layer >=4):
+           #上板
+           self.state = "下板"
+           return 'ready_to_lc'
         else:
             if (self.distance[0] <= WARNING_DISTANCE) or (self.distance[1] <= WARNING_DISTANCE) or (self.distance[2] <= WARNING_DISTANCE) or (self.distance[3] <= WARNING_DISTANCE) or (self.distance[4] <= WARNING_DISTANCE) or (self.distance[5] <= WARNING_DISTANCE): 
             #即將踩板
@@ -350,139 +489,76 @@ class LiftandCarry:
                 #     self.special_case()
                 # else:
                 if self.layer < 4:
-                    if max(self.distance[0],self.distance[1],self.distance[2])>60 and min(self.distance[0],self.distance[1],self.distance[2])>40:
+                    if max(self.distance[0],self.distance[1],self.distance[2])>30:
                         self.forward = FORWARD_CORRECTION 
                         self.translation = RIGHT_THETA * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
-                        self.theta   =  RIGHT_THETA * THETA_NORMAL + THETA_CORRECTION 
+                        if abs(self.distance[0]-self.distance[2]) < 5:
+                            self.theta   =  0
+                        else:
+                            self.theta   = RIGHT_THETA*THETA_NORMAL + THETA_CORRECTION
                         self.state   = "!!!右平移!!!"
-                    elif max(self.distance[3],self.distance[4],self.distance[5])>60 and min(self.distance[3],self.distance[4],self.distance[5])>40:
+                    elif max(self.distance[3],self.distance[4],self.distance[5])>30:
                         self.forward = FORWARD_CORRECTION 
                         self.translation = LEFT_THETA * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
-                        self.theta   =  LEFT_THETA * THETA_NORMAL + THETA_CORRECTION 
+                        if abs(self.distance[3]-self.distance[5]) < 5:
+                            self.theta   =  0
+                        else:
+                            self.theta   = LEFT_THETA*THETA_NORMAL + THETA_CORRECTION
                         self.state   = "!!!左平移!!!"
                     else:
-                        self.forward = FORWARD_CORRECTION
+                        self.forward = FORWARD_MIN + FORWARD_CORRECTION
                         self.theta_change()
-                        if self.theta == THETA_CORRECTION :
-                            if max(self.distance[0],self.distance[1],self.distance[2]) <= max(self.distance[3],self.distance[4],self.distance[5]):
-                                self.theta = THETA_NORMAL*LEFT_THETA + THETA_CORRECTION
-                            elif max(self.distance[0],self.distance[1],self.distance[2]) > max(self.distance[3],self.distance[4],self.distance[5]):
-                                self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
                         self.state = "!!!小心踩板,後退!!!"
                 else:
-                    if self.distance[0] < GO_UP_DISTANCE and min(self.distance[3],self.distance[4],self.distance[5]) > GO_UP_DISTANCE and max(self.distance[3],self.distance[4],self.distance[5]) < 100:
-                        self.forward = FORWARD_CORRECTION + THETA_CORRECTION
-                        self.translation = RIGHT_THETA * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
-                        self.theta   =  THETA_NORMAL*LEFT_THETA
+                    if self.distance[0] < GO_UP_DISTANCE and min(self.distance[3],self.distance[4],self.distance[5]) > GO_UP_DISTANCE:
+                        self.forward = BACK_MIN + FORWARD_CORRECTION 
+                        self.translation = RIGHT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                        self.theta   =  THETA_MIN*LEFT_THETA
                         self.state   = "!!!右平移,左旋!!!"
-                    elif self.distance[5] < GO_UP_DISTANCE and min(self.distance[0],self.distance[1],self.distance[2]) > GO_UP_DISTANCE and max(self.distance[0],self.distance[1],self.distance[2]) < 100:
-                        self.forward = FORWARD_CORRECTION + THETA_CORRECTION
-                        self.translation = LEFT_THETA * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
-                        self.theta   =  THETA_NORMAL*RIGHT_THETA
+                    elif self.distance[5] < GO_UP_DISTANCE and min(self.distance[0],self.distance[1],self.distance[2]) > GO_UP_DISTANCE:
+                        self.forward = BACK_MIN + FORWARD_CORRECTION 
+                        self.translation = LEFT_THETA * TRANSLATION_MIN + TRANSLATION_CORRECTION
+                        self.theta   =  THETA_MIN*RIGHT_THETA
                         self.state   = "!!!左平移,右旋!!!"
-                    elif (abs(edge.slope) > 2 or max(self.distance[0],self.distance[1],self.distance[2],self.distance[3],self.distance[4],self.distance[5]) > 120) and self.layer == 4:
+                    else:
                         self.forward = FORWARD_CORRECTION
-                        # rospy.logerr(self.now_board.center.x)
-                        if send.color_mask_subject_cnts[1] != None:
-                            left  = False
-                            right = False
-                            for i in range(send.color_mask_subject_cnts[1]):
-                                if send.color_mask_subject_size[1][i] > 500 and  send.color_mask_subject_X[1][i] < 160:
-                                    left = True
-                                elif send.color_mask_subject_size[1][i] > 500 and  send.color_mask_subject_X[1][i] >= 160:
-                                    right = True
-                            if left:
-                                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            elif right:
-                                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                            else:
-                                self.translation = TRANSLATION_CORRECTION 
-                            self.theta   =  THETA_CORRECTION
-                            self.state = "!!!小心踩板,shift!!!"
-                        else:
-                            self.forward = FORWARD_CORRECTION
-                            self.translation = TRANSLATION_CORRECTION 
-                            self.theta   =  THETA_CORRECTION
-                            rospy.logerr('沒看到黃板？？？')
-                    else:
-                        self.forward = BACK_NORMAL + FORWARD_CORRECTION
                         self.theta_change()
-                        if self.theta == THETA_CORRECTION :
-                            if max(self.distance[0],self.distance[1],self.distance[2]) > max(self.distance[3],self.distance[4],self.distance[5]):
-                                self.theta = THETA_NORMAL*LEFT_THETA + THETA_CORRECTION
-                            elif max(self.distance[0],self.distance[1],self.distance[2]) <= max(self.distance[3],self.distance[4],self.distance[5]):
-                                self.theta = THETA_NORMAL*RIGHT_THETA + THETA_CORRECTION
                         self.state = "!!!小心踩板,後退!!!"
-
-            elif (self.distance[0] < FIRST_FORWORD_CHANGE_LINE) and (self.distance[1] < FIRST_FORWORD_CHANGE_LINE) and\
-                 (self.distance[2] < FIRST_FORWORD_CHANGE_LINE) and (max(self.distance[3],self.distance[4],self.distance[5])>100) and self.layer <4:
-            #左平移
-                if self.layer != 1:
-                    self.forward     = FORWARD_CORRECTION
-                else:
-                    self.forward     = FORWARD_CORRECTION
-                self.theta       =  LEFT_THETA * THETA_NORMAL + THETA_CORRECTION
-                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                self.state ="左平移"
-            elif (self.distance[3] < FIRST_FORWORD_CHANGE_LINE) and (self.distance[4] < FIRST_FORWORD_CHANGE_LINE) and\
-                 (self.distance[5] < FIRST_FORWORD_CHANGE_LINE) and (max(self.distance[0],self.distance[1],self.distance[2])>100) and self.layer <4:
-            #右平移
-                if self.layer != 1:
-                    self.forward     = FORWARD_CORRECTION
-                else:
-                    self.forward     = FORWARD_CORRECTION
-                self.theta       =  RIGHT_THETA * THETA_NORMAL + THETA_CORRECTION
-                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                self.state ="右平移"
             else:
-                if self.layer > 1 and self.distance[0] > 240  and self.distance[1] > 240 and self.distance[4] > 240 and self.distance[5] > 240:
-                    self.state = "前方沒有要上的板子"
-                    self.no_up_board()
+                # if self.layer > 1 and not self.now_board.get_target:
+                #     self.state = "前方沒有要上的板子"
+                #     self.no_up_board()
+                # # elif self.now_board.get_target and max(self.distance[0],self.distance[1],self.distance[2]) > 240 and max(self.distance[3],self.distance[4],self.distance[5]) > 240:
+                # #     if min(self.distance[0],self.distance[1],self.distance[2]) < 240:
+                # #         self.forward     = FORWARD_CORRECTION
+                # #         self.theta       = LEFT_THETA*THETA_NORMAL
+                # #         self.translation = TRANSLATION_CORRECTION
+                # #     elif min(self.distance[3],self.distance[4],self.distance[5]) < 240:
+                # #         self.forward     = FORWARD_CORRECTION
+                # #         self.theta       = RIGHT_THETA*THETA_NORMAL
+                # #         self.translation = TRANSLATION_CORRECTION
+                # else:
+                if self.layer == 4:
+                    self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
+                    self.theta       = THETA_CORRECTION
+                elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
+                    self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
+                    self.theta_change()
+                    self.state = '前進'
+                elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE or self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
+                    self.forward     = FORWARD_BIG + FORWARD_CORRECTION
+                    self.theta_change()
+                    self.state = '大前進'
                 else:
-                    if self.distance[0] < FIRST_FORWORD_CHANGE_LINE or self.distance[1] < FIRST_FORWORD_CHANGE_LINE or self.distance[2] < FIRST_FORWORD_CHANGE_LINE or self.distance[3] < FIRST_FORWORD_CHANGE_LINE or self.distance[4] < FIRST_FORWORD_CHANGE_LINE or self.distance[5] < FIRST_FORWORD_CHANGE_LINE:
-                        if  self.layer != 3 and self.layer != 6 and (self.next_distance[0] < UP_BOARD_DISTANCE or self.next_distance[1] < UP_BOARD_DISTANCE or self.next_distance[2] < UP_BOARD_DISTANCE or self.next_distance[3] < UP_BOARD_DISTANCE or self.next_distance[4] < UP_BOARD_DISTANCE or self.next_distance[5] < UP_BOARD_DISTANCE):
-                            #左邊空間較大
-                            if (self.next_distance[0] + self.next_distance[1]) > (self.next_distance[4] + self.next_distance[5]):
-                                self.forward     = FORWARD_CORRECTION
-                                self.theta       = THETA_CORRECTION 
-                                self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                                self.state = "空間不足,往左移"
-                            #右邊空間較大
-                            elif (self.next_distance[0] + self.next_distance[1]) < (self.next_distance[4] + self.next_distance[5]):
-                                self.forward     = FORWARD_CORRECTION
-                                self.theta       = THETA_CORRECTION 
-                                self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
-                                self.state = "空間不足,往右移"
-                        else:
-                            self.forward     = FORWARD_MIN + FORWARD_CORRECTION
-                            self.theta_change()
-                            self.state = '小前進'
-                    elif self.layer == 4:
-                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                        self.theta       = THETA_CORRECTION
-                        self.state = '小前進'
-                    elif self.distance[0] < SECOND_FORWORD_CHANGE_LINE or self.distance[1] < SECOND_FORWORD_CHANGE_LINE or self.distance[2] < SECOND_FORWORD_CHANGE_LINE or self.distance[3] < SECOND_FORWORD_CHANGE_LINE or self.distance[4] < SECOND_FORWORD_CHANGE_LINE or self.distance[5] < SECOND_FORWORD_CHANGE_LINE:
-                        self.forward     = FORWARD_NORMAL + FORWARD_CORRECTION
-                        self.theta_change()
-                        self.state = '前進'
-                    elif self.distance[0] < THIRD_FORWORD_CHANGE_LINE or self.distance[5] < THIRD_FORWORD_CHANGE_LINE:
-                        self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                        if min(self.distance[0],self.distance[1],self.distance[2]) < 130 and max(self.distance[3],self.distance[4],self.distance[5]) > 240:
-                            self.theta = LEFT_THETA*THETA_NORMAL + THETA_CORRECTION
-                        elif max(self.distance[0],self.distance[1],self.distance[2]) > 240 and min(self.distance[3],self.distance[4],self.distance[5]) < 130:
-                            self.theta = RIGHT_THETA*THETA_NORMAL + THETA_CORRECTION
-                        self.state = '大前進'
+                    self.theta = THETA_CORRECTION
+                    if self.layer == 1:
+                        self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
+                        self.state = '超大前進' 
                     else:
-                        self.theta = THETA_CORRECTION
-                        if self.layer == 1:
-                            self.forward     = FORWARD_SUPER + FORWARD_CORRECTION
-                            self.state = '超大前進' 
-                        else:
-                            self.forward     = FORWARD_BIG + FORWARD_CORRECTION
-                            self.state = '大前進'
-                    self.translation = TRANSLATION_CORRECTION           #距離板太遠不須平移
+                        self.forward     = FORWARD_BIG + FORWARD_CORRECTION
+                        self.state = '大前進'
+                self.translation = TRANSLATION_CORRECTION           #距離板太遠不須平移
             return 'walking'
-
     def theta_change(self):
     #旋轉修正
         decide_theta = 0
@@ -531,12 +607,12 @@ class LiftandCarry:
 
     def no_up_board(self):
     #上板或下板後影像上無下一層板
-        rospy.logerr(self.now_board.target_size)
-        rospy.logerr(self.now_board.center.x)
+        rospy.logerr(self.now_board.color)
+        rospy.logerr(self.now_board.get_target)
         if self.layer != 4:
-            if self.now_board.center.x >= 162:
+            if self.now_board.edge_min.x >= 162:
                 self.theta = RIGHT_THETA * THETA_BIG + THETA_CORRECTION
-            elif self.now_board.center.x <= 158 and self.now_board.center.x != 0:
+            elif self.now_board.edge_max.x <= 158 and self.now_board.edge_max.x != 0:
                 self.theta = LEFT_THETA * THETA_BIG + THETA_CORRECTION
             else:
                 self.theta = THETA_CORRECTION
@@ -686,12 +762,13 @@ class LiftandCarry:
             start = rospy.get_time()
             end   = 99999
             rospy.sleep(1)       #啟動步態後穩定時間
-            while (end-start) < ROUTE_PLAN_TIME[now_layer-2]:
+            while (end-start) < ROUTE_PLAN_TIME[now_layer-1]:
                 end = rospy.get_time()
                 print(end-start)
-                self.forward     = ROUTE_PLAN_FORWARD[now_layer-2]
-                self.translation = ROUTE_PLAN_TRANSLATION[now_layer-2]
-                self.theta       = ROUTE_PLAN_THETA[now_layer-2]
+                print(now_layer)
+                self.forward     = ROUTE_PLAN_FORWARD[now_layer-1]
+                self.translation = ROUTE_PLAN_TRANSLATION[now_layer-1]
+                self.theta       = ROUTE_PLAN_THETA[now_layer-1]
                 send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
                  
     def aa(self):
@@ -743,7 +820,7 @@ class ObjectInfo:
     def get_object(self):
         max_object_size = max(send.color_mask_subject_size[self.color])
         max_object_idx = send.color_mask_subject_size[self.color].index(max_object_size)
-        return max_object_idx if max_object_size > 2000 else None
+        return max_object_idx if max_object_size > 500 else None
 
     def get_ball_object(self):
         object_idx = None
