@@ -14,13 +14,13 @@ send = Sendmessage()
 
 def Strategy_select():
 #策略選擇
-    if send.DIOValue == 1 or send.DIOValue == 2 or send.DIOValue == 3 or  send.DIOValue == 9 or send.DIOValue == 10 or send.DIOValue == 11:
+    if send.DIOValue == 1 or send.DIOValue == 2 or send.DIOValue == 3 or  send.DIOValue == 17 or send.DIOValue == 18 or send.DIOValue == 19:
         return "Lift_and_Carry_off"
-    elif send.DIOValue == 17 or send.DIOValue == 18 or  send.DIOValue == 19 or  send.DIOValue == 25 or  send.DIOValue == 26 or  send.DIOValue == 27:
+    elif send.DIOValue == 33 or send.DIOValue == 34 or  send.DIOValue == 35 or  send.DIOValue == 49 or  send.DIOValue == 50 or  send.DIOValue == 51:
         return "Lift_and_Carry_on"
-    elif send.DIOValue == 4 or send.DIOValue == 12:
+    elif send.DIOValue == 4 or send.DIOValue == 20:
         return "Wall_Climb_off"
-    elif send.DIOValue == 20 or send.DIOValue == 28:
+    elif send.DIOValue == 36 or send.DIOValue == 52:
         return "Wall_Climb_on"
 
 if __name__ == '__main__':
@@ -37,9 +37,9 @@ if __name__ == '__main__':
             if strategy == "Lift_and_Carry_off" or strategy =="Lift_and_Carry_on":
                 lc.main(strategy)
             elif strategy == "Wall_Climb_off" or strategy =="Wall_Climb_on":
-                if flag:
-                    send.sendBodySector(1)
-                    flag = False
+                # if flag:
+                #     send.sendBodySector(1)
+                #     flag = False
                 cw.main(strategy)
             else:
                 if not flag:
