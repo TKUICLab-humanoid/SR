@@ -254,31 +254,31 @@ class Sendmessage:
 
     def getObject(self,msg):
     #取得物件資訊
-        if self.data_check == False:
-            time_start = time.time()
-            self.color_mask_subject_cnts = [0 for i in range(8)]
-            self.color_mask_subject_X = [[0]*320 for i in range(8)]
-            self.color_mask_subject_Y = [[0]*320 for i in range(8)]
-            self.color_mask_subject_XMin = [[0]*320 for i in range(8)]
-            self.color_mask_subject_XMax = [[0]*320 for i in range(8)]
-            self.color_mask_subject_YMax = [[0]*320 for i in range(8)]
-            self.color_mask_subject_YMin = [[0]*320 for i in range(8)]
-            self.color_mask_subject_Width = [[0]*320 for i in range(8)]
-            self.color_mask_subject_Height = [[0]*320 for i in range(8)]
-            self.color_mask_subject_size = [[0]*320 for i in range(8)]
-            for i in range (8):
-                self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt#拉下來顏色
-                for j in range (self.color_mask_subject_cnts[i]):
-                    self.color_mask_subject_X[i][j] = msg.Objectlist[i].Colorarray[j].X
-                    self.color_mask_subject_Y[i][j] = msg.Objectlist[i].Colorarray[j].Y
-                    self.color_mask_subject_XMin[i][j] = msg.Objectlist[i].Colorarray[j].XMin
-                    self.color_mask_subject_YMin[i][j] = msg.Objectlist[i].Colorarray[j].YMin
-                    self.color_mask_subject_XMax[i][j] = msg.Objectlist[i].Colorarray[j].XMax
-                    self.color_mask_subject_YMax[i][j] = msg.Objectlist[i].Colorarray[j].YMax
-                    self.color_mask_subject_Width[i][j] = msg.Objectlist[i].Colorarray[j].Width
-                    self.color_mask_subject_Height[i][j] = msg.Objectlist[i].Colorarray[j].Height
-                    self.color_mask_subject_size[i][j] = msg.Objectlist[i].Colorarray[j].size
-            self.data_check = True
+        # if self.data_check == False:
+        time_start = time.time()
+        self.color_mask_subject_cnts = [0 for i in range(8)]
+        self.color_mask_subject_X = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Y = [[0]*320 for i in range(8)]
+        self.color_mask_subject_XMin = [[0]*320 for i in range(8)]
+        self.color_mask_subject_XMax = [[0]*320 for i in range(8)]
+        self.color_mask_subject_YMax = [[0]*320 for i in range(8)]
+        self.color_mask_subject_YMin = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Width = [[0]*320 for i in range(8)]
+        self.color_mask_subject_Height = [[0]*320 for i in range(8)]
+        self.color_mask_subject_size = [[0]*320 for i in range(8)]
+        for i in range (8):
+            self.color_mask_subject_cnts[i] = msg.Objectlist[i].cnt#拉下來顏色
+            for j in range (self.color_mask_subject_cnts[i]):
+                self.color_mask_subject_X[i][j] = msg.Objectlist[i].Colorarray[j].X
+                self.color_mask_subject_Y[i][j] = msg.Objectlist[i].Colorarray[j].Y
+                self.color_mask_subject_XMin[i][j] = msg.Objectlist[i].Colorarray[j].XMin
+                self.color_mask_subject_YMin[i][j] = msg.Objectlist[i].Colorarray[j].YMin
+                self.color_mask_subject_XMax[i][j] = msg.Objectlist[i].Colorarray[j].XMax
+                self.color_mask_subject_YMax[i][j] = msg.Objectlist[i].Colorarray[j].YMax
+                self.color_mask_subject_Width[i][j] = msg.Objectlist[i].Colorarray[j].Width
+                self.color_mask_subject_Height[i][j] = msg.Objectlist[i].Colorarray[j].Height
+                self.color_mask_subject_size[i][j] = msg.Objectlist[i].Colorarray[j].size
+            # self.data_check = True
             # time_end = time.time()
             # self.time = 1/(time_end - time_start)
             # print("FPS:",self.time)
@@ -291,7 +291,7 @@ class Sendmessage:
 
     def DIOackFunction(self,msg):
     #取得當前DIO值
-        if msg.data & 0x10:
+        if msg.data & 0x20:
             self.is_start = True
         else:
             self.is_start = False
