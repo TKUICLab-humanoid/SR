@@ -12,12 +12,12 @@ FORWARD_CORRECTION         = -400
 #平移校正
 TRANSLATION_CORRECTION     = 300
 #旋轉校正
-THETA_CORRECTION           = 1
+THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP                       = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCDOWN                     = 17000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = False
 ROUTE_PLAN_FORWARD         = [   0,  500, -400,    0,     -400, 0]
@@ -49,7 +49,7 @@ FOOT                       = [115 , 134, 153, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1300                  #頭垂直 #down 2750
 ##判斷值
-FOOTBOARD_LINE             = 220                   #上板基準線
+FOOTBOARD_LINE             = 212                  #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 15                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -131,7 +131,7 @@ class LiftandCarry:
                         rospy.logdebug("站立姿勢")
                     send.execute = False
                     if STAND_CORRECT_LC:
-                        send.sendBodySector(30)             #LC基礎站姿調整磁區
+                        send.sendBodySector(102)             #LC基礎站姿調整磁區
                         while not send.execute:
                             rospy.logdebug("站立姿勢調整")
                         send.execute = False
@@ -240,12 +240,12 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-4,\
+                                                com_y_shift =-2,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.35,\
+                                                t_dsp = 0.4,\
                                                 base_default_z = 5,\
-                                                right_z_shift = 3,\
+                                                right_z_shift = 4,\
                                                 base_lift_z = 2,\
                                                 com_height = 29.5,\
                                                 stand_height = 23.5,\
@@ -260,12 +260,12 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-4,\
+                                                com_y_shift =-1,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.35,\
+                                                t_dsp = 0.4,\
                                                 base_default_z = 5,\
-                                                right_z_shift = 3,\
+                                                right_z_shift = 4,\
                                                 base_lift_z = 2,\
                                                 com_height = 29.5,\
                                                 stand_height = 23.5,\
@@ -280,12 +280,12 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-4,\
+                                                com_y_shift =-1,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.35,\
+                                                t_dsp = 0.4,\
                                                 base_default_z = 5,\
-                                                right_z_shift = 3,\
+                                                right_z_shift = 4,\
                                                 base_lift_z = 2,\
                                                 com_height = 29.5,\
                                                 stand_height = 23.5,\
@@ -300,12 +300,12 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-4,\
+                                                com_y_shift =-1,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.35,\
+                                                t_dsp = 0.4,\
                                                 base_default_z = 5,\
-                                                right_z_shift = 3,\
+                                                right_z_shift = 4,\
                                                 base_lift_z = 2,\
                                                 com_height = 29.5,\
                                                 stand_height = 23.5,\
@@ -318,11 +318,11 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 540,\
                                             t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 0,\
-                                            base_lift_z = -4,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -338,11 +338,11 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 540,\
                                             t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 0,\
-                                            base_lift_z = -4,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -358,11 +358,11 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 540,\
                                             t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 0,\
-                                            base_lift_z = -4,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -378,26 +378,27 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 540,\
                                             t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 0,\
-                                            base_lift_z = -4,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
                     rospy.sleep(2)
                 if self.layer == 4:
-                    send.sendBodyAuto(20000, 0, 0, 0, 3, 0)
+                    send.sendBodyAuto(17000, 0, 0, 0, 3, 0)
+
                 else:
                     send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             rospy.sleep(3)                           #剛下板,等待搖晃
             # send.sendBodySector(102)               
             send.sendWalkParameter('send',\
                                     walk_mode = 1,\
-                                    com_y_shift = 2,\
+                                    com_y_shift = -1,\
                                     y_swing = 5,\
-                                    period_t = 360,\
+                                    period_t = 330,\
                                     t_dsp = 0,\
                                     base_default_z = 2,\
                                     com_height = 29.5,\
