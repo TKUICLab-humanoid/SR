@@ -12,7 +12,7 @@ FORWARD_CORRECTION         = 0
 #平移校正
 TRANSLATION_CORRECTION     = 0
 #旋轉校正
-THETA_CORRECTION           = 0
+THETA_CORRECTION           = 1
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
@@ -101,7 +101,7 @@ class LiftandCarry:
             self.draw_function()
 
         sys.stdout.write("\033[H")
-        sys.stdout.write("\033[J")
+        #sys.stdout.write("\033[J")
         rospy.loginfo('________________________________________')
         rospy.loginfo(f"SLOPE: {edge.slope}")
         if self.layer < 7:
@@ -120,6 +120,8 @@ class LiftandCarry:
             self.init()
             send.sendSensorReset(1,1,1)
             rospy.loginfo("turn off")
+            sys.stdout.write("\033[H")
+            sys.stdout.write("\033[J")
         elif strategy == "Lift_and_Carry_on":
         #開啟LC策略
             if self.layer < 7:
@@ -243,11 +245,11 @@ class LiftandCarry:
                                                 com_y_shift =-5,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.3,\
-                                                base_default_z = 3.5,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 5,\
-                                                com_height = 27.5,\
+                                                com_height = 29.5,\
                                                 stand_height = 23.5,\
                                                 back_flag = 0)
                     rospy.sleep(1.5)
@@ -263,11 +265,11 @@ class LiftandCarry:
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.3,\
-                                                base_default_z = 5,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 5,\
-                                                com_height = 27.5,\
+                                                com_height = 29.5,\
                                                 stand_height = 23.5,\
                                                 back_flag = 0)
                     rospy.sleep(1.5)
@@ -283,11 +285,11 @@ class LiftandCarry:
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.3,\
-                                                base_default_z = 5,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 5,\
-                                                com_height = 27.5,\
+                                                com_height = 29.5,\
                                                 stand_height = 23.5,\
                                                 back_flag = 0)
                     rospy.sleep(1.5)
@@ -303,11 +305,11 @@ class LiftandCarry:
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
-                                                t_dsp = 0.3,\
-                                                base_default_z = 5,\
+                                                t_dsp = 0.35,\
+                                                base_default_z = 3,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 5,\
-                                                com_height = 27.5,\
+                                                com_height = 29.5,\
                                                 stand_height = 23.5,\
                                                 back_flag = 0)
                     
@@ -389,7 +391,9 @@ class LiftandCarry:
                                             back_flag = 0)
                     rospy.sleep(2)
                 if self.layer == 4:
-                    send.sendBodyAuto(20000, 0, 0, 0, 3, 0)
+                    send.sendBodyAuto(18000, 0, 0, 0, 3, 0)
+                elif self.layer == 5:
+                    send.sendBodyAuto(19000, 0, 0, 0, 3, 0)
                 else:
                     send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             rospy.sleep(3)                           #剛下板,等待搖晃            
