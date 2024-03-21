@@ -20,19 +20,19 @@ LCUP                       = 20000                 #上板 Y_swing = 7,Period_T 
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [   0,  500, -400,    2000,     -400, 0]
-ROUTE_PLAN_TRANSLATION     = [3000, -1000,  -200, 0,     0, 0]
-ROUTE_PLAN_THETA           = [   0,    2,   4,    0,    -2, 5]
-ROUTE_PLAN_TIME            = [   0,    0,    0,    4,     2, 0]
+ROUTE_PLAN_FORWARD         = [   0,  0, 0,   500,   0, 0]
+ROUTE_PLAN_TRANSLATION     = [0, -1000,  -200, 0,     0, 0]
+ROUTE_PLAN_THETA           = [   -5,    4,   4,    4,    -2, 5]
+ROUTE_PLAN_TIME            = [   15,    8,    0,    15,     2, 0]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
+STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
-GND_BOARD_LC               = True                  #地板到板 磁區33              1
-UPBOARD_LAYER_TWO          = True                  #sector(31) 上板微調站姿      2
-UPBOARD_LAYER_THREE        = True                  #sector(35) 上板微調站姿      3
-DOWNBOARD_LAYER_FOUR       = True                  #sector(32) 下板微調站姿      4
-DOWNBOARD_LAYER_FIVE       = True                  #sector(36) 下板微調站姿      5
-BOARD_GND_LC               = True                   #板到地 磁區34
+GND_BOARD_LC               = False                  #地板到板 磁區33              1
+UPBOARD_LAYER_TWO          = False                  #sector(31) 上板微調站姿      2
+UPBOARD_LAYER_THREE        = False                  #sector(35) 上板微調站姿      3
+DOWNBOARD_LAYER_FOUR       = False                  #sector(32) 下板微調站姿      4
+DOWNBOARD_LAYER_FIVE       = False                  #sector(36) 下板微調站姿      5
+BOARD_GND_LC               = False                   #板到地 磁區34
 
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
@@ -47,7 +47,7 @@ BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現
 #                              左 ,  中,  右|  左,  中,   右
 FOOT                       = [115 , 134, 153, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
-HEAD_VERTICAL              = 1350                  #頭垂直 #down 2750
+HEAD_VERTICAL              = 1400                #頭垂直 #down 2750
 ##判斷值
 FOOTBOARD_LINE             = 215                 #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
@@ -101,7 +101,7 @@ class LiftandCarry:
             self.draw_function()
 
         sys.stdout.write("\033[H")
-        #sys.stdout.write("\033[J")
+        sys.stdout.write("\033[J")
         rospy.loginfo('________________________________________')
         rospy.loginfo(f"SLOPE: {edge.slope}")
         if self.layer < 7:
@@ -226,7 +226,7 @@ class LiftandCarry:
     
     def walkinggait(self,motion):
     #步態函數,用於切換countiue 或 LC 步態
-        rospy.loginfo(f"機器人狀態: {self.state}")
+        rospy.loginfo(f"\r機器人狀態: {self.state}")
         if motion == 'ready_to_lc' or motion == 'continue_to_lc':
             rospy.loginfo("對正板子")
             rospy.sleep(0.25)
@@ -319,7 +319,7 @@ class LiftandCarry:
                 if BOARD_GND_LC and self.layer == 6:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = 0,\
+                                            com_y_shift = -3,\
                                             y_swing = 4.5,\
                                             period_t = 480,\
                                             t_dsp = 0.4,\
@@ -339,7 +339,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = 0,\
+                                            com_y_shift = -3,\
                                             y_swing = 4.5,\
                                             period_t = 480,\
                                             t_dsp = 0.4,\
@@ -359,7 +359,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = 0,\
+                                            com_y_shift = -3,\
                                             y_swing = 4.5,\
                                             period_t = 480,\
                                             t_dsp = 0.4,\
@@ -379,7 +379,7 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = 0,\
+                                            com_y_shift = -3,\
                                             y_swing = 4.5,\
                                             period_t = 480,\
                                             t_dsp = 0.4,\
@@ -391,9 +391,7 @@ class LiftandCarry:
                                             back_flag = 0)
                     rospy.sleep(2)
                 if self.layer == 4:
-                    send.sendBodyAuto(18000, 0, 0, 0, 3, 0)
-                elif self.layer == 5:
-                    send.sendBodyAuto(19000, 0, 0, 0, 3, 0)
+                    send.sendBodyAuto(20000, 0, 0, 0, 3, 0)
                 else:
                     send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
             rospy.sleep(3)                           #剛下板,等待搖晃            
@@ -471,18 +469,18 @@ class LiftandCarry:
     #邊緣判斷,回傳機器人走路速度與走路模式
         if ((self.distance[0] < GO_UP_DISTANCE+5) and (self.distance[1] < GO_UP_DISTANCE+3) and\
            (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+2) and\
-           (self.distance[4] < GO_UP_DISTANCE+2)and self.layer < 4):
+           (self.distance[4] < GO_UP_DISTANCE+2)and (self.distance[5] < GO_UP_DISTANCE+5) and self.layer < 4):
            #上板
            self.state = "上板"
            return 'ready_to_lc'
-        elif ((self.distance[0] < GO_UP_DISTANCE + 10) and (self.distance[1] < GO_UP_DISTANCE+10) and\
-           (self.distance[2] < GO_UP_DISTANCE +10 ) and (self.distance[3] < GO_UP_DISTANCE+10) and\
-           (self.distance[4] < GO_UP_DISTANCE+10)and self.layer == 6):
+        elif ((self.distance[0] < GO_UP_DISTANCE +5) and (self.distance[1] < GO_UP_DISTANCE+5) and\
+           (self.distance[2] < GO_UP_DISTANCE +5 ) and (self.distance[3] < GO_UP_DISTANCE+5) and\
+           (self.distance[4] < GO_UP_DISTANCE+5)and (self.distance[5] < GO_UP_DISTANCE+5)and self.layer == 6):
            self.state = "下底板"
            return 'ready_to_lc'
         elif ((self.distance[0] < GO_UP_DISTANCE) and (self.distance[1] < GO_UP_DISTANCE) and\
            (self.distance[2] < GO_UP_DISTANCE) and (self.distance[3] < GO_UP_DISTANCE) and\
-           (self.distance[4] < GO_UP_DISTANCE)and self.layer >=4):
+           (self.distance[4] < GO_UP_DISTANCE)and (self.distance[5] < GO_UP_DISTANCE)and self.layer >=4):
            #上板
            self.state = "下板"
            return 'ready_to_lc'
@@ -772,7 +770,8 @@ class LiftandCarry:
                 print(now_layer)
                 self.forward     = ROUTE_PLAN_FORWARD[now_layer-1]
                 self.translation = ROUTE_PLAN_TRANSLATION[now_layer-1]
-                self.theta       = ROUTE_PLAN_THETA[now_layer-1]
+                self.theta       = ROUTE_PLAN_THETA[now_layer-1]+THETA_CORRECTION
+                
                 send.sendContinuousValue(self.forward,self.translation,0,self.theta,0)
                  
     def aa(self):

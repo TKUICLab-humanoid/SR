@@ -10,23 +10,23 @@ from Python_API import Sendmessage
 #前進量校正
 FORWARD_CORRECTION         = 0
 #平移校正
-TRANSLATION_CORRECTION     = -500
+TRANSLATION_CORRECTION     = 0
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 200      
 
 # ---微調站姿開關---#
-STAND_CORRECT_CW           = False                 #sector(33) CW_stand微調站姿
+STAND_CORRECT_CW           = True                 #sector(33) CW_stand微調站姿
 DRAW_FUNCTION_FLAG         = True                  #影像繪圖開關
 LADDER_COLOAR              = 'Red'                     
 
 #------------------#
-HEAD_HORIZONTAL            = 2068                  #頭水平
+HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1400                  #頭垂直 #down 2750
 
 #判斷值
-FOOTLADDER_LINE            = 200                   #上梯基準線
+FOOTLADDER_LINE            = 205                   #上梯基準線
 
 FIRST_FORWORD_CHANGE_LINE  = 20                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 50                    #前進判斷線
@@ -34,18 +34,18 @@ THIRD_FORWORD_CHANGE_LINE  = 100                   #大前進判斷線
 UP_LADDER_DISTANCE         = 0                    #最低上板需求距離
 
 #前後值
-BACK_MIN                   = -500                  #小退後
-FORWARD_MIN                = 1000                  #小前進
-FORWARD_NORMAL             = 4000                  #前進
-FORWARD_BIG                = 5000                  #大前進
+BACK_MIN                   = -1500                  #小退後
+FORWARD_MIN                = 800                  #小前進
+FORWARD_NORMAL             = 1000                  #前進
+FORWARD_BIG                = 2500                  #大前進
 
 #平移值
-TRANSLATION_BIG            = 1200                  #大平移
+TRANSLATION_BIG            = 500                  #大平移
 
 #旋轉值
-THETA_MIN                  = 1                     #小旋轉
-THETA_NORMAL               = 2                     #旋轉
-THETA_BIG                  = 3                     #大旋轉
+THETA_MIN                  = 3                     #小旋轉
+THETA_NORMAL               = 4                     #旋轉
+THETA_BIG                  = 5                     #大旋轉
 
 #左基礎參數
 LEFT_THETA                 = 1
@@ -140,7 +140,7 @@ class WallClimbing:
 
     def find_ladder(self):
     #獲取梯子資訊、距離資訊
-        self.ladder.update()
+        # self.ladder.update()
         self.lower_blue_ymax      = 0
         self.new_target_xmax = 0
         self.new_target_xmin = 0
@@ -213,7 +213,7 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 165) and (self.blue_x_middle <= 169) and abs(send.imu_value_Yaw) < 1:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 163) and (self.blue_x_middle <= 167) and abs(send.imu_value_Yaw) < 1.2:
             self.state = "爬梯"
             return "ready_to_cw"
         
@@ -223,13 +223,13 @@ class WallClimbing:
                 self.forward     = BACK_MIN + FORWARD_CORRECTION
                 self.state       = "!!!小心採到梯子,後退!!!"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 167):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 165):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "左平移"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >167):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >165):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
@@ -265,6 +265,7 @@ class WallClimbing:
     def draw_function(self):
     #畫面顯示繪畫資訊    
         send.drawImageFunction(1, 1, 175, 175, 0, 240, 255, 0, 0)   #中間基準線
+        send.drawImageFunction(3, 1, 0, 320, BASE_CHANGE, BASE_CHANGE, 255, 255, 0)
         
         #藍色的點
         send.drawImageFunction(2, 1, self.new_target_xmin, self.new_target_xmax, self.lower_blue_ymax-5, self.lower_blue_ymax+5, 255, 0, 128)
