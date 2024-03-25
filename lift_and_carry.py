@@ -17,14 +17,14 @@ THETA_CORRECTION           = 0
 BASE_CHANGE                = 100                   
 #上下板前進量
 LCUP                       = 16000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCDOWN                     = 17000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+LCDOWN                     = 16000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FLAG            = False
-ROUTE_PLAN_FORWARD         = [   0,  500, -400,    0,     -400, 0]
-ROUTE_PLAN_TRANSLATION     = [3000, -1000,  -200, 1000,     0, 0]
-ROUTE_PLAN_THETA           = [   0,    2,   4,    0,    -2, 5]
-ROUTE_PLAN_TIME            = [   0,    3,    2,    0,     2, 0]
-#---微調站姿開關---#
+ROUTE_PLAN_FLAG            = True
+ROUTE_PLAN_FORWARD         = [   3000,   100,      0,  2000,   10,   2400]
+ROUTE_PLAN_TRANSLATION     = [      0,  1500,   1600,     1500, 1000,   0]
+ROUTE_PLAN_THETA           = [     -1,     1,      5,    -6,     5,   5]
+ROUTE_PLAN_TIME            = [      5,     7,      5,     4,     4,   4]
+#---微調站姿開關---
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
 GND_BOARD_LC               = True                  #地板到板 磁區33              1
@@ -260,7 +260,7 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1,\
+                                                com_y_shift =-2,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
                                                 t_dsp = 0.4,\
@@ -280,7 +280,7 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1,\
+                                                com_y_shift =-2,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
                                                 t_dsp = 0.4,\
@@ -300,7 +300,7 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1,\
+                                                com_y_shift =-2,\
                                                 y_swing = 4.5,\
                                                 period_t = 450,\
                                                 t_dsp = 0.4,\
@@ -336,7 +336,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
+                                            com_y_shift = -2,\
                                             y_swing = 4.5,\
                                             period_t = 540,\
                                             t_dsp = 0.25,\
@@ -356,7 +356,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
+                                            com_y_shift = -4,\
                                             y_swing = 4.5,\
                                             period_t = 540,\
                                             t_dsp = 0.25,\
@@ -376,7 +376,7 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
+                                            com_y_shift = -5,\
                                             y_swing = 4.5,\
                                             period_t = 540,\
                                             t_dsp = 0.25,\
@@ -388,7 +388,7 @@ class LiftandCarry:
                                             back_flag = 0)
                     rospy.sleep(2)
                 if self.layer == 4:
-                    send.sendBodyAuto(17000, 0, 0, 0, 3, 0)
+                    send.sendBodyAuto(16000, 0, 0, 0, 3, 0)
 
                 else:
                     send.sendBodyAuto(LCDOWN,0,0,0,3,0)  #下板步態
@@ -400,7 +400,7 @@ class LiftandCarry:
                                     y_swing = 5,\
                                     period_t = 330,\
                                     t_dsp = 0,\
-                                    base_default_z = 2,\
+                                    base_default_z = 1.5,\
                                     com_height = 29.5,\
                                     stand_height = 23.5)
             rospy.sleep(2) 
@@ -468,7 +468,7 @@ class LiftandCarry:
     #邊緣判斷,回傳機器人走路速度與走路模式
         if ((self.distance[0] < GO_UP_DISTANCE+5) and (self.distance[1] < GO_UP_DISTANCE+3) and\
            (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+2) and\
-           (self.distance[4] < GO_UP_DISTANCE+2)and self.layer < 4):
+           (self.distance[4] < GO_UP_DISTANCE+2) and (self.distance[5] < GO_UP_DISTANCE+5)and self.layer < 4):
            #上板
            self.state = "上板"
            return 'ready_to_lc'
