@@ -65,20 +65,19 @@ class WallClimbing:
         send.sendHeadMotor(2, self.head_Vertical, 100)#垂直
         if DRAW_FUNCTION_FLAG:
             self.draw_function()
-
-        sys.stdout.write("\033[H")
         sys.stdout.write("\033[J")
-        rospy.loginfo('________________________________________')
-        rospy.loginfo(f'x: {self.now_forward} ,y: {self.now_translation} ,theta: {self.now_theta}')
-        rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}')
-        rospy.loginfo(f"機器人狀態: {self.state}")
-        rospy.loginfo(f"距離梯: {(FOOTLADDER_LINE - 20) - self.lower_blue_ymax}")
+        sys.stdout.write("\033[H")
+        rospy.loginfo('________________________________________\033[K')
+        rospy.loginfo(f'x: {self.now_forward} ,y: {self.now_translation} ,theta: {self.now_theta}\033[K')
+        rospy.loginfo(f'Goal_x: {self.forward} ,Goal_y: {self.translation} ,Goal_theta: {self.theta}\033[K')
+        rospy.loginfo(f"機器人狀態: {self.state}\033[K")
+        rospy.loginfo(f"距離梯: {(FOOTLADDER_LINE - 20) - self.lower_blue_ymax}\033[K")
         rospy.loginfo('￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣￣')
         
         if strategy == "Wall_Climb_off":
         #關閉策略,初始化設定
             if not self.walkinggait_stop:
-                rospy.loginfo("🔊CW parameter reset")
+                rospy.loginfo("🔊CW parameter reset\033[K")
                 send.sendHeadMotor(1,self.head_Horizontal,100)  #水平
                 send.sendHeadMotor(2,self.head_Vertical,100)    #垂直
                 send.sendBodyAuto(0,0,0,0,1,0)
@@ -89,9 +88,9 @@ class WallClimbing:
                 # if STAND_CORRECT_CW:
                 #     send.sendBodySector(30)             #CW基礎站姿調整磁區
                 #     STAND_CORRECT_CW = False 
-                rospy.loginfo("reset🆗🆗🆗")
+                rospy.loginfo("reset🆗🆗🆗\033[K")
             self.init()
-            rospy.loginfo("turn off")
+            rospy.loginfo("turn off\033[K")
 
         elif strategy == "Wall_Climb_on":
         #開啟CW策略 
@@ -99,7 +98,7 @@ class WallClimbing:
                 if self.STAND_CORRECT_CW:
                     send.sendBodySector(102)             #CW基礎站姿調整磁區
                     while not send.execute:
-                        rospy.logdebug("站立姿勢")
+                        rospy.logdebug("站立姿勢\033[K")
                     send.execute = False
                     self.STAND_CORRECT_CW = False
                     rospy.sleep(2)
@@ -108,7 +107,7 @@ class WallClimbing:
                     send.sendBodyAuto(0,0,0,0,1,0)
                     self.imu_reset = False
 
-                rospy.loginfo(f"blue ymax: {self.lower_blue_ymax}")
+                rospy.loginfo(f"blue ymax: {self.lower_blue_ymax}\033[K")
                 self.find_ladder()
                 self.walkinggait(motion=self.edge_judge(strategy))
                     
@@ -147,6 +146,7 @@ class WallClimbing:
         self.new_target_ymax = 0
         self.blue_x_middle = 160
         rospy.loginfo(send.color_mask_subject_cnts[2])
+        sys.stdout.write("\033[K")
         #-------距離判斷-------#
         for blue_cnt in range (send.color_mask_subject_cnts[2]):
             
@@ -159,18 +159,19 @@ class WallClimbing:
                     self.lower_blue_ymax = self.new_target_ymax
                     self.blue_x_middle = (self.new_target_xmax + self.new_target_xmin) / 2
                     rospy.logwarn(self.lower_blue_ymax)
+                    sys.stdout.write("\033[K")
         #self.lower_blue_ymax, self.blue_x_middle, self.new_target_xmax, self.new_target_xmin = self.ladder.get_object_ymax
     
     def walkinggait(self,motion):
     #步態函數
         if motion == 'ready_to_cw':
-            rospy.loginfo("對正梯子")
+            rospy.loginfo("對正梯子\033[K")
             send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
             send.sendSensorReset(1,1,1)                   #IMU reset 避免機器人步態修正錯誤
             rospy.sleep(3)                           #穩定停止後的搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
-                rospy.logdebug("站立姿勢")
+                rospy.logdebug("站立姿勢\033[K")
             send.execute = False
             rospy.sleep(3) 
             #-爬梯磁區-#
