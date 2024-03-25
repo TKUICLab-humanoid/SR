@@ -26,7 +26,7 @@ HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1400                  #頭垂直 #down 2750
 
 #判斷值
-FOOTLADDER_LINE            = 205                   #上梯基準線
+FOOTLADDER_LINE            = 215                   #上梯基準線
 
 FIRST_FORWORD_CHANGE_LINE  = 20                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 50                    #前進判斷線
@@ -158,8 +158,7 @@ class WallClimbing:
                 if self.lower_blue_ymax < self.new_target_ymax:
                     self.lower_blue_ymax = self.new_target_ymax
                     self.blue_x_middle = (self.new_target_xmax + self.new_target_xmin) / 2
-                    rospy.logwarn(self.lower_blue_ymax)
-                    sys.stdout.write("\033[K")
+                    rospy.logwarn(f"blue ymax: {self.lower_blue_ymax}\033[K")
         #self.lower_blue_ymax, self.blue_x_middle, self.new_target_xmax, self.new_target_xmin = self.ladder.get_object_ymax
     
     def walkinggait(self,motion):
@@ -214,34 +213,34 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 163) and (self.blue_x_middle <= 167) and abs(send.imu_value_Yaw) < 1.2:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 158) and (self.blue_x_middle <= 162) and abs(send.imu_value_Yaw) < 1.2:
             self.state = "爬梯"
             return "ready_to_cw"
         
         else:
             if (self.lower_blue_ymax > FOOTLADDER_LINE):
-                self.theta       = send.imu_value_Yaw
+                self.theta       = send.imu_value_Yaw/4
                 self.forward     = BACK_MIN + FORWARD_CORRECTION
                 self.state       = "!!!小心採到梯子,後退!!!"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 165):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 160):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "左平移"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >165):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >160):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "右平移"
             
             else:
-                if self.blue_x_middle < 167: #左移
+                if self.blue_x_middle < 160: #左移
                     self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "左平移  "
                 
-                elif self.blue_x_middle > 167: #右移
+                elif self.blue_x_middle > 160: #右移
                     self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "右平移  "
                 else:
@@ -265,7 +264,7 @@ class WallClimbing:
 
     def draw_function(self):
     #畫面顯示繪畫資訊    
-        send.drawImageFunction(1, 1, 175, 175, 0, 240, 255, 0, 0)   #中間基準線
+        send.drawImageFunction(1, 1, 159, 161, 0, 240, 255, 0, 0)   #中間基準線
         send.drawImageFunction(3, 1, 0, 320, BASE_CHANGE, BASE_CHANGE, 255, 255, 0)
         
         #藍色的點

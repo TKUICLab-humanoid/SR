@@ -20,10 +20,10 @@ LCUP                       = 20000                 #上板 Y_swing = 7,Period_T 
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [2000,   0,    200,    -400,     -500, 0]
-ROUTE_PLAN_TRANSLATION     = [500,   500, -1200,    -800,     0, 0]   #pos = left, neg = right
-ROUTE_PLAN_THETA           = [   4,  -4,    4,    5,    5, 0]   #pos = left, neg = right
-ROUTE_PLAN_TIME            = [  5,   4,    3,   17,     5, 0]
+ROUTE_PLAN_FORWARD         = [2000,   0,    0,    -400,     -500, 0]
+ROUTE_PLAN_TRANSLATION     = [-1200,   -1200, -500,    -300,     0, 0]   #pos = left, neg = right
+ROUTE_PLAN_THETA           = [   0,  -4,    2,    -5,    5, -4]   #pos = left, neg = right
+ROUTE_PLAN_TIME            = [  3,   4,    3,   3,     3, 2]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
@@ -318,9 +318,9 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 450,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 4,\
+                                            base_default_z = 5,\
                                             right_z_shift = 2,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
@@ -338,9 +338,9 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 450,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 4,\
+                                            base_default_z = 5,\
                                             right_z_shift = 2,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
@@ -358,9 +358,9 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 450,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 4,\
+                                            base_default_z = 5,\
                                             right_z_shift = 2,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
@@ -378,9 +378,9 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -3,\
                                             y_swing = 4.5,\
-                                            period_t = 480,\
+                                            period_t = 450,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 4,\
+                                            base_default_z = 5,\
                                             right_z_shift = 2,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
