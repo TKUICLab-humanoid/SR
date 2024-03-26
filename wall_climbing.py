@@ -201,9 +201,9 @@ class WallClimbing:
                 self.now_translation = self.translation
 
             #旋轉變化量
-            if send.imu_value_Yaw > 1:
+            if send.imu_value_Yaw > 0:
                 self.now_theta = -THETA_MIN
-            elif send.imu_value_Yaw < -1:
+            elif send.imu_value_Yaw < -2:
                 self.now_theta = THETA_MIN
             else:
                 self.now_theta = 0
@@ -213,7 +213,7 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 166) and (self.blue_x_middle <= 171) and abs(send.imu_value_Yaw) < 1.2:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 158) and (self.blue_x_middle <= 165) and abs(send.imu_value_Yaw) < 1.3:
             self.state = "爬梯"
             return "ready_to_cw"
         
@@ -223,24 +223,24 @@ class WallClimbing:
                 self.forward     = BACK_MIN + FORWARD_CORRECTION
                 self.state       = "!!!小心採到梯子,後退!!!"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 168):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 161):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "左平移"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >168):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >161):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "右平移"
             
             else:
-                if self.blue_x_middle < 168: #左移
+                if self.blue_x_middle < 161: #左移
                     self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "左平移  "
                 
-                elif self.blue_x_middle > 168: #右移
+                elif self.blue_x_middle > 161: #右移
                     self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "右平移  "
                 else:
