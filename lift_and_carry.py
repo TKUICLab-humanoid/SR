@@ -20,10 +20,10 @@ LCUP                       = 20000                 #上板 Y_swing = 7,Period_T 
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [2000,   0,    0,    -400,     -500, 0]
-ROUTE_PLAN_TRANSLATION     = [-1200,   -1200, -500,    -300,     0, 0]   #pos = left, neg = right
-ROUTE_PLAN_THETA           = [   0,  -4,    2,    -5,    5, -4]   #pos = left, neg = right
-ROUTE_PLAN_TIME            = [  3,   4,    3,   3,     3, 2]
+ROUTE_PLAN_FORWARD         = [2000,   -500,    -500,    1000,     -500, 0]
+ROUTE_PLAN_TRANSLATION     = [-1200,   0, -500,    -300,     0, 0]   #pos = left, neg = right
+ROUTE_PLAN_THETA           = [   0,  4,    4,    3,    5, 4]   #pos = left, neg = right
+ROUTE_PLAN_TIME            = [  0,   4,    2,   2,     0, 0]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
@@ -45,11 +45,11 @@ BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
-FOOT                       = [115 , 134, 153, 176, 194, 213]
+FOOT                       = [102 , 124, 145, 176, 194, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
-HEAD_VERTICAL              = 1400                #頭垂直 #down 2750
+HEAD_VERTICAL              = 1350                #頭垂直 #down 2750
 ##判斷值
-FOOTBOARD_LINE             = 215                 #上板基準線
+FOOTBOARD_LINE             = 210                 #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 15                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -239,9 +239,9 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-5,\
+                                                com_y_shift =-4,\
                                                 y_swing = 4.5,\
-                                                period_t = 450,\
+                                                period_t = 420,\
                                                 t_dsp = 0.4,\
                                                 base_default_z = 3,\
                                                 right_z_shift = 3,\
@@ -316,8 +316,8 @@ class LiftandCarry:
                 if BOARD_GND_LC and self.layer == 6:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
-                                            y_swing = 4.5,\
+                                            com_y_shift = -4,\
+                                            y_swing = 5,\
                                             period_t = 450,\
                                             t_dsp = 0.4,\
                                             base_default_z = 5,\
@@ -336,8 +336,8 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
-                                            y_swing = 4.5,\
+                                            com_y_shift = -4,\
+                                            y_swing = 5,\
                                             period_t = 450,\
                                             t_dsp = 0.4,\
                                             base_default_z = 5,\
@@ -356,8 +356,8 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
-                                            y_swing = 4.5,\
+                                            com_y_shift = -4,\
+                                            y_swing = 5,\
                                             period_t = 450,\
                                             t_dsp = 0.4,\
                                             base_default_z = 5,\
@@ -376,8 +376,8 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
-                                            y_swing = 4.5,\
+                                            com_y_shift = -4,\
+                                            y_swing = 5,\
                                             period_t = 450,\
                                             t_dsp = 0.4,\
                                             base_default_z = 5,\
@@ -470,14 +470,14 @@ class LiftandCarry:
            #上板
            self.state = "上板"
            return 'ready_to_lc'
-        elif ((self.distance[0] < GO_UP_DISTANCE +5) and (self.distance[1] < GO_UP_DISTANCE+5) and\
-           (self.distance[2] < GO_UP_DISTANCE +5 ) and (self.distance[3] < GO_UP_DISTANCE+5) and\
-           (self.distance[4] < GO_UP_DISTANCE+5)and (self.distance[5] < GO_UP_DISTANCE+5)and self.layer == 6):
-           self.state = "下底板"
-           return 'ready_to_lc'
         elif ((self.distance[0] < GO_UP_DISTANCE) and (self.distance[1] < GO_UP_DISTANCE) and\
            (self.distance[2] < GO_UP_DISTANCE) and (self.distance[3] < GO_UP_DISTANCE) and\
-           (self.distance[4] < GO_UP_DISTANCE)and (self.distance[5] < GO_UP_DISTANCE)and self.layer >=4):
+           (self.distance[4] < GO_UP_DISTANCE)and (self.distance[5] < GO_UP_DISTANCE)and self.layer == 6):
+           self.state = "下底板"
+           return 'ready_to_lc'
+        elif ((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
+           (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+3) and\
+           (self.distance[4] < GO_UP_DISTANCE+3)and (self.distance[5] < GO_UP_DISTANCE+3)and self.layer >=4):
            #上板
            self.state = "下板"
            return 'ready_to_lc'
@@ -489,7 +489,7 @@ class LiftandCarry:
                 # else:
                 if self.layer < 4:
                     if max(self.distance[0],self.distance[1],self.distance[2])>30:
-                        self.forward = FORWARD_CORRECTION 
+                        self.forward = BACK_MIN + FORWARD_CORRECTION
                         self.translation = RIGHT_THETA * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
                         if abs(self.distance[0]-self.distance[2]) < 5:
                             self.theta   =  0
@@ -497,7 +497,7 @@ class LiftandCarry:
                             self.theta   = RIGHT_THETA*THETA_NORMAL + THETA_CORRECTION
                         self.state   = "!!!右平移!!!"
                     elif max(self.distance[3],self.distance[4],self.distance[5])>30:
-                        self.forward = FORWARD_CORRECTION 
+                        self.forward = BACK_MIN + FORWARD_CORRECTION
                         self.translation = LEFT_THETA * TRANSLATION_NORMAL + TRANSLATION_CORRECTION
                         if abs(self.distance[3]-self.distance[5]) < 5:
                             self.theta   =  0
@@ -505,7 +505,7 @@ class LiftandCarry:
                             self.theta   = LEFT_THETA*THETA_NORMAL + THETA_CORRECTION
                         self.state   = "!!!左平移!!!"
                     else:
-                        self.forward = FORWARD_MIN + FORWARD_CORRECTION
+                        self.forward = BACK_MIN + FORWARD_CORRECTION
                         self.theta_change()
                         self.state = "!!!小心踩板,後退!!!"
                 else:
@@ -520,7 +520,7 @@ class LiftandCarry:
                         self.theta   =  THETA_MIN*RIGHT_THETA
                         self.state   = "!!!左平移,右旋!!!"
                     else:
-                        self.forward = FORWARD_CORRECTION
+                        self.forward = BACK_MIN + FORWARD_CORRECTION
                         self.theta_change()
                         self.state = "!!!小心踩板,後退!!!"
             else:
