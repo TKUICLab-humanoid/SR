@@ -26,7 +26,7 @@ HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1350                  #頭垂直 #down 2750
 
 #判斷值
-FOOTLADDER_LINE            = 205                  #上梯基準線
+FOOTLADDER_LINE            = 207                  #上梯基準線
 
 FIRST_FORWORD_CHANGE_LINE  = 20                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 70                    #前進判斷線
@@ -174,12 +174,12 @@ class WallClimbing:
             send.execute = False
             rospy.sleep(3) 
             #-爬梯磁區-#
-            send.sendBodySector(600)    #1
+            send.sendBodySector(611)    #1
                                        #2              
             # while not send.execute:
             #     rospy.logdebug("111號磁區")
             # send.execute = False
-            rospy.sleep(100)
+            rospy.sleep(40)
             #---------#
             self.status = 'cw_finish'
 
@@ -213,7 +213,7 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 156) and (self.blue_x_middle <= 164) and abs(send.imu_value_Yaw) < 1.3:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 154) and (self.blue_x_middle <= 162) and abs(send.imu_value_Yaw) < 1.3:
             self.state = "爬梯"
             return "ready_to_cw"
         
@@ -223,24 +223,24 @@ class WallClimbing:
                 self.forward     = BACK_MIN + FORWARD_CORRECTION
                 self.state       = "!!!小心採到梯子,後退!!!"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 160):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 158):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "左平移"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >160):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >158):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "右平移"
             
             else:
-                if self.blue_x_middle < 160: #左移
+                if self.blue_x_middle < 158: #左移
                     self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "左平移  "
                 
-                elif self.blue_x_middle > 160: #右移
+                elif self.blue_x_middle > 158: #右移
                     self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "右平移  "
                 else:

@@ -27,10 +27,10 @@ LCDOWN5                    = 19000
 LCDOWN6                    = 19000
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [   1200,   0,      500,    700,   200,   500]
-ROUTE_PLAN_TRANSLATION     = [      1300,   -700,     -1000,     1000,   600,   0]
-ROUTE_PLAN_THETA           = [     -1,     0,         5,      5,    5,   5]
-ROUTE_PLAN_TIME            = [      0,     6,        7,       7,     3,   0]
+ROUTE_PLAN_FORWARD         = [   1200,   1000,      500,    400,   800,   1000]
+ROUTE_PLAN_TRANSLATION     = [      1300,   0,     300,     1000,   100,   0]
+ROUTE_PLAN_THETA           = [     -1,     -5,         5,      -5,    -5,   5]
+ROUTE_PLAN_TIME            = [      0,     3,        6,       12,     5,   4]
 #---微調站姿開關---
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
@@ -44,11 +44,11 @@ BOARD_GND_LC               = True                  #板到地 磁區34
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Blue"   ,           #Blue Red Yellow Green
-                              "Red"    , 
-                              "Yellow" , 
-                              "Red"    , 
-                              "Blue"   , 
+                              "Red"   ,           #Blue Red Yellow Green
+                              "Yellow"    , 
+                              "Blue" , 
+                              "Yellow"    , 
+                              "Red"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
@@ -247,10 +247,10 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1.5,\
+                                                com_y_shift =-3,\
                                                 y_swing = 5,\
                                                 period_t = 390,\
-                                                t_dsp = 0.5,\
+                                                t_dsp = 0.35,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
@@ -268,10 +268,10 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1.5,\
+                                                com_y_shift =-2.5,\
                                                 y_swing = 5,\
                                                 period_t = 390,\
-                                                t_dsp = 0.5,\
+                                                t_dsp = 0.35,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
@@ -289,10 +289,10 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1.5,\
+                                                com_y_shift =-3,\
                                                 y_swing = 5,\
                                                 period_t = 390,\
-                                                t_dsp = 0.5,\
+                                                t_dsp = 0.35,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
@@ -309,10 +309,10 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-1.5,\
+                                                com_y_shift =-3,\
                                                 y_swing = 5,\
                                                 period_t = 390,\
-                                                t_dsp = 0.5,\
+                                                t_dsp = 0.35,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
