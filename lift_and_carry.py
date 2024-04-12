@@ -8,9 +8,9 @@ from Python_API import Sendmessage
 from calculate_edge import deep_calculate
 #--校正量--#
 #前進量校正
-FORWARD_CORRECTION         = 200
+FORWARD_CORRECTION         = 0
 #平移校正
-TRANSLATION_CORRECTION     = 100
+TRANSLATION_CORRECTION     = 0
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
@@ -21,18 +21,18 @@ LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T 
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
 ROUTE_PLAN_FORWARD         = [2000, 600,    0, 1000,     -200, -200]
-ROUTE_PLAN_TRANSLATION     = [-1200,   0,-1200,-1000,   -500, 0]   #pos = left, neg = right
-ROUTE_PLAN_THETA           = [    0,   4,   -4,    0,    4,   4]   #pos = left, neg = right
-ROUTE_PLAN_TIME            = [    0,   6,    3,    3,    4,   0]
+ROUTE_PLAN_TRANSLATION     = [-1200,   0, 1000,1000,   500, 0]   #pos = left, neg = right
+ROUTE_PLAN_THETA           = [    0,   -4,   4,    0,    -4,   4]   #pos = left, neg = right
+ROUTE_PLAN_TIME            = [    0,   6,    3,    3,    4,   3]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
-GND_BOARD_LC               = False                  #地板到板 磁區33              1
-UPBOARD_LAYER_TWO          = False                  #sector(31) 上板微調站姿      2
-UPBOARD_LAYER_THREE        = False                  #sector(35) 上板微調站姿      3
-DOWNBOARD_LAYER_FOUR       = False                  #sector(32) 下板微調站姿      4
-DOWNBOARD_LAYER_FIVE       = False                  #sector(36) 下板微調站姿      5
-BOARD_GND_LC               = False                   #板到地 磁區34
+GND_BOARD_LC               = True                  #地板到板 磁區33              1
+UPBOARD_LAYER_TWO          = True                  #sector(31) 上板微調站姿      2
+UPBOARD_LAYER_THREE        = True                  #sector(35) 上板微調站姿      3
+DOWNBOARD_LAYER_FOUR       = True                  #sector(32) 下板微調站姿      4
+DOWNBOARD_LAYER_FIVE       = True                  #sector(36) 下板微調站姿      5
+BOARD_GND_LC               = True                  #板到地 磁區34
 
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
@@ -51,7 +51,7 @@ HEAD_VERTICAL              = 1350                #頭垂直 #down 2750
 ##判斷值
 FOOTBOARD_LINE             = 195                 #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
-GO_UP_DISTANCE             = 15                    #上板距離
+GO_UP_DISTANCE             = 20                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 100                   #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
@@ -241,7 +241,7 @@ class LiftandCarry:
                                                 walk_mode = 2,\
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
-                                                period_t = 450,\
+                                                period_t = 420,\
                                                 t_dsp = 0.4,\
                                                 base_default_z = 4,\
                                                 right_z_shift = 4,\
@@ -261,7 +261,7 @@ class LiftandCarry:
                                                 walk_mode = 2,\
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
-                                                period_t = 450,\
+                                                period_t = 420,\
                                                 t_dsp = 0.4,\
                                                 base_default_z = 4,\
                                                 right_z_shift = 4,\
@@ -281,7 +281,7 @@ class LiftandCarry:
                                                 walk_mode = 2,\
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
-                                                period_t = 450,\
+                                                period_t = 420,\
                                                 t_dsp = 0.4,\
                                                 base_default_z = 4,\
                                                 right_z_shift = 4,\
@@ -301,7 +301,7 @@ class LiftandCarry:
                                                 walk_mode = 2,\
                                                 com_y_shift =-4,\
                                                 y_swing = 4.5,\
-                                                period_t = 450,\
+                                                period_t = 420,\
                                                 t_dsp = 0.4,\
                                                 base_default_z = 4,\
                                                 right_z_shift = 4,\
@@ -316,13 +316,13 @@ class LiftandCarry:
                 if BOARD_GND_LC and self.layer == 6:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -4,\
-                                            y_swing = 4.5,\
-                                            period_t = 450,\
+                                            com_y_shift = -2,\
+                                            y_swing = 5,\
+                                            period_t = 630,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 5,\
-                                            right_z_shift = 2,\
-                                            base_lift_z = -1,\
+                                            base_default_z = 5.5,\
+                                            right_z_shift = 1,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -336,13 +336,13 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -4,\
-                                            y_swing = 4.5,\
-                                            period_t = 450,\
+                                            com_y_shift = -2,\
+                                            y_swing = 5,\
+                                            period_t = 630,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 5,\
-                                            right_z_shift = 2,\
-                                            base_lift_z = -1,\
+                                            base_default_z = 5.5,\
+                                            right_z_shift = 1,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -356,13 +356,13 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -4,\
-                                            y_swing = 4.5,\
-                                            period_t = 450,\
+                                            com_y_shift = -2,\
+                                            y_swing = 5,\
+                                            period_t = 630,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 5,\
-                                            right_z_shift = 2,\
-                                            base_lift_z = -1,\
+                                            base_default_z = 5.5,\
+                                            right_z_shift = 1,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -376,13 +376,13 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -4,\
-                                            y_swing = 4.5,\
-                                            period_t = 450,\
+                                            com_y_shift = -2,\
+                                            y_swing = 5,\
+                                            period_t = 630,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 5,\
-                                            right_z_shift = 2,\
-                                            base_lift_z = -1,\
+                                            base_default_z = 5.5,\
+                                            right_z_shift = 1,\
+                                            base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -394,11 +394,11 @@ class LiftandCarry:
             rospy.sleep(3)                           #剛下板,等待搖晃            
             send.sendWalkParameter('send',\
                                     walk_mode = 1,\
-                                    com_y_shift = -3,\
-                                    y_swing = 4.5,\
+                                    com_y_shift = -2,\
+                                    y_swing = 4,\
                                     period_t = 300,\
                                     t_dsp = 0,\
-                                    base_default_z = 1.2,\
+                                    base_default_z = 1.1,\
                                     com_height = 29.5,\
                                     stand_height = 23.5)
             rospy.sleep(2) 
