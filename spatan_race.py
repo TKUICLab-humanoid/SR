@@ -39,7 +39,7 @@ if __name__ == '__main__':
             elif strategy == "Wall_Climb_off" or strategy =="Wall_Climb_on":
                 # if flag:
                 #     send.sendBodySector(1)
-                #     flag = False
+                flag = False
                 cw.main(strategy)
             else:
                 if not flag:

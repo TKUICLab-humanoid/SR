@@ -10,7 +10,7 @@ from Python_API import Sendmessage
 #前進量校正
 FORWARD_CORRECTION         = 0
 #平移校正
-TRANSLATION_CORRECTION     = 0
+TRANSLATION_CORRECTION     = -50
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
@@ -145,7 +145,7 @@ class WallClimbing:
         self.new_target_xmin = 0
         self.new_target_ymax = 0
         self.blue_x_middle = 160
-        rospy.loginfo(send.color_mask_subject_cnts[2])
+        rospy.loginfo(f"blue mask subject cnts: {send.color_mask_subject_cnts[2]}\033[K")
         sys.stdout.write("\033[K")
         #-------距離判斷-------#
         for blue_cnt in range (send.color_mask_subject_cnts[2]):
@@ -158,7 +158,7 @@ class WallClimbing:
                 if self.lower_blue_ymax < self.new_target_ymax:
                     self.lower_blue_ymax = self.new_target_ymax
                     self.blue_x_middle = (self.new_target_xmax + self.new_target_xmin) / 2
-                    rospy.logwarn(f"blue ymax: {self.lower_blue_ymax}\033[K")
+                    rospy.logwarn(f"lower blue ymax: {self.lower_blue_ymax}\033[K")
         #self.lower_blue_ymax, self.blue_x_middle, self.new_target_xmax, self.new_target_xmin = self.ladder.get_object_ymax
     
     def walkinggait(self,motion):
@@ -174,12 +174,12 @@ class WallClimbing:
             send.execute = False
             rospy.sleep(3) 
             #-爬梯磁區-#
-            send.sendBodySector(600)    #1
+            send.sendBodySector(610)    #1 #610 = first step
                                        #2              
             # while not send.execute:
             #     rospy.logdebug("111號磁區")
             # send.execute = False
-            rospy.sleep(100)
+            rospy.sleep(20)
             #---------#
             self.status = 'cw_finish'
 
