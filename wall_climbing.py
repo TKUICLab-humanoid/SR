@@ -43,7 +43,7 @@ FORWARD_BIG                = 3000                  #大前進
 TRANSLATION_BIG            = 600                  #大平移
 
 #旋轉值
-THETA_MIN                  = 1                     #小旋轉
+THETA_MIN                  = 2                     #小旋轉
 THETA_NORMAL               = 2                     #旋轉
 THETA_BIG                  = 3                     #大旋轉
 
@@ -59,6 +59,16 @@ class WallClimbing:
         self.ladder = ObjectInfo(LADDER_COLOAR,'Ladder')
         self.init()
         self.STAND_CORRECT_CW = True
+        self.body_auto = True
+
+    def walk_switch(self):
+        rospy.sleep(0.5)
+        send.sendBodyAuto(0, 0, 0, 0, 1, 0)
+        if self.body_auto:
+            self.body_auto = False
+        else:
+            self.body_auto = True
+
         
     def main(self,strategy):
         send.sendHeadMotor(1, self.head_Horizontal, 100)#水平
@@ -81,7 +91,9 @@ class WallClimbing:
                 rospy.loginfo("🔊CW parameter reset")
                 send.sendHeadMotor(1,self.head_Horizontal,100)  #水平
                 send.sendHeadMotor(2,self.head_Vertical,100)    #垂直
-                send.sendBodyAuto(0,0,0,0,1,0)
+                if not self.body_auto:
+                    self.walk_switch()
+                # send.sendBodyAuto(0,0,0,0,1,0)
                 send.sendSensorReset(1,1,1)              #IMUreset
                 rospy.sleep(2)
                 send.sendBodySector(29)             #基礎站姿磁區
@@ -91,13 +103,14 @@ class WallClimbing:
                 #     STAND_CORRECT_CW = False 
                 rospy.loginfo("reset🆗🆗🆗")
             self.init()
+            self.STAND_CORRECT_CW = True
             rospy.loginfo("turn off")
 
         elif strategy == "Wall_Climb_on":
-        #開啟CW策略 
+        #開啟CW策略 f.init()
             if self.state != 'cw_finish':
                 if self.STAND_CORRECT_CW:
-                    send.sendBodySector(102)             #CW基礎站姿調整磁區
+                    send.sendBodySector(602)#CW基礎站姿調整磁區
                     while not send.execute:
                         rospy.logdebug("站立姿勢")
                     send.execute = False
@@ -105,7 +118,9 @@ class WallClimbing:
                     rospy.sleep(2)
                 if self.imu_reset:
                     send.sendSensorReset(1,1,1)
-                    send.sendBodyAuto(0,0,0,0,1,0)
+                    if self.body_auto:
+                        self.walk_switch()
+                    # send.sendBodyAuto(0,0,0,0,1,0)
                     self.imu_reset = False
 
                 rospy.loginfo(f"blue ymax: {self.lower_blue_ymax}")
@@ -150,7 +165,7 @@ class WallClimbing:
         #-------距離判斷-------#
         for blue_cnt in range (send.color_mask_subject_cnts[2]):
             
-            if send.color_mask_subject_size[2][blue_cnt] > 10:
+            if send.color_mask_subject_size[2][blue_cnt] > 500:
                 self.new_target_xmax = send.color_mask_subject_XMax[2][blue_cnt]
                 self.new_target_xmin = send.color_mask_subject_XMin[2][blue_cnt]
                 self.new_target_ymax = send.color_mask_subject_YMax[2][blue_cnt]
@@ -165,7 +180,9 @@ class WallClimbing:
     #步態函數
         if motion == 'ready_to_cw':
             rospy.loginfo("對正梯子")
-            send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
+            if not self.body_auto:
+                self.walk_switch()
+            # send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
             send.sendSensorReset(1,1,1)                   #IMU reset 避免機器人步態修正錯誤
             rospy.sleep(3)                           #穩定停止後的搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
@@ -174,12 +191,12 @@ class WallClimbing:
             send.execute = False
             rospy.sleep(3) 
             #-爬梯磁區-#
-            send.sendBodySector(611)    #1
+            send.sendBodySector(620)    #1
                                        #2              
             # while not send.execute:
             #     rospy.logdebug("111號磁區")
             # send.execute = False
-            rospy.sleep(40)
+            rospy.sleep(20)
             #---------#
             self.status = 'cw_finish'
 
@@ -213,7 +230,7 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 154) and (self.blue_x_middle <= 162) and abs(send.imu_value_Yaw) < 1.3:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 157) and (self.blue_x_middle <= 165) and abs(send.imu_value_Yaw) < 1.2:
             self.state = "爬梯"
             return "ready_to_cw"
         
@@ -223,24 +240,24 @@ class WallClimbing:
                 self.forward     = BACK_MIN + FORWARD_CORRECTION
                 self.state       = "!!!小心採到梯子,後退!!!"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 158):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 161):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "左平移"
 
-            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >158):
+            elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >161):
                 self.forward     = BACK_MIN+ FORWARD_CORRECTION
                 self.theta       =  0
                 self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                 self.state       = "右平移"
             
             else:
-                if self.blue_x_middle < 158: #左移
+                if self.blue_x_middle < 161: #左移
                     self.translation = LEFT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "左平移  "
                 
-                elif self.blue_x_middle > 158: #右移
+                elif self.blue_x_middle > 161: #右移
                     self.translation = RIGHT_THETA * TRANSLATION_BIG + TRANSLATION_CORRECTION
                     self.state       = "右平移  "
                 else:

@@ -22,15 +22,15 @@ LCDOWN                     = 19000                 #下板 Y_swing = 7,Period_T 
 LCUP1                      = 19000
 LCUP2                      = 19000
 LCUP3                      = 19000
-LCDOWN4                    = 19000
+LCDOWN4                    = 18000
 LCDOWN5                    = 19000
 LCDOWN6                    = 19000
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [   1200,   1000,      500,    400,   800,   1000]
-ROUTE_PLAN_TRANSLATION     = [      1300,   0,     300,     1000,   100,   0]
-ROUTE_PLAN_THETA           = [     -1,     -5,         5,      -5,    -5,   5]
-ROUTE_PLAN_TIME            = [      0,     3,        6,       12,     5,   4]
+ROUTE_PLAN_FORWARD         = [   200,   900,      1000,    2000,   200,   1000]
+ROUTE_PLAN_TRANSLATION     = [      -800,   -1400,     800,     500,   1000,   0]
+ROUTE_PLAN_THETA           = [     0,     0,         -5,      -2,    5,   -5]
+ROUTE_PLAN_TIME            = [      0,     0,        5,       5,     5,   0]
 #---微調站姿開關---
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
@@ -44,19 +44,19 @@ BOARD_GND_LC               = True                  #板到地 磁區34
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Red"   ,           #Blue Red Yellow Green
-                              "Yellow"    , 
-                              "Blue" , 
-                              "Yellow"    , 
-                              "Red"   , 
+                              "Blue"   ,           #Blue Red Yellow Green
+                              "Red"    , 
+                              "Yellow" , 
+                              "Red"    , 
+                              "Blue"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右
-FOOT                       = [115 , 134, 153, 176, 194, 213]
+FOOT                       = [115 , 132, 153, 176, 196, 213]
 HEAD_HORIZONTAL            = 2048                  #頭水平
-HEAD_VERTICAL              = 1250                  #頭垂直 #down 2750
+HEAD_VERTICAL              = 1280                  #頭垂直 #down 2750
 ##判斷值
-FOOTBOARD_LINE             = 212                  #上板基準線
+FOOTBOARD_LINE             = 211                  #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
 GO_UP_DISTANCE             = 15                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
@@ -247,17 +247,16 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-3,\
+                                                com_y_shift =-4,\
                                                 y_swing = 5,\
-                                                period_t = 390,\
-                                                t_dsp = 0.35,\
+                                                period_t = 330,\
+                                                t_dsp = 0.25,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
                                                 com_height = 29.5,\
                                                 stand_height = 23.5,\
                                                 back_flag = 0)
-                    rospy.sleep(1.5)
                     rospy.loginfo("準備上板")
                     send.sendBodySector(100)          #上板前站姿調整
                     while not send.execute:
@@ -268,10 +267,10 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-2.5,\
+                                                com_y_shift =-4,\
                                                 y_swing = 5,\
-                                                period_t = 390,\
-                                                t_dsp = 0.35,\
+                                                period_t = 330,\
+                                                t_dsp = 0.3,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
@@ -289,10 +288,10 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-3,\
+                                                com_y_shift =-4,\
                                                 y_swing = 5,\
-                                                period_t = 390,\
-                                                t_dsp = 0.35,\
+                                                period_t = 330,\
+                                                t_dsp = 0.25,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
@@ -309,10 +308,10 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-3,\
+                                                com_y_shift =-4,\
                                                 y_swing = 5,\
-                                                period_t = 390,\
-                                                t_dsp = 0.35,\
+                                                period_t = 330,\
+                                                t_dsp = 0.25,\
                                                 base_default_z = 4.5,\
                                                 right_z_shift = 3,\
                                                 base_lift_z = 4,\
@@ -328,11 +327,11 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -0.5,\
                                             y_swing = 5,\
-                                            period_t = 570,\
-                                            t_dsp = 0.5,\
+                                            period_t = 480,\
+                                            t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 3,\
-                                            base_lift_z = -2,\
+                                            base_lift_z = -1.2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -347,13 +346,13 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -0.5,\
+                                            com_y_shift = -2.5,\
                                             y_swing = 5,\
                                             period_t = 570,\
-                                            t_dsp = 0.5,\
+                                            t_dsp = 0.4,\
                                             base_default_z = 3,\
                                             right_z_shift = 3,\
-                                            base_lift_z = -2,\
+                                            base_lift_z = -1.4,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -370,11 +369,11 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -0.5,\
                                             y_swing = 5,\
-                                            period_t = 570,\
-                                            t_dsp = 0.5,\
+                                            period_t = 540,\
+                                            t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 3,\
-                                            base_lift_z = -2,\
+                                            base_lift_z = -1.2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
@@ -391,11 +390,11 @@ class LiftandCarry:
                                             walk_mode = 3,\
                                             com_y_shift = -0.5,\
                                             y_swing = 5,\
-                                            period_t = 570,\
-                                            t_dsp = 0.5,\
+                                            period_t = 480,\
+                                            t_dsp = 0.25,\
                                             base_default_z = 3,\
                                             right_z_shift = 3,\
-                                            base_lift_z = -2,\
+                                            base_lift_z = -1.2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
                                             back_flag = 0)
