@@ -20,10 +20,10 @@ LCUP                       = 20000                 #上板 Y_swing = 7,Period_T 
 LCDOWN                     = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [1000, 0,    200, 500,   -200, 300]
-ROUTE_PLAN_TRANSLATION     = [-1200,  1200, 0, 1000,    -500, 0]   #pos = left, neg = right
-ROUTE_PLAN_THETA           = [    -1,   4,   -4,    0,    4,   4]   #pos = left, neg = right
-ROUTE_PLAN_TIME            = [    0,   5,    6,    6,    2,   4]
+ROUTE_PLAN_FORWARD         = [ 1000,     200, 500, 500,   -200, 300]
+ROUTE_PLAN_TRANSLATION     = [-1200,  1000, 300, -1000,    -500, 0]   #pos = left, neg = right
+ROUTE_PLAN_THETA           = [    -1,   4,   -4,    -1,    4,   4]   #pos = left, neg = right
+ROUTE_PLAN_TIME            = [    0,   6,    5,    8,    5,   5]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
@@ -32,7 +32,7 @@ UPBOARD_LAYER_TWO          = True                  #sector(31) 上板微調站�
 UPBOARD_LAYER_THREE        = True                  #sector(35) 上板微調站姿      3
 DOWNBOARD_LAYER_FOUR       = True                  #sector(32) 下板微調站姿      4
 DOWNBOARD_LAYER_FIVE       = True                  #sector(36) 下板微調站姿      5
-BOARD_GND_LC               = True                  #板到地 磁區34
+BOARD_GND_LC               = True                 #板到地 磁區34
 
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
@@ -50,7 +50,7 @@ HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1350                #頭垂直 #down 2750
 ##判斷值
 FOOTBOARD_LINE             = 195                 #上板基準線
-WARNING_DISTANCE           = 4                     #危險距離
+WARNING_DISTANCE           = 8                     #危險距離
 GO_UP_DISTANCE             = 20                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 100                   #前進判斷線
@@ -239,7 +239,7 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-4,\
+                                                com_y_shift =-4.5,\
                                                 y_swing = 4.5,\
                                                 period_t = 420,\
                                                 t_dsp = 0.4,\
@@ -259,7 +259,7 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-5,\
+                                                com_y_shift =-5.5,\
                                                 y_swing = 4.5,\
                                                 period_t = 420,\
                                                 t_dsp = 0.4,\
@@ -279,7 +279,7 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-5,\
+                                                com_y_shift =-5.5,\
                                                 y_swing = 4.5,\
                                                 period_t = 420,\
                                                 t_dsp = 0.4,\
@@ -299,7 +299,7 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-5,\
+                                                com_y_shift =-5.5,\
                                                 y_swing = 4.5,\
                                                 period_t = 420,\
                                                 t_dsp = 0.4,\
@@ -316,12 +316,12 @@ class LiftandCarry:
                 if BOARD_GND_LC and self.layer == 6:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -5,\
+                                            com_y_shift = -4.5,\
                                             y_swing = 5,\
-                                            period_t = 630,\
+                                            period_t = 600,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 6,\
-                                            right_z_shift = -2,\
+                                            base_default_z = 4,\
+                                            right_z_shift = 0,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
@@ -336,12 +336,12 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -6,\
+                                            com_y_shift = -5,\
                                             y_swing = 5,\
-                                            period_t = 630,\
+                                            period_t = 600,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 6,\
-                                            right_z_shift = -2,\
+                                            base_default_z = 4,\
+                                            right_z_shift = 0,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
@@ -356,12 +356,12 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -6,\
+                                            com_y_shift = -5,\
                                             y_swing = 5,\
-                                            period_t = 630,\
+                                            period_t = 600,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 6,\
-                                            right_z_shift = -2,\
+                                            base_default_z = 4,\
+                                            right_z_shift = 0,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
@@ -376,12 +376,12 @@ class LiftandCarry:
                 else:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -6,\
+                                            com_y_shift = -5,\
                                             y_swing = 5,\
-                                            period_t = 630,\
+                                            period_t = 600,\
                                             t_dsp = 0.4,\
-                                            base_default_z = 6,\
-                                            right_z_shift = -2,\
+                                            base_default_z = 4,\
+                                            right_z_shift = 0,\
                                             base_lift_z = -2,\
                                             com_height = 29.5,\
                                             stand_height = 23.5,\
@@ -470,9 +470,9 @@ class LiftandCarry:
            #上板
            self.state = "上板"
            return 'ready_to_lc'
-        elif ((self.distance[0] < GO_UP_DISTANCE) and (self.distance[1] < GO_UP_DISTANCE) and\
-           (self.distance[2] < GO_UP_DISTANCE) and (self.distance[3] < GO_UP_DISTANCE) and\
-           (self.distance[4] < GO_UP_DISTANCE)and (self.distance[5] < GO_UP_DISTANCE)and self.layer == 6):
+        elif ((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
+           (self.distance[2] < GO_UP_DISTANCE+3) and (self.distance[3] < GO_UP_DISTANCE+3) and\
+           (self.distance[4] < GO_UP_DISTANCE+3)and (self.distance[5] < GO_UP_DISTANCE+3)and self.layer == 6):
            self.state = "下底板"
            return 'ready_to_lc'
         elif ((self.distance[0] < GO_UP_DISTANCE+3) and (self.distance[1] < GO_UP_DISTANCE+3) and\
