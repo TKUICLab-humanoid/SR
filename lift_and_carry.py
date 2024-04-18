@@ -9,7 +9,7 @@ from Python_API import Sendmessage
 from calculate_edge import deep_calculate
 #--校正量--#
 #前進量校正
-FORWARD_CORRECTION         = -500
+FORWARD_CORRECTION         = 0
 #平移校正
 TRANSLATION_CORRECTION     = 0
 #旋轉校正
@@ -20,24 +20,24 @@ BASE_CHANGE                = 100
 LCUP                       = 19000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
 LCDOWN                     = 19500                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 #上下板後路徑規劃
-ROUTE_PLAN_FORWARD         = [2500  , 0     , 100   , 1000  , -700 , 1800]
-ROUTE_PLAN_TRANSLATION     = [0   , -800    , 1900  , 0     , 0    , 0]
-ROUTE_PLAN_THETA           = [0     , -3    , 0     , 0     , 0    , 0]
-ROUTE_PLAN_TIME            = [0     , 0     , 3.8    , 0    , 2.5  , 4]
+ROUTE_PLAN_FORWARD         = [0  ,0     , 100   , 1000  , -700 , 1800]
+ROUTE_PLAN_TRANSLATION     = [0   ,  0    , 0  , 0     , 0    , 0]
+ROUTE_PLAN_THETA           = [0     , 0    , 0     , 0     , 0    , 0]
+ROUTE_PLAN_TIME            = [0     , 0     , 0    , 0    , 0  , 0]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                   #sector(30) LC_stand微調站姿
-GROUND_TO_BOARD            = True                  #地板到板磁區(33)
-UPBOARD_CORRECT            = True                   #sector(31) 上板微調站姿
-DOWNBOARD_CORRECT          = True                   #sector(32) 下板微調站姿
+GROUND_TO_BOARD            = False                  #地板到板磁區(33)
+UPBOARD_CORRECT            = False                   #sector(31) 上板微調站姿
+DOWNBOARD_CORRECT          = False                   #sector(32) 下板微調站姿
 BOARD_TO_GROUND            = False                  #板到地板磁區(34)
 DRAW_FUNCTION_FLAG         = True                   #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,            #板子顏色(根據比賽現場調整)
-                              "Yellow"   ,             #Blue Red Yellow Green
+                              "Blue"   ,             #Blue Red Yellow Green
                               "Red"    , 
-                              "Blue" , 
+                              "Yellow" , 
                               "Red"    , 
-                              "Yellow"   , 
+                              "Blue"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右 |  左,  中,   右
@@ -54,18 +54,18 @@ ORIGINAL_TRANSLATE_RIGHT        = 700
 ##判斷值
 FOOTBOARD_LINE             = 210                   #上板基準線
 WARNING_DISTANCE           = 4                     #危險距離
-GO_UP_DISTANCE             = 10                    #上板距離
+GO_UP_DISTANCE             = 15                    #上板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 90                    #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 50                    #最低上板需求距離
 ##前後值
-BACK_MIN                   = -500                  #小退後
-BACK_NORMAL                = -2000                  #退後
-FORWARD_MIN                = 1500                  #小前進
-FORWARD_NORMAL             = 2000                  #前進
-FORWARD_BIG                = 3000                  #大前進
-FORWARD_SUPER              = 5000                  #超大前進
+BACK_MIN                   = 500                  #小退後
+BACK_NORMAL                = -500                  #退後
+FORWARD_MIN                = 1000                   #小前進
+FORWARD_NORMAL             = 1500                  #前進
+FORWARD_BIG                = 2000                  #大前進
+FORWARD_SUPER              = 2000                  #超大前進
 ##平移值
 TRANSLATION_MIN            = 500                   #小平移
 TRANSLATION_NORMAL         = 1000                  #平移
@@ -241,11 +241,12 @@ class LiftandCarry:
                 pass
             else:
                 send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
-            rospy.sleep(5)                           #穩定停止後的搖晃
+            rospy.sleep(2)                           #穩定停止後的搖晃
             send.sendSensorReset(1,1,1)              #IMU reset 避免機器人步態修正錯誤
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
                 rospy.logdebug("站立姿勢")
+            rospy.sleep(1.5)
             send.execute = False
             if self.layer < 4:
                 #上板前站姿調整
@@ -536,10 +537,10 @@ class LiftandCarry:
     def theta_change(self):
     #旋轉修正
         decide_theta = 0
-        # if self.distance[2] < 240 and self.distance[3] < 240:
-        #     slope = self.distance[2] - self.distance[3]             #計算斜率(使用LR-RL)
-        # else:
-        #     slope = 0
+        if self.distance[2] < 240 and self.distance[3] < 240:
+            slope = self.distance[2] - self.distance[3]             #計算斜率(使用LR-RL)
+        else:
+            slope = 0
 
         # slope = edge.slope
         
