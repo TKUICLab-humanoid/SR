@@ -123,6 +123,9 @@ class LiftandCarry:
                 send.sendBodyAuto(0,0,0,0,1,0)
                 rospy.sleep(1.5)
                 send.sendBodySector(29)             #基礎站姿磁區
+                while not send.execute:
+                    rospy.logdebug("策略關閉stand")
+                send.execute = False
                 rospy.loginfo("reset🆗🆗🆗")
             self.init()
             send.sendSensorReset(1,1,1)
