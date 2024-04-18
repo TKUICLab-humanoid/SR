@@ -1,8 +1,1 @@
-
-build/
-
-devel/
-
-\.catkin_workspace
-
-*.ods
+__pycache__
