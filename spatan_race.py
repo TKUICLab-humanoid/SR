@@ -37,16 +37,13 @@ if __name__ == '__main__':
             if strategy == "Lift_and_Carry_off" or strategy =="Lift_and_Carry_on":
                 lc.main(strategy)
             elif strategy == "Wall_Climb_off" or strategy =="Wall_Climb_on":
+<<<<<<< HEAD
                 # if flag:
                 #     send.sendBodySector(1)
                 flag = False
+=======
+>>>>>>> bfdc43bd676df2592c035fcb23bf1a911041d86e
                 cw.main(strategy)
-            else:
-                if not flag:
-                    rospy.sleep(1)
-                    send.sendBodySector(29)
-                    rospy.sleep(2)
-                    flag = True
             # end      = rospy.get_time()
             # rospy.logdebug(f'策略計算總時間: {end-start}')
             r.sleep()
