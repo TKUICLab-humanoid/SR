@@ -10,7 +10,7 @@ from Python_API import Sendmessage
 #前進量校正
 FORWARD_CORRECTION         = 0
 #平移校正
-TRANSLATION_CORRECTION     = -50
+TRANSLATION_CORRECTION     = 0
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
@@ -213,7 +213,7 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 158) and (self.blue_x_middle <= 162) and abs(send.imu_value_Yaw) < 1.2:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 157) and (self.blue_x_middle <= 163) and abs(send.imu_value_Yaw) < 1.2:
             self.state = "爬梯"
             return "ready_to_cw"
         
