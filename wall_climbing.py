@@ -26,7 +26,7 @@ HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1350                  #頭垂直 #down 2750
 
 #判斷值
-FOOTLADDER_LINE            = 195                 #上梯基準線
+FOOTLADDER_LINE            = 192                 #上梯基準線
 
 FIRST_FORWORD_CHANGE_LINE  = 20                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 70                    #前進判斷線

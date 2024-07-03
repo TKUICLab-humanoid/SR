@@ -59,7 +59,8 @@ class deep_calculate:
     def calc_slope(self, x0, y0, x1, y1):
         if x0 == x1:
             #無限e
-            return float("inf")
+            # return float("inf")
+            return 15
         return (y1 - y0) / (x1 - x0)
 
     def edge(self, img, color):
