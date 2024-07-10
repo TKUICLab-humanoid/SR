@@ -26,7 +26,7 @@ HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1350                  #頭垂直 #down 2750
 
 #判斷值
-FOOTLADDER_LINE            = 192                 #上梯基準線
+FOOTLADDER_LINE            = 167                 #上梯基準線
 
 FIRST_FORWORD_CHANGE_LINE  = 20                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 70                    #前進判斷線
@@ -191,14 +191,15 @@ class WallClimbing:
             while not send.execute:
                 rospy.logdebug("站立姿勢")
             send.execute = False
-            rospy.sleep(3) 
+            rospy.sleep(2) 
             #-爬梯磁區-#
-            send.sendBodySector(610)    #1
-                                       #2              
+            send.sendBodySector(621)    #1
+            rospy.sleep(19) 
+            send.sendBodySector(622)    #2
+            rospy.sleep(25)               
             # while not send.execute:
             #     rospy.logdebug("111號磁區")
             # send.execute = False
-            rospy.sleep(20)
             #---------#
             self.status = 'cw_finish'
 
