@@ -194,7 +194,7 @@ class WallClimbing:
             rospy.sleep(2) 
             #-爬梯磁區-#
             send.sendBodySector(621)    #1
-            rospy.sleep(19) 
+            rospy.sleep(18) 
             send.sendBodySector(622)    #2
             rospy.sleep(20)               
             # while not send.execute:
