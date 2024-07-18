@@ -10,7 +10,7 @@ from Python_API import Sendmessage
 #前進量校正
 FORWARD_CORRECTION         = 0
 #平移校正
-TRANSLATION_CORRECTION     = 200
+TRANSLATION_CORRECTION     = 0
 #旋轉校正
 THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
@@ -95,7 +95,7 @@ class WallClimbing:
                     self.walk_switch()
                 # send.sendBodyAuto(0,0,0,0,1,0)
                 send.sendSensorReset(1,1,1)              #IMUreset
-                rospy.sleep(2)
+                rospy.sleep(1)
                 send.sendBodySector(29)             #基礎站姿磁區
                 rospy.sleep(1.5)
                 # if STAND_CORRECT_CW:
@@ -186,15 +186,15 @@ class WallClimbing:
                 self.walk_switch()
             # send.sendBodyAuto(0,0,0,0,1,0)           #停止步態
             send.sendSensorReset(1,1,1)                   #IMU reset 避免機器人步態修正錯誤
-            rospy.sleep(3)                           #穩定停止後的搖晃
+            rospy.sleep(2)                           #穩定停止後的搖晃
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
                 rospy.logdebug("站立姿勢")
             send.execute = False
-            rospy.sleep(2) 
+            rospy.sleep(1.5) 
             #-爬梯磁區-#
             send.sendBodySector(621)    #1
-            rospy.sleep(18) 
+            rospy.sleep(16) 
             send.sendBodySector(622)    #2
             rospy.sleep(20)               
             # while not send.execute:
