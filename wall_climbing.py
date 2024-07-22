@@ -233,7 +233,7 @@ class WallClimbing:
 
     def edge_judge(self,strategy):
     #邊緣判斷,回傳機器人走路速度與走路模式
-        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 157) and (self.blue_x_middle <= 165) and abs(send.imu_value_Yaw) < 1.2:
+        if (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle >= 157) and (self.blue_x_middle <= 165) and abs(send.imu_value_Yaw) < 1.1:
             self.state = "爬梯"
             return "ready_to_cw"
         
@@ -241,6 +241,7 @@ class WallClimbing:
             if (self.lower_blue_ymax > FOOTLADDER_LINE):
                 self.theta       = send.imu_value_Yaw
                 self.forward     = BACK_MIN + FORWARD_CORRECTION
+                self.translation = 0 + TRANSLATION_CORRECTION
                 self.state       = "!!!小心採到梯子,後退!!!"
 
             elif (self.lower_blue_ymax >= FOOTLADDER_LINE - UP_LADDER_DISTANCE) and (self.blue_x_middle < 161):
