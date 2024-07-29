@@ -110,7 +110,7 @@ class WallClimbing:
         #開啟CW策略 f.init()
             if self.state != 'cw_finish':
                 if self.STAND_CORRECT_CW:
-                    send.sendBodySector(4)#CW基礎站姿調整磁區
+                    send.sendBodySector(20)#CW基礎站姿調整磁區
                     while not send.execute:
                         rospy.logdebug("站立姿勢")
                     send.execute = False
@@ -193,6 +193,8 @@ class WallClimbing:
             # send.execute = False
             # rospy.sleep(1.5) 
             #-爬梯磁區-#
+            send.sendBodySector(20)    #1
+            rospy.sleep(1) 
             send.sendBodySector(621)    #1
             rospy.sleep(16) 
             send.sendBodySector(622)    #2
