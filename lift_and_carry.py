@@ -16,18 +16,18 @@ THETA_CORRECTION           = 0
 #基礎變化量(前進&平移)
 BASE_CHANGE                = 100                   
 #上下板前進量
-LCUP1                      = 20000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
-LCUP2                      = 20000
-LCUP3                      = 20000
-LCDOWN4                    = 19000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
+LCUP1                      = 19000                 #上板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = 3.2
+LCUP2                      = 19000
+LCUP3                      = 19000
+LCDOWN4                    = 20000                 #下板 Y_swing = 7,Period_T = 840,OSC_LockRange = 0.4,BASE_Default_Z = 8,BASE_LIFT_Z = -1.5
 LCDOWN5                    = 20000
 LCDOWN6                    = 20000
 #上下板後路徑規劃
 ROUTE_PLAN_FLAG            = True
-ROUTE_PLAN_FORWARD         = [ 0,      200,   -200,      300,    400,     500  ]
-ROUTE_PLAN_TRANSLATION     = [ 1200,  -800,   -500,     -600,   -500,     800  ]   #pos = left, neg = right
-ROUTE_PLAN_THETA           = [   -2,   -2,      6,       6,      6,        -3  ]   #pos = left, neg = right
-ROUTE_PLAN_TIME            = [    0,    5,     12,       10,      8,       4   ]
+ROUTE_PLAN_FORWARD         = [ 0,     2000,    300,      800,    200,     500  ]
+ROUTE_PLAN_TRANSLATION     = [ 1200,  -800,   -1000,     1000,   400,     800  ]   #pos = left, neg = right
+ROUTE_PLAN_THETA           = [   -2,    3,      6,       4,      -6,       -3  ]   #pos = left, neg = right
+ROUTE_PLAN_TIME            = [    0,    8,      5,       7,      6,        0   ]
 #---微調站姿開關---#
 STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
@@ -97,9 +97,9 @@ class LiftandCarry:
     def main(self,strategy):
         send.sendHeadMotor(1,self.head_Horizontal,100)#水平
         if self.layer <4:
-            send.sendHeadMotor(2,self.head_Vertical+10,100)#垂直 1340
+            send.sendHeadMotor(2,self.head_Vertical+5,100)#垂直 1340
         else:
-            send.sendHeadMotor(2,self.head_Vertical-10,100)#垂直 -數值 更靠近基準線 ＋數值遠離基準線
+            send.sendHeadMotor(2,self.head_Vertical-20,100)#垂直 -數值 更靠近基準線 ＋數值遠離基準線
 
         if DRAW_FUNCTION_FLAG:
             self.draw_function()
@@ -134,7 +134,7 @@ class LiftandCarry:
                         rospy.logdebug("站立姿勢\033[K")
                     send.execute = False
                     if STAND_CORRECT_LC:
-                        send.sendBodySector(29)             #LC基礎站姿調整磁區
+                        send.sendBodySector(299)             #LC基礎站姿調整磁區
                         while not send.execute:
                             rospy.logdebug("站立姿勢調整\033[K")
                         send.execute = False
@@ -243,9 +243,9 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-2.5,\
+                                                com_y_shift =-1,\
                                                 y_swing = 4.5,\
-                                                period_t = 360,\
+                                                period_t = 390,\
                                                 t_dsp = 0.4,\
                                                 base_default_z = 3,\
                                                 right_z_shift = 3,\
@@ -255,34 +255,13 @@ class LiftandCarry:
                                                 back_flag = 0)
                     rospy.sleep(2)
                     rospy.loginfo("準備上板\033[K")
-                    send.sendBodySector(20)          #上板前站姿調整
+                    send.sendBodySector(299)          #上板前站姿調整
                     while not send.execute:
                         rospy.logdebug("上板前姿勢\033[K")
                     rospy.sleep(1)
                     send.execute = False
                     send.sendBodyAuto(LCUP1,0,0,0,2,0)  
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
-                    send.sendWalkParameter('send',\
-                                                walk_mode = 2,\
-                                                com_y_shift =-2.5,\
-                                                y_swing = 4.5,\
-                                                period_t = 360,\
-                                                t_dsp = 0.4,\
-                                                base_default_z = 3,\
-                                                right_z_shift = 3,\
-                                                base_lift_z = 3.5,\
-                                                com_height = 29.5,\
-                                                stand_height = 23.5,\
-                                                back_flag = 0)
-                    rospy.sleep(2)
-                    rospy.loginfo("準備上板\033[K")
-                    send.sendBodySector(20)          #上板前站姿調整
-                    while not send.execute:
-                        rospy.logdebug("上板前姿勢\033[K")
-                    rospy.sleep(1)
-                    send.execute = False
-                    send.sendBodyAuto(LCUP2,0,0,0,2,0)                   #微調站姿延遲
-                elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
                                                 com_y_shift =-2,\
@@ -297,7 +276,28 @@ class LiftandCarry:
                                                 back_flag = 0)
                     rospy.sleep(2)
                     rospy.loginfo("準備上板\033[K")
-                    send.sendBodySector(20)          #上板前站姿調整
+                    send.sendBodySector(299)          #上板前站姿調整
+                    while not send.execute:
+                        rospy.logdebug("上板前姿勢\033[K")
+                    rospy.sleep(1)
+                    send.execute = False
+                    send.sendBodyAuto(LCUP2,0,0,0,2,0)                   #微調站姿延遲
+                elif UPBOARD_LAYER_THREE and self.layer == 3:
+                    send.sendWalkParameter('send',\
+                                                walk_mode = 2,\
+                                                com_y_shift =-2.5,\
+                                                y_swing = 4.5,\
+                                                period_t = 390,\
+                                                t_dsp = 0.4,\
+                                                base_default_z = 3,\
+                                                right_z_shift = 3,\
+                                                base_lift_z = 3.5,\
+                                                com_height = 29.5,\
+                                                stand_height = 23.5,\
+                                                back_flag = 0)
+                    rospy.sleep(2)
+                    rospy.loginfo("準備上板\033[K")
+                    send.sendBodySector(299)          #上板前站姿調整
                     while not send.execute:
                         rospy.logdebug("上板前姿勢\033[K")
                     rospy.sleep(1)
@@ -323,6 +323,27 @@ class LiftandCarry:
                 if BOARD_GND_LC and self.layer == 6:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
+                                            com_y_shift = -3,\
+                                            y_swing = 4.5,\
+                                            period_t = 420,\
+                                            t_dsp = 0.5,\
+                                            base_default_z = 4,\
+                                            right_z_shift = 2,\
+                                            base_lift_z = -2,\
+                                            com_height = 29.5,\
+                                            stand_height = 23.5,\
+                                            back_flag = 0)
+                    rospy.sleep(2)
+                    rospy.loginfo("準備下板\033[K")
+                    send.sendBodySector(2999)          #下板前站姿調整
+                    while not send.execute:
+                        rospy.logdebug("下板前姿勢\033[K")
+                    rospy.sleep(1)
+                    send.execute = False               #微調站姿延遲
+                    send.sendBodyAuto(LCDOWN6,0,0,0,3,0)
+                elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
+                    send.sendWalkParameter('send',\
+                                            walk_mode = 3,\
                                             com_y_shift = -2.5,\
                                             y_swing = 4.5,\
                                             period_t = 420,\
@@ -335,28 +356,7 @@ class LiftandCarry:
                                             back_flag = 0)
                     rospy.sleep(2)
                     rospy.loginfo("準備下板\033[K")
-                    send.sendBodySector(20)          #下板前站姿調整
-                    while not send.execute:
-                        rospy.logdebug("下板前姿勢\033[K")
-                    rospy.sleep(1)
-                    send.execute = False               #微調站姿延遲
-                    send.sendBodyAuto(LCDOWN6,0,0,0,3,0)
-                elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
-                    send.sendWalkParameter('send',\
-                                            walk_mode = 3,\
-                                            com_y_shift = -2,\
-                                            y_swing = 4.5,\
-                                            period_t = 420,\
-                                            t_dsp = 0.5,\
-                                            base_default_z = 4,\
-                                            right_z_shift = 2,\
-                                            base_lift_z = -2,\
-                                            com_height = 29.5,\
-                                            stand_height = 23.5,\
-                                            back_flag = 0)
-                    rospy.sleep(2)
-                    rospy.loginfo("準備下板\033[K")
-                    send.sendBodySector(20)          #下板前站姿調整
+                    send.sendBodySector(2999)          #下板前站姿調整
                     while not send.execute:
                         rospy.logdebug("下板前姿勢\033[K")
                     rospy.sleep(1)
@@ -365,7 +365,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -2,\
+                                            com_y_shift = -2.5,\
                                             y_swing = 4.5,\
                                             period_t = 420,\
                                             t_dsp = 0.5,\
@@ -377,7 +377,7 @@ class LiftandCarry:
                                             back_flag = 0)
                     rospy.sleep(2)
                     rospy.loginfo("準備下板\033[K")
-                    send.sendBodySector(20)          #下板前站姿調整
+                    send.sendBodySector(2999)          #下板前站姿調整
                     while not send.execute:
                         rospy.logdebug("下板前姿勢\033[K")
                     rospy.sleep(1)
@@ -419,7 +419,7 @@ class LiftandCarry:
             send.execute = False
             rospy.sleep(1)
             if STAND_CORRECT_LC:
-                send.sendBodySector(40)              #基礎站姿調整
+                send.sendBodySector(299)              #基礎站姿調整
                 while not send.execute:
                     rospy.logdebug("站立姿勢調整\033[K")
                 send.execute = False
