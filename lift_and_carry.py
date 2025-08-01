@@ -8,7 +8,7 @@ from Python_API import Sendmessage
 from calculate_edge import deep_calculate
 #--校正量--#
 #前進量校正
-FORWARD_CORRECTION         = -300
+FORWARD_CORRECTION         = -200
 #平移校正
 TRANSLATION_CORRECTION     = -100
 #旋轉校正
@@ -24,7 +24,7 @@ LCDOWN_FOUR                = 19000
 LCDOWN_FIVE                = 19500
 LCDOWN_SIX                 = 19500
 #上下板後路徑規劃
-ROUTE_PLAN_FLAG            = False
+ROUTE_PLAN_FLAG            = True
 # ROUTE_PLAN_FORWARD         = [ 1000,300,300,-500,300,300]
 # ROUTE_PLAN_TRANSLATION     = [-1200,600,400,-800,0,1500]   #pos = left, neg = right
 # ROUTE_PLAN_THETA           = [-1,-5,5,8,5,   5]   #pos = left, neg = right
@@ -38,10 +38,10 @@ ROUTE_PLAN_FLAG            = False
 '''
 
 #[Forward,TRANSLATION,THETA,TIME......]
-ROUTE_PLAN_LAYER_ONE       = [1000,0,0,5]
-ROUTE_PLAN_LAYER_TWO       = [1000,0,3,0]# 
-ROUTE_PLAN_LAYER_TREE      = [-300,1100,-5,4,   0,1100,0,4]
-ROUTE_PLAN_LAYER_FORE      = [1000,0,0,3]
+ROUTE_PLAN_LAYER_ONE       = [2000,0,0,0]
+ROUTE_PLAN_LAYER_TWO       = [500,0,4,4]# 
+ROUTE_PLAN_LAYER_TREE      = [0,800,-5,0]
+ROUTE_PLAN_LAYER_FORE      = [800,800,-4,5]
 ROUTE_PLAN_LAYER_FIVE      = [-300,-800,6,0]
 ROUTE_PLAN_LAYER_SIX       = [0,0,0,0]
 ROUTE_PLAN_LAYER_SEVEN     = [0,0,0,0]
@@ -55,7 +55,7 @@ ROUTE_PLAN = [
                 ROUTE_PLAN_LAYER_SEVEN
              ]
 #---微調站姿開關---#
-STAND_CORRECT_LC           = False                  #sector(30) LC_stand微調站姿
+STAND_CORRECT_LC           = True                  #sector(30) LC_stand微調站姿
 
 GND_BOARD_LC               = True                  #地板到板 磁區33              1
 UPBOARD_LAYER_TWO          = True                  #sector(31) 上板微調站姿      2
@@ -64,7 +64,7 @@ DOWNBOARD_LAYER_FOUR       = True                  #sector(32) 下板微調站�
 DOWNBOARD_LAYER_FIVE       = True                  #sector(36) 下板微調站姿      5
 BOARD_GND_LC               = True                 #板到地 磁區34
 
-GND_BOARD_LC_U               = False  #上U形板            
+GND_BOARD_LC_U               = True  #上U形板            
 UPBOARD_LAYER_TWO_U          = False                 
 UPBOARD_LAYER_THREE_U        = False                 
 
@@ -75,11 +75,11 @@ DOWNBOARD_LAYER_GND_U        = False
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Blue"   ,           #Blue Red Yellow Green
-                              "Red"    , 
-                              "Yellow" , 
-                              "Red"    , 
-                              "Blue"   , 
+                              "Red"   ,           #Blue Red Yellow Green
+                              "Yellow"    , 
+                              "Blue" , 
+                              "Yellow"    , 
+                              "Red"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右S
@@ -90,8 +90,8 @@ HEAD_VERTICAL              = 1350                #頭垂直 #down 2750
 FOOTBOARD_LINE             = 210                  #基準線
 UP_WARNING_DISTANCE        = 5                    #上板危險距離
 DOWN_WARNING_DISTANCE      = 0                      #下板危險距離
-GO_UP_DISTANCE             = 28                    #上板距離
-GO_DOWN_DISTANCE           = 10                     #下板距離
+GO_UP_DISTANCE             = 17                    #上板距離
+GO_DOWN_DISTANCE           = 4                     #下板距離
 FIRST_FORWORD_CHANGE_LINE  = 50                    #小前進判斷線
 SECOND_FORWORD_CHANGE_LINE = 100                   #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
@@ -170,7 +170,7 @@ class LiftandCarry:
                         rospy.logdebug("站立姿勢\033[K")
                     send.execute = False
                     if STAND_CORRECT_LC:
-                        send.sendBodySector(101)             #LC基礎站姿調整磁區
+                        send.sendBodySector(102)             #LC基礎站姿調整磁區
                         while not send.execute:
                             rospy.logdebug("站立姿勢調整\033[K")
                         send.execute = False
@@ -281,7 +281,7 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-4,\
+                                                com_y_shift =-3,\
                                                 y_swing = 4.5,\
                                                 period_t = 330,\
                                                 t_dsp = 0.3,\
@@ -362,7 +362,7 @@ class LiftandCarry:
                 if BOARD_GND_LC and self.layer == 6:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -4,\
+                                            com_y_shift = -4.5,\
                                             y_swing = 4.5,\
                                             period_t = 360,\
                                             t_dsp = 0.4,\
@@ -382,7 +382,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3.5,\
+                                            com_y_shift = -3,\
                                             y_swing = 4.5,\
                                             period_t = 360,\
                                             t_dsp = 0.4,\
@@ -457,11 +457,21 @@ class LiftandCarry:
                                     com_y_shift = -1.5,\
                                     y_swing = 4.5,\
                                     period_t = 270,\
-                                    t_dsp = 0.4,\
-                                    base_default_z = 0.7,\
+                                    t_dsp = 0.7,\
+                                    base_default_z = 0.6,\
                                     com_height = 29.5,\
                                     stand_height = 23.5,
                                     back_flag = False)
+            send.sendWalkParameter('send',\
+                                    walk_mode = 1,\
+                                    com_y_shift = -1.5,\
+                                    y_swing = 4.5,\
+                                    period_t = 270,\
+                                    t_dsp = 0.7,\
+                                    base_default_z = 0.6,\
+                                    com_height = 29.5,\
+                                    stand_height = 23.5,
+                                    back_flag = True)
             rospy.sleep(2) 
             send.sendBodySector(29)                  #這是基本站姿的磁區
             while not send.execute:
@@ -469,7 +479,7 @@ class LiftandCarry:
             send.execute = False
             rospy.sleep(1.5)
             if STAND_CORRECT_LC:
-                send.sendBodySector(101)              #基礎站姿調整
+                send.sendBodySector(102)              #基礎站姿調整
                 while not send.execute:
                     rospy.logdebug("站立姿勢調整\033[K")
                 send.execute = False
