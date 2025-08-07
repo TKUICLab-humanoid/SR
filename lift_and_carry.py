@@ -39,9 +39,9 @@ ROUTE_PLAN_FLAG            = True
 
 #[Forward,TRANSLATION,THETA,TIME......]
 ROUTE_PLAN_LAYER_ONE       = [2000,0,0,0]
-ROUTE_PLAN_LAYER_TWO       = [500,0,4,4]# 
-ROUTE_PLAN_LAYER_TREE      = [0,800,-5,0]
-ROUTE_PLAN_LAYER_FORE      = [800,800,-4,5]
+ROUTE_PLAN_LAYER_TWO       = [1000,300,0,14]# 
+ROUTE_PLAN_LAYER_TREE      = [800,-1000,5,7]
+ROUTE_PLAN_LAYER_FORE      = [800,800,-4,0]
 ROUTE_PLAN_LAYER_FIVE      = [-300,-800,6,0]
 ROUTE_PLAN_LAYER_SIX       = [0,0,0,0]
 ROUTE_PLAN_LAYER_SEVEN     = [0,0,0,0]
@@ -64,8 +64,8 @@ DOWNBOARD_LAYER_FOUR       = True                  #sector(32) 下板微調站�
 DOWNBOARD_LAYER_FIVE       = True                  #sector(36) 下板微調站姿      5
 BOARD_GND_LC               = True                 #板到地 磁區34
 
-GND_BOARD_LC_U               = True  #上U形板            
-UPBOARD_LAYER_TWO_U          = False                 
+GND_BOARD_LC_U               = False  #上U形板            
+UPBOARD_LAYER_TWO_U          = True                 
 UPBOARD_LAYER_THREE_U        = False                 
 
 DOWNBOARD_LAYER_FOUR_U       = False  #下U形板
@@ -75,11 +75,11 @@ DOWNBOARD_LAYER_GND_U        = False
 DRAW_FUNCTION_FLAG         = True                 #影像繪圖開關
 START_LAYER                = 1
 BOARD_COLOR                = ["Green"  ,           #板子顏色(根據比賽現場調整)
-                              "Red"   ,           #Blue Red Yellow Green
-                              "Yellow"    , 
-                              "Blue" , 
-                              "Yellow"    , 
-                              "Red"   , 
+                              "Blue"   ,           #Blue Red Yellow Green
+                              "Red"    , 
+                              "Yellow" , 
+                              "Red"    , 
+                              "Blue"   , 
                               "Green"]              
 #----------#                       右腳           左腳
 #                              左 ,  中,  右|  左,  中,   右S
@@ -87,7 +87,7 @@ FOOT                       = [93 , 116, 136, 157, 185, 201]
 HEAD_HORIZONTAL            = 2048                  #頭水平
 HEAD_VERTICAL              = 1350                #頭垂直 #down 2750
 ##判斷值
-FOOTBOARD_LINE             = 210                  #基準線
+FOOTBOARD_LINE             = 213                  #基準線
 UP_WARNING_DISTANCE        = 5                    #上板危險距離
 DOWN_WARNING_DISTANCE      = 0                      #下板危險距離
 GO_UP_DISTANCE             = 17                    #上板距離
@@ -97,7 +97,7 @@ SECOND_FORWORD_CHANGE_LINE = 100                   #前進判斷線
 THIRD_FORWORD_CHANGE_LINE  = 150                   #大前進判斷線
 UP_BOARD_DISTANCE          = 60                    #最低上板需求距離
 
-BACK_MIN                   = -1000                  #小後退
+BACK_MIN                   = -800                  #小後退
 BACK_NORMAL                = -1200                  #後退
 FORWARD_MIN                = 600                  #小前進
 FORWARD_NORMAL             = 1000                  #前進
@@ -281,7 +281,7 @@ class LiftandCarry:
                 if GND_BOARD_LC and self.layer == 1:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-3,\
+                                                com_y_shift =-4.5,\
                                                 y_swing = 4.5,\
                                                 period_t = 330,\
                                                 t_dsp = 0.3,\
@@ -302,7 +302,7 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_TWO and self.layer == 2:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-3,\
+                                                com_y_shift =-2,\
                                                 y_swing = 4.5,\
                                                 period_t = 330,\
                                                 t_dsp = 0.3,\
@@ -323,7 +323,7 @@ class LiftandCarry:
                 elif UPBOARD_LAYER_THREE and self.layer == 3:
                     send.sendWalkParameter('send',\
                                                 walk_mode = 2,\
-                                                com_y_shift =-3,\
+                                                com_y_shift =-2.5,\
                                                 y_swing = 4.5,\
                                                 period_t = 330,\
                                                 t_dsp = 0.3,\
@@ -382,7 +382,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FOUR and self.layer == 4:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -3,\
+                                            com_y_shift = -2,\
                                             y_swing = 4.5,\
                                             period_t = 360,\
                                             t_dsp = 0.4,\
@@ -402,7 +402,7 @@ class LiftandCarry:
                 elif DOWNBOARD_LAYER_FIVE and self.layer == 5:
                     send.sendWalkParameter('send',\
                                             walk_mode = 3,\
-                                            com_y_shift = -4,\
+                                            com_y_shift = -2,\
                                             y_swing = 4.5,\
                                             period_t = 360,\
                                             t_dsp = 0.4,\
